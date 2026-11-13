@@ -45,6 +45,8 @@ frosted glass, smooth motion and close to zero CPU when idle.
   - blur and blur strength, *liquid glass*, animations, low-power mode;
   - window borders (accent / Hyprland / none), resize windows by dragging
     their edges, smooth resizing;
+  - workspace switching animation (slide, vertical slide, fade, off or your
+    own) and speed; the bar's workspace indicator moves in sync;
   - **window transparency**: a default opacity for focused and other
     windows, plus per-app rules (focused / unfocused opacity, blur behind),
     with one-click suggestions (kitty, Spotify, Discord, Firefox, Dolphin)
@@ -54,8 +56,9 @@ frosted glass, smooth motion and close to zero CPU when idle.
   - live CPU and memory readout of the shell.
 - **Safe with your Hyprland config**: Altair is loaded by one line; your
   `hyprland.lua` is never rewritten. Look changes (blur, borders, resizing,
-  transparency) are applied at runtime (`hyprctl eval`: options and named
-  window rules that live only in the running compositor) and your own values come back when you switch them
+  transparency, workspace animation) are applied at runtime (`hyprctl
+  eval`: options and named window rules that live only in the running
+  compositor) and your own values come back when you switch them
   off or uninstall.
 
 ### About "liquid glass"
@@ -138,7 +141,7 @@ and add `require("altair").setup({ terminal = "your-terminal" })` to the end of
 | `autostart` | `true` | start Altair with Hyprland |
 | `nvidia_egl_only` | `false` | on **NVIDIA-only** desktops: load only NVIDIA's EGL driver (saves ~100 MB). Don't use on laptops where an Intel/AMD GPU drives the screen. |
 | `icon_theme` | your GTK icon theme | icon theme for apps and tray |
-| `launcher_key`, `notifications_key`, `wallpaper_key`, `settings_key` | see below | other keys, or `false` for none |
+| `launcher_key`, `notifications_key`, `wallpaper_key`, `settings_key`, `workspace_prev_key`, `workspace_next_key`, `last_workspace_key` | see below | other keys (e.g. `"SUPER + CTRL + H"`), or `false` for none |
 
 ## Keys
 
@@ -148,6 +151,8 @@ and add `require("altair").setup({ terminal = "your-terminal" })` to the end of
 | `SUPER + W` | wallpaper picker |
 | `SUPER + N` | notification centre |
 | `SUPER + ,` | settings |
+| `SUPER + CTRL + Left` / `Right` | previous / next workspace |
+| `SUPER + Tab` | back to the last-used workspace |
 | `SUPER + SHIFT + R` | restart Altair |
 | `SUPER + SHIFT + Return` | terminal (works even if Altair is down) |
 

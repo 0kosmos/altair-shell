@@ -41,4 +41,35 @@ Page {
             onToggled: value => Config.windows.smoothResize = value
         }
     }
+
+    Section { text: "Workspaces" }
+
+    SettingRow {
+        title: "Switching animation"
+        description: Hypr.workspaceStyle === "hyprland" ? "The animation from your Hyprland config."
+            : Hypr.workspaceStyle === "off" ? "Workspaces change instantly."
+            : "How the screen moves when you change workspace. The bar's workspace indicator moves along with it."
+        Segmented {
+            options: [{ label: "Slide", value: "slide" }, { label: "Vertical", value: "slidevert" }, { label: "Fade", value: "fade" },
+                { label: "Off", value: "off" }, { label: "Hyprland", value: "hyprland" }]
+            current: Hypr.workspaceStyle
+            onSelected: value => Config.windows.workspaceAnim = value
+        }
+    }
+
+    SettingRow {
+        title: "Speed"
+        enabled: ["slide", "slidevert", "fade"].indexOf(Hypr.workspaceStyle) !== -1
+        opacity: enabled ? 1 : 0.5
+        Segmented {
+            options: [{ label: "Calm", value: "calm" }, { label: "Normal", value: "normal" }, { label: "Fast", value: "fast" }]
+            current: ["calm", "fast"].indexOf(Config.windows.workspaceSpeed) !== -1 ? Config.windows.workspaceSpeed : "normal"
+            onSelected: value => Config.windows.workspaceSpeed = value
+        }
+    }
+
+    SettingRow {
+        title: "Keys"
+        description: "SUPER + CTRL + Left / Right: previous / next workspace. SUPER + Tab: back to the last workspace. Change them in your setup() call (see the README)."
+    }
 }

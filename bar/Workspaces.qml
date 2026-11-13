@@ -79,8 +79,15 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         x: (root.activeId - 1) * root.slot + (root.slot - width) / 2
 
+        // Moves with Hyprland's workspace animation (same duration and curve),
+        // so the pill and the screen arrive together.
         Behavior on x {
-            NumberAnimation { duration: Theme.anim.normal; easing.type: Theme.anim.easing }
+            NumberAnimation {
+                duration: !Theme.animations ? 0
+                    : Hypr.workspaceDuration > 0 ? Hypr.workspaceDuration : Theme.anim.normal
+                easing.type: Hypr.workspaceStyle === "hyprland" ? Theme.anim.easing : Easing.BezierSpline
+                easing.bezierCurve: Hypr.workspaceCurve.concat([1, 1])
+            }
         }
     }
 

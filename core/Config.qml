@@ -167,6 +167,10 @@ Singleton {
                 property bool resizeOnBorder: true
                 // Windows glide when resized/dragged by hand, with a calm curve.
                 property bool smoothResize: true
+                // Workspace switching: "slide" | "slidevert" | "fade" | "off" |
+                // "hyprland" (your own animation from hyprland.lua).
+                property string workspaceAnim: "slide"
+                property string workspaceSpeed: "normal"   // "calm" | "normal" | "fast"
             }
 
             // Window transparency (services/WindowRules.qml). Applied as Hyprland

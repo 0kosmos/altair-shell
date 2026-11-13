@@ -96,8 +96,50 @@ Singleton {
             + `inactive_opacity = ${pick(inactiveOpacity, original.inactiveOpacity)} } })`);
     }
 
+    // ---- Workspace switching animation --------------------------------------------
+    // Style: "slide", "slidevert", "fade", "off", or "hyprland" (your own).
+    // Applied to Hyprland's workspaces / workspacesIn / workspacesOut animations.
+    readonly property string workspaceStyle: {
+        const v = Config.ready ? Config.windows.workspaceAnim : "hyprland";
+        return ["slide", "slidevert", "fade", "off"].indexOf(v) !== -1 ? v : "hyprland";
+    }
+    // Hyprland speed in tenths of a second.
+    readonly property real workspaceSpeed: {
+        const v = Config.ready ? Config.windows.workspaceSpeed : "normal";
+        return v === "calm" ? 5 : v === "fast" ? 2.2 : 3.5;
+    }
+    // The bezier we use, also mirrored by the bar's workspace pill.
+    readonly property var workspaceCurve: [0.22, 1, 0.36, 1]
+    // How long a workspace switch takes, in ms, for the bar to follow (0 = instant).
+    readonly property int workspaceDuration: workspaceStyle === "off" ? 0
+        : workspaceStyle === "hyprland" ? Math.round((original?.wsAnim?.[0]?.speed ?? 2.6) * 100)
+        : Math.round(workspaceSpeed * 100)
+    onWorkspaceStyleChanged: Qt.callLater(applyWorkspaces)
+    onWorkspaceSpeedChanged: Qt.callLater(applyWorkspaces)
+
+    function applyWorkspaces(): void {
+        if (!original || !Config.ready || reading || !original.wsAnim)
+            return;
+        const leaves = ["workspaces", "workspacesIn", "workspacesOut"];
+        let lua = "";
+        if (workspaceStyle === "hyprland") {
+            for (const a of original.wsAnim)
+                lua += `hl.animation({ leaf = "${a.name}", enabled = ${a.enabled}, speed = ${a.speed}, ${a.curve}${a.style ? `, style = "${a.style}"` : ""} }) `;
+        } else if (workspaceStyle === "off") {
+            for (const n of leaves)
+                lua += `hl.animation({ leaf = "${n}", enabled = false }) `;
+        } else {
+            const c = workspaceCurve;
+            lua += `hl.curve("altairWorkspace", { type = "bezier", points = { {${c[0]}, ${c[1]}}, {${c[2]}, ${c[3]}} } }) `;
+            // A fade with a slide feels busy; "slidefade" is not used on purpose.
+            for (const n of leaves)
+                lua += `hl.animation({ leaf = "${n}", enabled = true, speed = ${workspaceSpeed}, bezier = "altairWorkspace", style = "${workspaceStyle}" }) `;
+        }
+        hyprEval(lua);
+    }
+
     // { borderSize, active, inactive, blurSize, blurPasses, resizeOnBorder,
-    //   animResize, animDrag, activeOpacity, inactiveOpacity, moveAnim } — Lua values.
+    //   animResize, animDrag, activeOpacity, inactiveOpacity, moveAnim, wsAnim } — Lua values.
     property var original: null
     readonly property string session: Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") ?? ""
 
@@ -158,6 +200,8 @@ Singleton {
             const move = all.find(a => a.name === "windowsMove");
             const win = all.find(a => a.name === "windows");
             const a = move && move.overridden ? move : win;
+            if ((a?.bezier ?? "").startsWith("altair"))
+                return null;   // our own override, not the user's (see readerGuard)
             const curve = (a?.bezier ?? "").startsWith("spring:")
                 ? `spring = "${a.bezier.slice(7)}"` : `bezier = "${a?.bezier || "default"}"`;
             return { enabled: a?.enabled !== false, speed: a?.speed || 5, curve };
@@ -165,6 +209,39 @@ Singleton {
             console.warn("altair: could not read Hyprland animations: " + e);
             return { enabled: true, speed: 5, curve: 'bezier = "default"' };
         }
+    }
+
+    // The user's workspaces / workspacesIn / workspacesOut animations, as
+    // [{ name, enabled, speed, curve, style }] (inherited values filled in).
+    function wsAnimFrom(json: string): var {
+        try {
+            const d = JSON.parse(json);
+            const all = Array.isArray(d[0]) ? d[0] : d;
+            const get = n => all.find(a => a.name === n);
+            const base = get("workspaces");
+            return ["workspaces", "workspacesIn", "workspacesOut"].map(n => {
+                const own = get(n);
+                const a = own && own.overridden ? own : base && base.overridden ? base : (get("global") ?? own);
+                if ((a?.bezier ?? "").startsWith("altair"))
+                    throw "our own override";   // see readerGuard
+                const curve = (a?.bezier ?? "").startsWith("spring:")
+                    ? `spring = "${a.bezier.slice(7)}"` : `bezier = "${a?.bezier || "default"}"`;
+                return { name: n, enabled: a?.enabled !== false, speed: a?.speed || 5, curve, style: (own?.overridden ? own.style : base?.style) || "" };
+            });
+        } catch (e) {
+            console.warn("altair: could not read Hyprland workspace animations: " + e);
+            return null;
+        }
+    }
+
+    // Everything Altair overrides, e.g. once the originals are known.
+    function applyAll(): void {
+        applyBlur();
+        applyBorders();
+        applyResize();
+        applySmooth();
+        applyOpacity();
+        applyWorkspaces();
     }
 
     function readOriginal(): void {
@@ -209,17 +286,18 @@ Singleton {
                     animDrag: /true|:\s*1/.test(l[7]),
                     activeOpacity: parseFloat(l[8].replace(/^.*?:\s*/, "")) || 1,
                     inactiveOpacity: parseFloat(l[9].replace(/^.*?:\s*/, "")) || 1,
-                    moveAnim: root.moveAnimFrom(l.slice(10).join(""))
+                    // readerGuard: if a read still sees Altair's own curves
+                    // (e.g. two shell instances overlapping during a hot reload,
+                    // one applying while the other reads), keep what we had.
+                    moveAnim: root.moveAnimFrom(l.slice(10).join("")) ?? root.original?.moveAnim
+                        ?? { enabled: true, speed: 5, curve: 'bezier = "default"' },
+                    wsAnim: root.wsAnimFrom(l.slice(10).join("")) ?? root.original?.wsAnim ?? null
                 };
                 root.reading = false;
                 cleanReadFallback.stop();
                 store.session = root.session;
                 store.values = root.original;
-                root.applyBlur();
-                root.applyBorders();
-                root.applyResize();
-                root.applySmooth();
-                root.applyOpacity();
+                root.applyAll();
             }
         }
     }
@@ -234,13 +312,9 @@ Singleton {
         onLoaded: {
             // (Records from older versions lack some values: read again.)
             if (store.session === root.session && store.values && store.values.moveAnim !== undefined
-                    && store.values.activeOpacity !== undefined) {
+                    && store.values.activeOpacity !== undefined && store.values.wsAnim !== undefined) {
                 root.original = store.values;
-                root.applyBlur();
-                root.applyBorders();
-                root.applyResize();
-                root.applySmooth();
-                root.applyOpacity();
+                root.applyAll();
             } else {
                 // No (complete) record for this Hyprland session.
                 root.cleanRead();

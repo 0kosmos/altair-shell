@@ -22,6 +22,10 @@
 --   notifications_key = keys for the notification centre (default: MOD + N)
 --   settings_key = keys for Altair Settings (default: MOD + comma)
 --   wallpaper_key = keys for the wallpaper picker (default: MOD + W)
+--   workspace_prev_key = previous workspace by number (default: MOD + CTRL + left)
+--   workspace_next_key = next workspace by number (default: MOD + CTRL + right)
+--   last_workspace_key = back to the last-used workspace (default: MOD + Tab)
+--   (any key option: false = no bind)
 --
 -- The escape hatches below are plain Hyprland binds, so they work even when the
 -- shell has crashed or hangs:
@@ -106,6 +110,17 @@ function M.setup(opts)
     end
     if opts.settings_key ~= false then
         hl.bind(opts.settings_key or (mod .. " + comma"), hl.dsp.exec_cmd(ipc .. "settings"))
+    end
+
+    -- Workspaces. Animated by Hyprland (style/speed set by Altair at runtime).
+    if opts.workspace_prev_key ~= false then
+        hl.bind(opts.workspace_prev_key or (mod .. " + CTRL + left"), hl.dsp.focus({ workspace = "r-1" }))
+    end
+    if opts.workspace_next_key ~= false then
+        hl.bind(opts.workspace_next_key or (mod .. " + CTRL + right"), hl.dsp.focus({ workspace = "r+1" }))
+    end
+    if opts.last_workspace_key ~= false then
+        hl.bind(opts.last_workspace_key or (mod .. " + Tab"), hl.dsp.focus({ workspace = "previous" }))
     end
 
     -- The Settings window is a normal toplevel window (class org.quickshell):
