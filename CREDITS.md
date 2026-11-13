@@ -18,5 +18,12 @@ distribution's packages.
 
 Colour palettes in `theme/palettes.js` are original to Altair.
 
+### Screenshots (`docs/screenshots/`)
+
+- The soft colour wallpapers in the screenshots were generated for Altair;
+  same licence as Altair.
+- "Next" wallpaper by Krystian Zajdel for KDE, CC-BY-SA-4.0, visible in the
+  wallpaper picker screenshot.
+
 If you add an asset to the repository (an image, a sound, a font), it must
 have a free licence and be listed here.

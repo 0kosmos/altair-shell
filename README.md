@@ -1,5 +1,7 @@
 # Altair
 
+![Altair on Hyprland](docs/screenshots/desktop.png)
+
 A clean, fast desktop shell for [Hyprland](https://hypr.land), built with
 [Quickshell](https://quickshell.org). Mostly monochrome with one accent colour,
 frosted glass, smooth motion and close to zero CPU when idle.
@@ -9,7 +11,13 @@ frosted glass, smooth motion and close to zero CPU when idle.
 
 ## Screenshots
 
-*Coming soon.*
+![Settings with palettes and accent colours](docs/screenshots/settings.png)
+
+![Wallpaper carousel](docs/screenshots/wallpapers.png)
+
+![App launcher](docs/screenshots/launcher.png)
+
+<sub>Regenerate with `docs/screenshots/make.sh` from raw 1920x1080 screenshots.</sub>
 
 ## Features
 
