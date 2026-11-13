@@ -20,8 +20,8 @@ AltairPanel {
     dock: Theme.barAtTop ? "top" : "bottom"
     fullWidth: false
     slideDistance: 12
-    panelWidth: 300 + (Config.bar.weekNumbers ? 29 : 0) + (Config.bar.analogClock ? 222 : 0)
-    panelHeight: 348
+    panelWidth: 286 + (Config.bar.weekNumbers ? 27 : 0) + (Config.bar.analogClock ? 222 : 0)
+    panelHeight: 334
 
     content: Component {
         FocusScope {
@@ -186,6 +186,7 @@ AltairPanel {
                         month: cal.month
                         today: clock.date
                         weekNumbers: Config.bar.weekNumbers
+                        cellSize: 34
                     }
 
                     QtObject {
