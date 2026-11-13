@@ -19,6 +19,7 @@
 --   icon_theme = icon theme for app/tray icons (default: your GTK icon theme from
 --               gtk-3.0/settings.ini; Qt alone often finds no theme on Hyprland)
 --   launcher_key = keys for the app launcher (default: MOD + SPACE, false = none)
+--   notifications_key = keys for the notification centre (default: MOD + N)
 --
 -- The escape hatches below are plain Hyprland binds, so they work even when the
 -- shell has crashed or hangs:
@@ -89,6 +90,9 @@ function M.setup(opts)
     local ipc = "qs -c altair ipc call panels toggle "
     if opts.launcher_key ~= false then
         hl.bind(opts.launcher_key or (mod .. " + SPACE"), hl.dsp.exec_cmd(ipc .. "launcher"))
+    end
+    if opts.notifications_key ~= false then
+        hl.bind(opts.notifications_key or (mod .. " + N"), hl.dsp.exec_cmd(ipc .. "notifications"))
     end
 
     -- Altair animates its own surfaces; stop Hyprland from animating them too.

@@ -30,6 +30,7 @@ Singleton {
     readonly property alias effects: adapter.effects
     readonly property alias performance: adapter.performance
     readonly property alias apps: adapter.apps
+    readonly property alias notifications: adapter.notifications
 
     function reload(): void {
         file.reload();
@@ -109,6 +110,11 @@ Singleton {
             property JsonObject apps: JsonObject {
                 // Terminal for apps that need one. Empty = $TERMINAL, else kitty.
                 property string terminal: ""
+            }
+
+            property JsonObject notifications: JsonObject {
+                // Only critical notifications pop up; all still go to history.
+                property bool doNotDisturb: false
             }
 
             property JsonObject performance: JsonObject {

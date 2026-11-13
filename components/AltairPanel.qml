@@ -25,6 +25,9 @@ Scope {
     property int panelWidth: 560
     property int panelHeight: 420
     property real topOffset: 0.2
+    // false: centred, topOffset from the top (launcher).
+    // true: docked to the right edge next to the bar (notification centre).
+    property bool alignRight: false
     property Component content
 
     readonly property bool open: ShellState.openPanel === name
@@ -53,10 +56,17 @@ Scope {
             WlrLayershell.namespace: "altair-" + root.name
             WlrLayershell.layer: WlrLayer.Overlay
             WlrLayershell.keyboardFocus: root.open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-            exclusionMode: ExclusionMode.Ignore
+            // Docked panels respect the bar's exclusive zone (sit next to it);
+            // centred ones float over everything.
+            exclusionMode: root.alignRight ? ExclusionMode.Normal : ExclusionMode.Ignore
+            exclusiveZone: 0
 
-            anchors.top: true
-            margins.top: Math.round((screen?.height ?? 1080) * root.topOffset)
+            anchors.top: !root.alignRight || Theme.barAtTop
+            anchors.bottom: root.alignRight && !Theme.barAtTop
+            anchors.right: root.alignRight
+            margins.top: root.alignRight ? Theme.barGap : Math.round((screen?.height ?? 1080) * root.topOffset)
+            margins.bottom: root.alignRight ? Theme.barGap : 0
+            margins.right: root.alignRight ? Theme.barGap : 0
             implicitWidth: root.panelWidth
             implicitHeight: root.panelHeight
             color: "transparent"

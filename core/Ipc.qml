@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.core
+import qs.services
 
 // All IPC entry points in one place. Hyprland keybinds call these, e.g.
 //   qs -c altair ipc call panels toggle launcher
@@ -38,6 +39,21 @@ Scope {
         }
         function configPath(): string {
             return Config.path;
+        }
+    }
+
+    IpcHandler {
+        target: "notifications"
+
+        function clearAll(): void {
+            Notifs.clearAll();
+        }
+        function toggleDnd(): bool {
+            Config.notifications.doNotDisturb = !Config.notifications.doNotDisturb;
+            return Config.notifications.doNotDisturb;
+        }
+        function count(): int {
+            return Notifs.count;
         }
     }
 

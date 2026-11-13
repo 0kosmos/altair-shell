@@ -78,6 +78,7 @@ Variants {
             Volume {}
             NetworkStatus {}
             BatteryStatus {}
+            NotificationButton {}
         }
     }
 }
