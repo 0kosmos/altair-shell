@@ -20,7 +20,7 @@ AltairPanel {
     dock: Theme.barAtTop ? "top" : "bottom"
     fullWidth: false
     slideDistance: 12
-    panelWidth: 272 + (Config.bar.weekNumbers ? 26 : 0) + (Config.bar.analogClock ? 282 : 0)
+    panelWidth: 272 + (Config.bar.weekNumbers ? 26 : 0) + (Config.bar.analogClock ? 262 : 0)
     panelHeight: 322
 
     content: Component {
@@ -100,7 +100,7 @@ AltairPanel {
                 AnalogClock {
                     id: analog
                     Layout.alignment: Qt.AlignHCenter
-                    size: 240
+                    size: 220
                     showSeconds: Config.bar.clockSeconds
                 }
                 StyledText {
