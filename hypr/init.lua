@@ -124,16 +124,21 @@ function M.setup(opts)
         hl.bind(opts.last_workspace_key or (mod .. " + Tab"), hl.dsp.focus({ workspace = "previous" }))
     end
 
-    -- Alt+Tab. The keys reach the shell as global shortcuts (no process per
-    -- press). Releasing Alt commits; with Shift held the released key can be
-    -- Meta_L (US layouts), hence the extra binds. See alttab/AltTab.qml.
+    -- Alt+Tab (see alttab/AltTab.qml).
+    --   Tab presses reach the shell as global shortcuts (no process per press).
+    --   Releasing Alt emits a custom event on Hyprland's event socket instead:
+    --   a global-shortcut event sent on a key RELEASE is only delivered with
+    --   the next input event (tested on 0.57), so the switcher would wait for
+    --   another key. ignore_mods: matches with or without Shift held (where the
+    --   key can be Meta_L); non_consuming: apps still see Alt (e.g. menu bars).
     if opts.alttab ~= false then
         local g = function(name) return hl.dsp.global("altair:alttab-" .. name) end
         hl.bind("ALT + Tab", g("next"), { repeating = true })
         hl.bind("ALT + SHIFT + Tab", g("prev"), { repeating = true })
-        hl.bind("ALT + Alt_L", g("release"), { release = true })
-        hl.bind("ALT + SHIFT + Alt_L", g("release"), { release = true })
-        hl.bind("ALT + SHIFT + Meta_L", g("release"), { release = true })
+        local released = hl.dsp.event("altair:alttab-release")
+        local opt = { release = true, ignore_mods = true, non_consuming = true }
+        hl.bind("Alt_L", released, opt)
+        hl.bind("Meta_L", released, opt)
     end
 
     -- The Settings window is a normal toplevel window (class org.quickshell):

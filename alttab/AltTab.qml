@@ -13,10 +13,11 @@ import qs.theme
 // binds (hypr/init.lua) that reach us through Hyprland's global-shortcut
 // protocol (GlobalShortcut below: no process per key press):
 //   ALT + Tab / ALT + SHIFT + Tab  -> "alttab-next" / "alttab-prev"
-//   releasing Alt (a release bind)  -> "alttab-release"  => commit
-// Backups, so it can never stay open: while the overlay is shown it has
-// keyboard focus, so Qt also sees the Alt release; any key without Alt held
-// commits; Escape or a click outside cancels.
+//   releasing Alt (a release bind)  -> custom event "altair:alttab-release"
+//                                      on Hyprland's event socket => commit
+// Backups, so it can never stay open: while shown, the overlay has keyboard
+// focus, so any key pressed without Alt held commits (and an Alt release, if
+// Qt sees one); Escape or a click outside cancels.
 //
 // A quick Alt+Tab tap switches to the previous window without showing the
 // overlay at all (it only appears after `showDelay`).
@@ -130,13 +131,14 @@ Scope {
         description: "Alt+Tab: previous window"
         onPressed: root.step(-1)
     }
-    GlobalShortcut {
-        appid: "altair"
-        name: "alttab-release"
-        description: "Alt+Tab: Alt released"
-        // A release bind may arrive as either signal; commit is idempotent.
-        onPressed: root.commit("release bind")
-        onReleased: root.commit("release bind")
+    // Alt released: a custom event on Hyprland's event socket (see the binds in
+    // hypr/init.lua for why this is not a global shortcut).
+    Connections {
+        target: Hyprland
+        function onRawEvent(event) {
+            if (event.name === "custom" && event.data === "altair:alttab-release")
+                root.commit("Alt released");
+        }
     }
 
     // ---- Overlay ----------------------------------------------------------------
@@ -159,7 +161,8 @@ Scope {
                         root.commit("key release");
                 }
                 Keys.onPressed: event => {
-                    if (!(event.modifiers & Qt.AltModifier) && event.key !== Qt.Key_Escape) {
+                    const modifierKey = [Qt.Key_Alt, Qt.Key_Shift, Qt.Key_Control, Qt.Key_Meta, Qt.Key_Super_L].indexOf(event.key) !== -1;
+                    if (!(event.modifiers & Qt.AltModifier) && event.key !== Qt.Key_Escape && !modifierKey) {
                         root.commit("key without Alt");
                     } else if (event.key === Qt.Key_Left) {
                         root.step(-1);
