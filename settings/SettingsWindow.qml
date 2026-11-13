@@ -13,7 +13,7 @@ import qs.theme
 // Every change is saved to ~/.config/altair/config.json immediately.
 //
 // It is an ordinary window, so Hyprland's window rules apply: hypr/init.lua
-// makes it float, centred, at 1000x700 with corner rounding matching ours
+// makes it float, centred, at 1120x700 with corner rounding matching ours
 // (class org.quickshell, this title).
 Scope {
     id: settings
@@ -39,7 +39,7 @@ Scope {
             id: win
 
             title: "Altair Settings"
-            implicitWidth: 1000
+            implicitWidth: 1120
             implicitHeight: 700
             minimumSize: Qt.size(760, 520)
             // The background is drawn by GlassBackground below (so liquid glass
@@ -109,12 +109,13 @@ Scope {
                     }
                 }
 
-                // Double-click on any empty spot (sidebar, margins): back to the
-                // default size, centred. Controls on top take their own clicks;
+                // Double-click on any empty spot (sidebar, margins): re-centre,
+                // keeping the current size (Ctrl+0 also resets the size).
+                // Controls on top take their own clicks;
                 // pages report theirs via backgroundDoubleClicked.
                 MouseArea {
                     anchors.fill: parent
-                    onDoubleClicked: win.resetGeometry()
+                    onDoubleClicked: win.recenter()
                 }
 
                 // Radius deliberately SMALLER than Hyprland's window rounding (18,
@@ -133,7 +134,7 @@ Scope {
                     anchors.fill: parent
                     focus: true
                     Keys.onEscapePressed: ShellState.settingsOpen = false
-                    // Keyboard: Ctrl+0 re-centres; Tab / Shift+Tab and Left/Right
+                    // Keyboard: Ctrl+0 resets to the default size, centred; Tab / Shift+Tab and Left/Right
                     // switch pages; Up/Down scroll, and at the end of a page (or on
                     // a page that fits) move to the next/previous page (only on a
                     // fresh press, so holding a key never races through pages);
@@ -288,7 +289,7 @@ Scope {
                                     Layout.rightMargin: Theme.space.s
                                     wrapMode: Text.Wrap
                                     elide: Text.ElideNone
-                                    text: "Altair " + ShellState.version + "\nArrows / Tab: scroll and switch pages\nDouble-click an empty spot or Ctrl+0 to re-centre"
+                                    text: "Altair " + ShellState.version + "\nArrows / Tab: scroll and switch pages\nDouble-click an empty spot to re-centre\nCtrl+0: default size"
                                     color: Theme.fgDisabled
                                     font.pixelSize: Theme.font.small
                                 }
@@ -316,7 +317,7 @@ Scope {
                                 target: pageLoader.item
                                 ignoreUnknownSignals: true
                                 function onBackgroundDoubleClicked() {
-                                    win.resetGeometry();
+                                    win.recenter();
                                 }
                             }
                         }
@@ -350,6 +351,10 @@ Scope {
             function stepPage(delta: int): void {
                 const i = pages.findIndex(p => p.id === page);
                 page = pages[(i + delta + pages.length) % pages.length].id;
+            }
+
+            function recenter(): void {
+                Hypr.centerWindowByTitle(win.title);
             }
 
             function resetGeometry(): void {

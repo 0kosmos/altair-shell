@@ -12,7 +12,7 @@ Flickable {
     property string title
     default property alias content: column.data
 
-    // Double-click on an empty part of the page (the window re-centres).
+    // Double-click on an empty part of the page (the window re-centres, keeping its size).
     signal backgroundDoubleClicked()
 
     // Smooth keyboard scrolling (the window calls these for arrows, PageUp/

@@ -282,6 +282,15 @@ Singleton {
             resetWindow(t.address, width, height);
     }
 
+    // Centre our floating window with this title, keeping its size.
+    function centerWindowByTitle(title: string): void {
+        const t = Hyprland.toplevels.values.find(t => t.title === title);
+        if (t) {
+            const a = t.address.startsWith("0x") ? t.address : "0x" + t.address;
+            Hyprland.dispatch(`hl.dsp.window.center({ window = "address:${a}" })`);
+        }
+    }
+
     // Give a floating window this size and centre it. address: from
     // HyprlandToplevel (with or without "0x").
     function resetWindow(address: string, width: int, height: int): void {

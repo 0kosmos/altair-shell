@@ -77,7 +77,7 @@ Scope {
 
         // Settings window back to its default size, centred.
         function recenter(): void {
-            Hypr.resetWindowByTitle("Altair Settings", 1000, 700);
+            Hypr.resetWindowByTitle("Altair Settings", 1120, 700);
         }
 
         // "#RRGGBB", or "mono" for the theme-adaptive monochrome accent.

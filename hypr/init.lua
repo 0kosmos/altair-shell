@@ -115,7 +115,7 @@ function M.setup(opts)
         match  = { class = "^org\\.quickshell$", title = "^Altair Settings$" },
         float  = true,
         center = true,
-        size   = { 1000, 700 },
+        size   = { 1120, 700 },
         -- Matches the corner radius Altair draws (Theme.radius.l).
         rounding = 18,
         -- Altair animates the window's content itself (a calm fade-in). Hyprland's
