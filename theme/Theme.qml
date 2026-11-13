@@ -30,6 +30,7 @@ Singleton {
     readonly property color border: Qt.alpha(fg, dark ? 0.08 : 0.10)
     readonly property color hover: Qt.alpha(fg, 0.06)
     readonly property color pressed: Qt.alpha(fg, 0.12)
+    readonly property color critical: dark ? "#f7768e" : "#d1364f"
 
     // Panel background: more transparent when blur is behind it; still slightly
     // translucent without blur so the "effects off" look stays light.
@@ -56,6 +57,7 @@ Singleton {
     readonly property QtObject font: QtObject {
         readonly property string family: Config.appearance.fontFamily
         readonly property string icons: Config.appearance.iconFontFamily
+        readonly property int icon: 18
         readonly property int small: 12
         readonly property int body: 14
         readonly property int title: 18
@@ -75,7 +77,10 @@ Singleton {
 
     // ---- Bar ----------------------------------------------------------------------
     readonly property string barPosition: Config.appearance.barPosition === "bottom" ? "bottom" : "top"
+    readonly property bool barAtTop: barPosition === "top"
     readonly property int barHeight: 36
+    // Gap between the floating bar and the screen edges.
+    readonly property int barGap: 8
 
     // ---- Helpers ------------------------------------------------------------------
     function validColor(value: string, fallback: string): color {

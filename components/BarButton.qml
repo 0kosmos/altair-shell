@@ -1,0 +1,57 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+import QtQuick
+import QtQuick.Layouts
+import qs.theme
+
+// A rounded, hoverable container for bar items. Children are laid out in a row
+// and the button sizes itself to them.
+//
+// `stepped(direction)` fires once per wheel notch (+1 up, -1 down). Touchpads
+// send many small deltas; they are accumulated so one gesture ≈ one notch.
+MouseArea {
+    id: root
+
+    default property alias content: row.data
+    property alias spacing: row.spacing
+    property int padding: Theme.space.s
+    // false = display only: no hover/press highlight, normal cursor, no clicks.
+    // Use it for items without an action so they don't look clickable.
+    property bool interactive: true
+
+    signal stepped(int direction)
+
+    implicitWidth: row.implicitWidth + padding * 2
+    implicitHeight: Theme.barHeight - Theme.space.xs * 2
+
+    hoverEnabled: interactive
+    acceptedButtons: interactive ? (Qt.LeftButton | Qt.RightButton | Qt.MiddleButton) : Qt.NoButton
+    cursorShape: interactive ? Qt.PointingHandCursor : Qt.ArrowCursor
+
+    property int wheelAccum: 0
+    onWheel: wheel => {
+        wheelAccum += wheel.angleDelta.y;
+        while (Math.abs(wheelAccum) >= 120) {
+            const dir = wheelAccum > 0 ? 1 : -1;
+            wheelAccum -= dir * 120;
+            stepped(dir);
+        }
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        radius: Theme.radius.s
+        color: !root.interactive ? "transparent"
+            : root.pressed ? Theme.pressed
+            : root.containsMouse ? Theme.hover : "transparent"
+
+        Behavior on color {
+            ColorAnimation { duration: Theme.anim.fast }
+        }
+    }
+
+    RowLayout {
+        id: row
+        anchors.centerIn: parent
+        spacing: Theme.space.xs
+    }
+}
