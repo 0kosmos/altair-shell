@@ -20,7 +20,7 @@ AltairPanel {
     dock: Theme.barAtTop ? "top" : "bottom"
     fullWidth: false
     slideDistance: 12
-    panelWidth: 300 + (Config.bar.weekNumbers ? 29 : 0)
+    panelWidth: 300 + (Config.bar.weekNumbers ? 29 : 0) + (Config.bar.analogClock ? 222 : 0)
     panelHeight: 348
 
     content: Component {
@@ -85,9 +85,46 @@ AltairPanel {
                 }
             }
 
-            ColumnLayout {
+            RowLayout {
                 anchors.fill: parent
                 anchors.margins: Theme.space.l
+                spacing: Theme.space.l
+
+            // ---- Round clock (optional) -------------------------------------------
+            ColumnLayout {
+                visible: Config.bar.analogClock
+                Layout.alignment: Qt.AlignVCenter
+                Layout.leftMargin: Theme.space.xs
+                spacing: Theme.space.m
+
+                AnalogClock {
+                    id: analog
+                    Layout.alignment: Qt.AlignHCenter
+                    size: 180
+                    showSeconds: Config.bar.clockSeconds
+                }
+                StyledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: Qt.locale().toString(analog.date, Qt.locale().timeFormat(Locale.ShortFormat))
+                    color: Theme.fgMuted
+                    font.pixelSize: Theme.font.body
+                    font.weight: Font.Medium
+                    tabular: true
+                }
+            }
+
+            Rectangle {
+                visible: Config.bar.analogClock
+                Layout.fillHeight: true
+                Layout.topMargin: Theme.space.s
+                Layout.bottomMargin: Theme.space.s
+                implicitWidth: 1
+                color: Theme.border
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 spacing: Theme.space.s
 
                 // Today, in full ("sabato 14 novembre").
@@ -171,6 +208,7 @@ AltairPanel {
                 // panelHeight grown to fit). Deliberately not built yet.
 
                 Item { Layout.fillHeight: true }
+            }
             }
         }
     }

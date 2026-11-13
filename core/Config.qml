@@ -188,6 +188,8 @@ Singleton {
                 property bool showDate: true           // date next to the time
                 property bool clockPopup: true         // click the clock: calendar
                 property bool weekNumbers: false       // ISO week numbers in the calendar
+                property bool analogClock: true        // round clock in the calendar popup
+                property bool clockSeconds: true       // its seconds hand (ticks once a second while open)
             }
 
             property JsonObject performance: JsonObject {

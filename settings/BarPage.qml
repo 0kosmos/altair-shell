@@ -71,4 +71,26 @@ Page {
             onToggled: value => Config.bar.weekNumbers = value
         }
     }
+
+    SettingRow {
+        title: "Round clock in calendar"
+        description: "An analogue clock next to the calendar."
+        enabled: Config.bar.clockPopup
+        opacity: enabled ? 1 : 0.5
+        Toggle {
+            checked: Config.bar.analogClock
+            onToggled: value => Config.bar.analogClock = value
+        }
+    }
+
+    SettingRow {
+        title: "Seconds hand"
+        description: "Ticks once a second, only while the calendar is open."
+        enabled: Config.bar.clockPopup && Config.bar.analogClock
+        opacity: enabled ? 1 : 0.5
+        Toggle {
+            checked: Config.bar.clockSeconds
+            onToggled: value => Config.bar.clockSeconds = value
+        }
+    }
 }

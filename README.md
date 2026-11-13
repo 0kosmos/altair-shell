@@ -24,8 +24,9 @@ frosted glass, smooth motion and close to zero CPU when idle.
 - **Bar**: workspaces (sliding indicator), clock, system tray with themed
   menus, volume, network, battery (laptops), notifications and settings.
   Top or bottom.
-- **Calendar**: click the clock for a month calendar (today highlighted, your
-  locale's first weekday, optional ISO week numbers). Arrows, mouse wheel or
+- **Calendar**: click the clock for a month calendar next to a round
+  analogue clock (today highlighted, your locale's first weekday, optional
+  ISO week numbers and seconds hand). Arrows, mouse wheel or
   Left/Right change the month; click the month name or press Home for today.
 - **App launcher** (`SUPER + Space`): fuzzy search over names, descriptions
   and keywords; apps you use often rise to the top.
