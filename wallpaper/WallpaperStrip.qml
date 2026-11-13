@@ -13,7 +13,7 @@ import qs.theme
 // Bottom, centre or top of the screen (Settings -> Wallpaper). SUPER+W.
 //
 //   arrows / Tab           move one wallpaper, wrapping around at the ends
-//   wheel                  move one wallpaper (stops at the ends)
+//   wheel                  up = right, down = left (stops at the ends)
 //   hover                  preview that wallpaper
 //   click                  apply it (and bring it to the middle)
 //   Enter / double-click   apply and close
@@ -206,20 +206,6 @@ AltairPanel {
                     event.accepted = true;
                 }
 
-                // Wheel: one wallpaper per notch (touchpads accumulate).
-                property int wheelAccum: 0
-                WheelHandler {
-                    onWheel: event => {
-                        const d = Math.abs(event.angleDelta.x) > Math.abs(event.angleDelta.y) ? -event.angleDelta.x : event.angleDelta.y;
-                        list.wheelAccum += d;
-                        while (Math.abs(list.wheelAccum) >= 120) {
-                            const dir = list.wheelAccum > 0 ? -1 : 1;
-                            list.wheelAccum += dir * 120;
-                            list.step(dir, false);
-                        }
-                    }
-                }
-
                 delegate: Item {
                     id: card
                     required property int index
@@ -272,6 +258,26 @@ AltairPanel {
                         text: "Add JPG, PNG, WebP or MP4/WebM files there; they appear here right away."
                         color: Theme.fgDisabled
                         font.pixelSize: Theme.font.small
+                    }
+                }
+            }
+
+            // Wheel: one wallpaper per notch (touchpads accumulate). Up moves
+            // right, down moves left; a horizontal swipe moves the way the
+            // fingers go. A button-less MouseArea on top: it takes only wheel
+            // events, so hover and clicks still reach the cards below. (A
+            // WheelHandler inside the ListView never saw the events.)
+            MouseArea {
+                anchors.fill: list
+                acceptedButtons: Qt.NoButton
+                property int accum: 0
+                onWheel: wheel => {
+                    const d = Math.abs(wheel.angleDelta.x) > Math.abs(wheel.angleDelta.y) ? wheel.angleDelta.x : wheel.angleDelta.y;
+                    accum += d;
+                    while (Math.abs(accum) >= 120) {
+                        const dir = accum > 0 ? 1 : -1;
+                        accum -= dir * 120;
+                        list.step(dir, false);
                     }
                 }
             }
