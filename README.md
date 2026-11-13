@@ -41,11 +41,17 @@ frosted glass, smooth motion and close to zero CPU when idle.
   - blur and blur strength, *liquid glass*, animations, low-power mode;
   - window borders (accent / Hyprland / none), resize windows by dragging
     their edges, smooth resizing;
+  - **window transparency**: a default opacity for focused and other
+    windows, plus per-app rules (focused / unfocused opacity, blur behind),
+    with one-click suggestions (kitty, Spotify, Discord, Firefox, Dolphin)
+    or any open window. Low-power mode keeps the opacity but turns the blur
+    behind windows off;
   - keyboard navigation (arrows, Tab, Home/End);
   - live CPU and memory readout of the shell.
 - **Safe with your Hyprland config**: Altair is loaded by one line; your
-  `hyprland.lua` is never rewritten. Look changes (blur, borders, resizing)
-  are applied at runtime and your own values come back when you switch them
+  `hyprland.lua` is never rewritten. Look changes (blur, borders, resizing,
+  transparency) are applied at runtime (`hyprctl eval`: options and named
+  window rules that live only in the running compositor) and your own values come back when you switch them
   off or uninstall.
 
 ### About "liquid glass"
@@ -193,7 +199,8 @@ that memory. Measure on your machine with `scripts/perf.sh 30`, or see
 ```
 
 Removes the links, `~/.local/share/altair` and the line in `hyprland.lua`
-(backup first), and reloads Hyprland so your own look is back. Your settings
+(backup first), and reloads Hyprland so your own look is back (this also
+drops Altair's transparency rules). Your settings
 (`~/.config/altair`), state and cache are kept; delete them yourself if you
 like.
 

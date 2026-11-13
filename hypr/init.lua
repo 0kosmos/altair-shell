@@ -121,6 +121,9 @@ function M.setup(opts)
         -- Altair animates the window's content itself (a calm fade-in). Hyprland's
         -- own open animation (often a springy pop-in) made it wobble.
         no_anim = true,
+        -- Never made see-through by a default window opacity (Settings >
+        -- Transparency); it draws its own translucent glass.
+        opacity = "1 override 1 override",
     })
 
     -- Altair animates its own surfaces; stop Hyprland from animating them too.

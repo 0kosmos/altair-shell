@@ -81,8 +81,23 @@ Singleton {
         }
     }
 
+    // Default window opacity (focused / unfocused), 0.3–1, or -1 = Hyprland's
+    // own. Per-app values are window rules, see services/WindowRules.qml.
+    readonly property real activeOpacity: Config.ready ? Config.transparency.activeOpacity : -1
+    readonly property real inactiveOpacity: Config.ready ? Config.transparency.inactiveOpacity : -1
+    onActiveOpacityChanged: Qt.callLater(applyOpacity)
+    onInactiveOpacityChanged: Qt.callLater(applyOpacity)
+
+    function applyOpacity(): void {
+        if (!original || !Config.ready || reading)
+            return;
+        const pick = (v, orig) => v > 0 ? Math.max(0.3, Math.min(1, v)) : orig;
+        hyprEval(`hl.config({ decoration = { active_opacity = ${pick(activeOpacity, original.activeOpacity)}, `
+            + `inactive_opacity = ${pick(inactiveOpacity, original.inactiveOpacity)} } })`);
+    }
+
     // { borderSize, active, inactive, blurSize, blurPasses, resizeOnBorder,
-    //   animResize, animDrag, moveAnim } — Lua values.
+    //   animResize, animDrag, activeOpacity, inactiveOpacity, moveAnim } — Lua values.
     property var original: null
     readonly property string session: Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") ?? ""
 
@@ -173,11 +188,11 @@ Singleton {
 
     Process {
         id: reader
-        command: ["sh", "-c", "for o in general:border_size general:col.active_border general:col.inactive_border decoration:blur:size decoration:blur:passes general:resize_on_border misc:animate_manual_resizes misc:animate_mouse_windowdragging; do hyprctl getoption \"$o\" | head -n1; done; hyprctl animations -j | tr -d '\\n'"]
+        command: ["sh", "-c", "for o in general:border_size general:col.active_border general:col.inactive_border decoration:blur:size decoration:blur:passes general:resize_on_border misc:animate_manual_resizes misc:animate_mouse_windowdragging decoration:active_opacity decoration:inactive_opacity; do hyprctl getoption \"$o\" | head -n1; done; hyprctl animations -j | tr -d '\\n'"]
         stdout: StdioCollector {
             onStreamFinished: {
                 const l = this.text.trim().split("\n");
-                if (l.length < 9) {
+                if (l.length < 11) {
                     console.warn("altair: could not read Hyprland options: " + this.text);
                     root.reading = false;
                     return;
@@ -192,7 +207,9 @@ Singleton {
                     resizeOnBorder: /true|:\s*1/.test(l[5]),
                     animResize: /true|:\s*1/.test(l[6]),
                     animDrag: /true|:\s*1/.test(l[7]),
-                    moveAnim: root.moveAnimFrom(l.slice(8).join(""))
+                    activeOpacity: parseFloat(l[8].replace(/^.*?:\s*/, "")) || 1,
+                    inactiveOpacity: parseFloat(l[9].replace(/^.*?:\s*/, "")) || 1,
+                    moveAnim: root.moveAnimFrom(l.slice(10).join(""))
                 };
                 root.reading = false;
                 cleanReadFallback.stop();
@@ -202,6 +219,7 @@ Singleton {
                 root.applyBorders();
                 root.applyResize();
                 root.applySmooth();
+                root.applyOpacity();
             }
         }
     }
@@ -214,12 +232,15 @@ Singleton {
         // Same Hyprland session as last time: our overrides may be active, so
         // trust the stored originals instead of reading Hyprland.
         onLoaded: {
-            if (store.session === root.session && store.values && store.values.moveAnim !== undefined) {
+            // (Records from older versions lack some values: read again.)
+            if (store.session === root.session && store.values && store.values.moveAnim !== undefined
+                    && store.values.activeOpacity !== undefined) {
                 root.original = store.values;
                 root.applyBlur();
                 root.applyBorders();
                 root.applyResize();
                 root.applySmooth();
+                root.applyOpacity();
             } else {
                 // No (complete) record for this Hyprland session.
                 root.cleanRead();

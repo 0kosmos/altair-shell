@@ -31,6 +31,7 @@ ShellRoot {
         void Apps.list;
         void Notifs.count;
         void Hypr.blurStrength;   // apply the saved blur strength and border colours
+        void WindowRules.rules;   // re-send per-app transparency rules
     }
 
     Connections {

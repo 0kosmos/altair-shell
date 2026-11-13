@@ -33,6 +33,7 @@ Singleton {
     readonly property alias notifications: adapter.notifications
     readonly property alias wallpaper: adapter.wallpaper
     readonly property alias windows: adapter.windows
+    readonly property alias transparency: adapter.transparency
     readonly property alias bar: adapter.bar
 
     function reload(): void {
@@ -166,6 +167,20 @@ Singleton {
                 property bool resizeOnBorder: true
                 // Windows glide when resized/dragged by hand, with a calm curve.
                 property bool smoothResize: true
+            }
+
+            // Window transparency (services/WindowRules.qml). Applied as Hyprland
+            // window rules at runtime; hyprland.lua is never edited.
+            property JsonObject transparency: JsonObject {
+                // Default opacity for all windows, 0.3–1. -1 = Hyprland's own
+                // decoration.active_opacity / inactive_opacity.
+                property real activeOpacity: -1
+                property real inactiveOpacity: -1
+                // Per-app rules, each:
+                //   { name, match (regex on the window class), opacity,
+                //     inactiveOpacity, blur (blur behind), enabled }
+                // They replace the default above for matching windows.
+                property var rules: []
             }
 
             property JsonObject bar: JsonObject {

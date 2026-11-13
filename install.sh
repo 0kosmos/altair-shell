@@ -351,7 +351,8 @@ do_uninstall() {
     remove_install_dir
     unconfigure_hyprland
     # Altair changes some Hyprland options at runtime (blur strength, borders,
-    # resizing); re-reading the config restores your own values.
+    # resizing, opacity) and adds window rules (transparency); re-reading the
+    # config restores your own values and drops those rules.
     if (( START )) && hypr_running; then run hyprctl reload >/dev/null; ok "Hyprland config reloaded (your own look is back)"; fi
 
     step "Done"
