@@ -1,3 +1,4 @@
+-- SPDX-License-Identifier: GPL-3.0-or-later
 -- Altair — Hyprland integration (Hyprland 0.57+ Lua config).
 --
 -- This folder is linked to ~/.config/hypr/altair/, which is on Hyprland's Lua

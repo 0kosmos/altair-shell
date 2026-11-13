@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Measure Altair's CPU and memory use.
 #
 #   scripts/perf.sh [seconds]     (default: 10)

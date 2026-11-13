@@ -7,3 +7,6 @@
 .vscode/
 .idea/
 *.swp
+
+# Local machine notes for Claude Code (hardware details)
+CLAUDE.local.md

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Altair — entry point. Run with `qs -c altair` (or `qs -p <repo>` while developing).
 import QtQuick
 import Quickshell
