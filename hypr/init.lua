@@ -78,6 +78,11 @@ function M.setup(opts)
         .. "for i in $(seq 20); do qs list -c altair 2>/dev/null | grep -q '^Instance' || break; sleep 0.1; done; "
         .. start
 
+    -- Exposed so install.sh can (re)start the shell with the same settings:
+    --   hyprctl eval 'hl.exec_cmd(require("altair").restart_cmd)'
+    M.start_cmd = start
+    M.restart_cmd = restart
+
     if opts.autostart ~= false then
         hl.on("hyprland.start", function()
             hl.exec_cmd(start)
