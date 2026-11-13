@@ -126,6 +126,7 @@ Scope {
                     radius: Theme.radius.m
                     bordered: false
                     solidity: 0.85
+                    rim: 0.35
                 }
 
                 FocusScope {

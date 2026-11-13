@@ -17,6 +17,10 @@ Item {
     // 0 = normal translucency, 1 = opaque. Text-heavy surfaces (Settings) use
     // a higher value so the background doesn't hurt readability.
     property real solidity: 0
+    // Strength of liquid glass's bright rim, 0–1. Lower on surfaces whose
+    // corners the compositor cuts with a larger radius (Settings window):
+    // there the rim is clipped at the corners and reads as a stray line.
+    property real rim: 1
 
     function solid(v: vector4d): vector4d {
         return Qt.vector4d(v.x, v.y, v.z, v.w + (1 - v.w) * solidity);
@@ -42,7 +46,8 @@ Item {
         sourceComponent: ShaderEffect {
             readonly property size size: Qt.size(width, height)
             readonly property real radius: root.radius
-            readonly property real rimStrength: Theme.glassRim
+            readonly property real rimStrength: Theme.glassRim * root.rim
+            readonly property vector4d rimColor: Theme.glassRimColor
             readonly property vector4d topTint: root.solid(Theme.glassTop)
             readonly property vector4d bottomTint: root.solid(Theme.glassBottom)
 

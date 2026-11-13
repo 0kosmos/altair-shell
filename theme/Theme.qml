@@ -70,6 +70,12 @@ Singleton {
                : Qt.vector4d(1.0, 1.0, 1.0, blur ? 0.50 : 0.90)
     readonly property vector4d glassBottom: Qt.vector4d(base.r, base.g, base.b, blur ? 0.58 : 0.92)
     readonly property real glassRim: dark ? 1.0 : 0.6
+    // Rim light: the palette's light colour on dark themes, white on light
+    // ones (where the text colour is dark).
+    readonly property vector4d glassRimColor: {
+        const c = dark && usingPalette ? Qt.lighter(paletteColors[3], 1.05) : Qt.color("#ffffff");
+        return Qt.vector4d(c.r, c.g, c.b, 1);
+    }
     readonly property color surfaceRaised: usingPalette ? Qt.alpha(paletteColors[1], 0.75) : Qt.alpha(fg, dark ? 0.05 : 0.04)
 
     // A palette colour, made a bit lighter, as a straight rgba glass tint.
