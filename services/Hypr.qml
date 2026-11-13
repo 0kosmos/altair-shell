@@ -105,8 +105,8 @@ Singleton {
     }
     // Hyprland speed in tenths of a second.
     readonly property real workspaceSpeed: {
-        const v = Config.ready ? Config.windows.workspaceSpeed : "normal";
-        return v === "calm" ? 5 : v === "fast" ? 2.2 : 3.5;
+        const v = Config.ready ? Config.windows.workspaceSpeed : "calm";
+        return v === "normal" ? 3.5 : v === "fast" ? 2.2 : 5;   // unknown -> calm
     }
     // The bezier we use, also mirrored by the bar's workspace pill.
     readonly property var workspaceCurve: [0.22, 1, 0.36, 1]

@@ -63,7 +63,7 @@ Page {
         opacity: enabled ? 1 : 0.5
         Segmented {
             options: [{ label: "Calm", value: "calm" }, { label: "Normal", value: "normal" }, { label: "Fast", value: "fast" }]
-            current: ["calm", "fast"].indexOf(Config.windows.workspaceSpeed) !== -1 ? Config.windows.workspaceSpeed : "normal"
+            current: ["normal", "fast"].indexOf(Config.windows.workspaceSpeed) !== -1 ? Config.windows.workspaceSpeed : "calm"
             onSelected: value => Config.windows.workspaceSpeed = value
         }
     }

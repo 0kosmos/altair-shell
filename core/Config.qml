@@ -170,7 +170,7 @@ Singleton {
                 // Workspace switching: "slide" | "slidevert" | "fade" | "off" |
                 // "hyprland" (your own animation from hyprland.lua).
                 property string workspaceAnim: "slide"
-                property string workspaceSpeed: "normal"   // "calm" | "normal" | "fast"
+                property string workspaceSpeed: "calm"     // "calm" | "normal" | "fast"
             }
 
             // Window transparency (services/WindowRules.qml). Applied as Hyprland
