@@ -57,7 +57,6 @@ AltairPanel {
                 anchors.left: parent.left
                 anchors.leftMargin: Theme.space.l
                 visible: Notifs.dnd
-                height: visible ? implicitHeight + Theme.space.xs : 0
                 text: "Do not disturb is on — only critical notifications pop up"
                 color: Theme.fgMuted
                 font.pixelSize: Theme.font.small
@@ -66,7 +65,7 @@ AltairPanel {
             // ---- List ------------------------------------------------------------
             ListView {
                 id: list
-                anchors.top: dndHint.bottom
+                anchors.top: Notifs.dnd ? dndHint.bottom : header.bottom
                 anchors.topMargin: Theme.space.s
                 anchors.left: parent.left
                 anchors.right: parent.right

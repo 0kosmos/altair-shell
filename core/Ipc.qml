@@ -60,6 +60,7 @@ Scope {
     IpcHandler {
         target: "settings"
 
+        // "#RRGGBB", or "mono" for the theme-adaptive monochrome accent.
         function setAccent(value: string): void {
             Config.appearance.accent = value;
         }
@@ -72,6 +73,19 @@ Scope {
         }
         function setBlur(enabled: bool): void {
             Config.effects.blur = enabled;
+        }
+        // 1–10, or -1 for Hyprland's own setting.
+        function setBlurStrength(value: int): void {
+            Config.effects.blurStrength = value < 1 ? -1 : Math.min(10, value);
+        }
+        function setLiquidGlass(enabled: bool): void {
+            Config.effects.liquidGlass = enabled;
+        }
+        function setAnimations(enabled: bool): void {
+            Config.effects.animations = enabled;
+        }
+        function setBarPosition(position: string): void {
+            Config.appearance.barPosition = position === "bottom" ? "bottom" : "top";
         }
     }
 }

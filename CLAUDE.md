@@ -33,6 +33,18 @@ The developer's own machine (hardware, driver, monitor, measurements) is describ
 - Hyprland module is `hypr/init.lua`, symlinked as ~/.config/hypr/altair/ and loaded
   with `require("altair").setup({...})`.
 - Measure with `scripts/perf.sh [seconds]`.
+- Hyprland look (blur strength, window borders) is changed at runtime with
+  `hyprctl eval`, never in hyprland.lua and never via `hyprctl reload` (a reload
+  re-applies window rules and makes windows jump). The user's original values are
+  read first and stored per Hyprland session (services/Hypr.qml).
+  Changing `border_size` resizes every window (wobble with spring animations):
+  "no borders" = transparent colours, not 0 px.
+- Settings is a FloatingWindow (class org.quickshell, title "Altair Settings")
+  with a window rule in hypr/init.lua (float, centre, rounding 18, no_anim; it
+  fades itself in). Panels (launcher, notification centre) are layer surfaces.
+- Liquid glass = static shader (shaders/glass.frag, rebuild with
+  scripts/build-shaders.sh). Real refraction is not possible (compositor only
+  offers blur).
 
 ## How we work (rules)
 1. Start every new feature by checking the environment and the docs, not by guessing.

@@ -19,9 +19,15 @@ Singleton {
     // ---- Colours ------------------------------------------------------------
     readonly property bool dark: Config.appearance.theme !== "light"
 
-    // Falls back to the default accent if the config holds something invalid.
-    readonly property color accent: validColor(Config.appearance.accent, "#7aa2f7")
-    readonly property color onAccent: luminance(accent) > 0.55 ? "#111216" : "#ffffff"
+    // Accent setting: a colour (#RRGGBB), or "mono" = monochrome, which adapts
+    // to the theme (near-white on dark, dark grey on light). Custom colours are
+    // used exactly as chosen, even if that means white on the light theme.
+    readonly property bool monoAccent: Config.appearance.accent === "mono"
+    readonly property color monoColor: dark ? "#e8e9ee" : "#2b2d33"
+    readonly property color chosenAccent: monoAccent ? monoColor : validColor(Config.appearance.accent, "#7aa2f7")
+    readonly property color accent: chosenAccent
+    // Text/icons drawn on top of the accent: whichever of dark/white reads better.
+    readonly property color onAccent: contrast(accent, "#111216") > contrast(accent, "#ffffff") ? "#111216" : "#ffffff"
 
     readonly property color base: dark ? "#14151a" : "#f3f4f7"     // panel colour, opaque
     readonly property color fg: dark ? "#e8e9ee" : "#16171c"
@@ -35,6 +41,13 @@ Singleton {
     // Panel background: more transparent when blur is behind it; still slightly
     // translucent without blur so the "effects off" look stays light.
     readonly property color surface: Qt.alpha(base, blur ? 0.70 : 0.92)
+
+    // Liquid glass tints (straight rgba, for the shader): a lighter, more
+    // transparent top fading into the base colour.
+    readonly property vector4d glassTop: dark ? Qt.vector4d(0.22, 0.23, 0.27, blur ? 0.40 : 0.85)
+                                              : Qt.vector4d(1.0, 1.0, 1.0, blur ? 0.50 : 0.90)
+    readonly property vector4d glassBottom: Qt.vector4d(base.r, base.g, base.b, blur ? 0.58 : 0.92)
+    readonly property real glassRim: dark ? 1.0 : 0.6
     readonly property color surfaceRaised: Qt.alpha(fg, dark ? 0.05 : 0.04)
 
     // ---- Spacing / shape (4px grid) ------------------------------------------
@@ -68,11 +81,15 @@ Singleton {
     // Durations collapse to 0 when animations are off, so components can always
     // use a Behavior with Theme.anim.* and get instant changes in low-power mode.
     readonly property QtObject anim: QtObject {
-        readonly property int fast: root.animations ? 120 : 0
-        readonly property int normal: root.animations ? 200 : 0
-        readonly property int slow: root.animations ? 320 : 0
+        readonly property int fast: root.animations ? 160 : 0     // hover, press, colour
+        readonly property int normal: root.animations ? 260 : 0   // move, open
+        readonly property int slow: root.animations ? 380 : 0     // large movements
         readonly property int easing: Easing.OutCubic
         readonly property int easingIn: Easing.InCubic
+        // Smooth deceleration with no overshoot; for things that slide.
+        readonly property int easingSlide: Easing.OutQuint
+        // Buttons shrink to this while pressed, then spring back.
+        readonly property real pressScale: root.animations ? 0.94 : 1
     }
 
     // ---- Bar ----------------------------------------------------------------------
@@ -87,8 +104,16 @@ Singleton {
         return /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(value) ? value : fallback;
     }
 
-    // Relative luminance (sRGB approximation, good enough for picking text colour).
+    // WCAG relative luminance (linearised sRGB), 0 = black, 1 = white.
     function luminance(c: color): real {
-        return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+        const lin = v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+        return 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
+    }
+
+    // WCAG contrast ratio, 1 (identical) … 21 (black on white).
+    function contrast(a: color, b: color): real {
+        const la = luminance(a);
+        const lb = luminance(b);
+        return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
     }
 }

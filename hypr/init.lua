@@ -20,6 +20,7 @@
 --               gtk-3.0/settings.ini; Qt alone often finds no theme on Hyprland)
 --   launcher_key = keys for the app launcher (default: MOD + SPACE, false = none)
 --   notifications_key = keys for the notification centre (default: MOD + N)
+--   settings_key = keys for Altair Settings (default: MOD + comma)
 --
 -- The escape hatches below are plain Hyprland binds, so they work even when the
 -- shell has crashed or hangs:
@@ -94,6 +95,24 @@ function M.setup(opts)
     if opts.notifications_key ~= false then
         hl.bind(opts.notifications_key or (mod .. " + N"), hl.dsp.exec_cmd(ipc .. "notifications"))
     end
+    if opts.settings_key ~= false then
+        hl.bind(opts.settings_key or (mod .. " + comma"), hl.dsp.exec_cmd(ipc .. "settings"))
+    end
+
+    -- The Settings window is a normal toplevel window (class org.quickshell):
+    -- float it, centred, at a sensible size instead of tiling it.
+    hl.window_rule({
+        name   = "altair-settings",
+        match  = { class = "^org\\.quickshell$", title = "^Altair Settings$" },
+        float  = true,
+        center = true,
+        size   = { 820, 560 },
+        -- Matches the corner radius Altair draws (Theme.radius.l).
+        rounding = 18,
+        -- Altair animates the window's content itself (a calm fade-in). Hyprland's
+        -- own open animation (often a springy pop-in) made it wobble.
+        no_anim = true,
+    })
 
     -- Altair animates its own surfaces; stop Hyprland from animating them too.
     hl.layer_rule({

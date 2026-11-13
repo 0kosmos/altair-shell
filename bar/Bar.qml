@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
+import qs.components
 import qs.theme
 
 // The top (or bottom) bar: one floating panel per screen.
@@ -44,17 +45,10 @@ Variants {
             radius: Theme.radius.m
         }
 
-        Rectangle {
+        GlassBackground {
             id: background
             anchors.fill: parent
             radius: Theme.radius.m
-            color: Theme.surface
-            border.width: 1
-            border.color: Theme.border
-
-            Behavior on color {
-                ColorAnimation { duration: Theme.anim.normal }
-            }
         }
 
         Workspaces {

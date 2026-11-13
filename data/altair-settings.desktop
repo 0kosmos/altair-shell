@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Altair Settings
+GenericName=Shell settings
+Comment=Theme, accent colour, blur, notifications and performance for the Altair shell
+Exec=qs -c altair ipc call panels toggle settings
+Icon=preferences-desktop-theme
+Categories=Settings;
+Keywords=altair;shell;theme;accent;color;colour;blur;bar;notifications;
+StartupNotify=false

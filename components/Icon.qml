@@ -23,4 +23,8 @@ Text {
     Behavior on color {
         ColorAnimation { duration: Theme.anim.fast }
     }
+    // Outline <-> filled morphs smoothly (variable font axis).
+    Behavior on fill {
+        NumberAnimation { duration: Theme.anim.normal; easing.type: Theme.anim.easing }
+    }
 }

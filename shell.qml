@@ -7,6 +7,7 @@ import qs.core
 import qs.launcher
 import qs.notifications
 import qs.services
+import qs.settings
 import qs.theme
 
 ShellRoot {
@@ -15,6 +16,7 @@ ShellRoot {
     Launcher {}
     NotificationPopups {}
     NotificationCenter {}
+    SettingsWindow {}
 
     // Singletons and Quickshell services start lazily, on first access.
     // Touch the ones we want ready at startup: Config (load/create the file),
@@ -24,6 +26,7 @@ ShellRoot {
         console.info("altair " + ShellState.version + " starting, config: " + Config.path);
         void Apps.list;
         void Notifs.count;
+        void Hypr.blurStrength;   // apply the saved blur strength and border colours
     }
 
     Connections {

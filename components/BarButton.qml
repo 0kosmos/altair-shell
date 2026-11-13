@@ -27,6 +27,12 @@ MouseArea {
     acceptedButtons: interactive ? (Qt.LeftButton | Qt.RightButton | Qt.MiddleButton) : Qt.NoButton
     cursorShape: interactive ? Qt.PointingHandCursor : Qt.ArrowCursor
 
+    // Press feedback: shrink slightly, spring back on release.
+    scale: pressed ? Theme.anim.pressScale : 1
+    Behavior on scale {
+        NumberAnimation { duration: Theme.anim.fast; easing.type: Easing.OutBack; easing.overshoot: 2.5 }
+    }
+
     property int wheelAccum: 0
     onWheel: wheel => {
         wheelAccum += wheel.angleDelta.y;

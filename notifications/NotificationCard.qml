@@ -39,9 +39,18 @@ Rectangle {
 
     implicitHeight: content.implicitHeight + Theme.space.m * 2
     radius: Theme.radius.l
-    color: inPopup ? Theme.surface : Theme.surfaceRaised
+    // Popups draw their background with GlassBackground (below); cards in the
+    // centre sit on the panel's glass and only need a light raised fill.
+    color: inPopup ? "transparent" : Theme.surfaceRaised
     border.width: 1
-    border.color: critical ? Theme.critical : Theme.border
+    border.color: critical ? Theme.critical : inPopup ? "transparent" : Theme.border
+
+    GlassBackground {
+        z: -1
+        anchors.fill: parent
+        visible: card.inPopup
+        radius: card.radius
+    }
 
     MouseArea {
         id: hover

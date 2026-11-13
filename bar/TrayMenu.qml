@@ -56,13 +56,10 @@ PopupWindow {
         menu: root.current
     }
 
-    Rectangle {
+    GlassBackground {
         id: background
         anchors.fill: parent
         radius: Theme.radius.m
-        color: Theme.surface
-        border.width: 1
-        border.color: Theme.border
 
         // Open animation: short fade + slide toward the bar.
         opacity: 0

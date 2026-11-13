@@ -112,13 +112,10 @@ Scope {
                 // Unload once fully faded out.
                 onOpacityChanged: if (opacity === 0 && !shown) root.closing = false
 
-                Rectangle {
+                GlassBackground {
                     id: background
                     anchors.fill: parent
                     radius: Theme.radius.l
-                    color: Theme.surface
-                    border.width: 1
-                    border.color: Theme.border
                 }
 
                 FocusScope {

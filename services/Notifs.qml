@@ -26,6 +26,10 @@ Singleton {
     readonly property int count: history.length
 
     readonly property bool dnd: Config.notifications.doNotDisturb
+    readonly property bool sound: Config.notifications.sound
+    // freedesktop sound theme (package sound-theme-freedesktop).
+    readonly property string defaultSound: "/usr/share/sounds/freedesktop/stereo/message-new-instant.oga"
+    property real lastSound: 0
     readonly property bool centerOpen: ShellState.openPanel === "notifications"
 
     // Arrival time (ms since epoch) by notification id, for "5 min" labels.
@@ -84,6 +88,17 @@ Singleton {
             return false;
         action.invoke();
         return true;
+    }
+
+    // Played with pw-play (PipeWire) in a separate process, so the shell never
+    // loads audio decoders. At most one sound per 400 ms (notification floods).
+    function playSound(n): void {
+        if (n.hints["suppress-sound"] === true || Date.now() - lastSound < 400)
+            return;
+        lastSound = Date.now();
+        const file = n.hints["sound-file"];
+        const path = typeof file === "string" && file.startsWith("/") ? file : defaultSound;
+        Quickshell.execDetached(["pw-play", path]);
     }
 
     function stamp(n): void {
@@ -150,6 +165,8 @@ Singleton {
             // Notifications carried over from before a reload were shown already.
             if (!n.lastGeneration) {
                 root.show(n);
+                if (root.sound && (!root.dnd || n.urgency === NotificationUrgency.Critical))
+                    root.playSound(n);
                 // Apps can replace a notification's content (same id): show it again.
                 const refresh = () => {
                     root.stamp(n);

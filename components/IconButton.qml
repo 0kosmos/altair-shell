@@ -17,6 +17,12 @@ MouseArea {
     hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
 
+    // Press feedback: shrink slightly, spring back on release.
+    scale: pressed ? Theme.anim.pressScale : 1
+    Behavior on scale {
+        NumberAnimation { duration: Theme.anim.fast; easing.type: Easing.OutBack; easing.overshoot: 2.5 }
+    }
+
     Rectangle {
         anchors.fill: parent
         radius: width / 2

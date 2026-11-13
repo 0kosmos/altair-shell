@@ -95,8 +95,12 @@ Singleton {
 
             property JsonObject appearance: JsonObject {
                 property string theme: "dark"          // "dark" | "light"
-                property string accent: "#7aa2f7"      // #RRGGBB or #AARRGGBB
+                property string accent: "#7aa2f7"      // #RRGGBB, or "mono" (adapts to the theme)
                 property string barPosition: "top"     // "top" | "bottom"
+                // Hyprland window borders: "accent" (accent colour for the
+                // focused window, soft grey for others), "hyprland" (colours from
+                // hyprland.lua), "none" (no borders). Older configs: true/false.
+                property var windowBorders: "accent"
                 property string fontFamily: "Inter"
                 property string iconFontFamily: "Material Symbols Rounded"
             }
@@ -104,6 +108,9 @@ Singleton {
             property JsonObject effects: JsonObject {
                 property bool animations: true
                 property bool blur: true
+                // Hyprland's blur size/passes, 1–10. -1 = leave Hyprland's own
+                // setting alone. NOTE: global — also affects window blur.
+                property int blurStrength: -1
                 property bool liquidGlass: false
             }
 
@@ -115,6 +122,8 @@ Singleton {
             property JsonObject notifications: JsonObject {
                 // Only critical notifications pop up; all still go to history.
                 property bool doNotDisturb: false
+                // Play a short sound for new notifications (via pw-play).
+                property bool sound: false
             }
 
             property JsonObject performance: JsonObject {
