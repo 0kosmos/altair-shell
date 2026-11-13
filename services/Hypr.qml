@@ -293,12 +293,18 @@ Singleton {
         if (!t)
             return;
         const w = `address:${t.address.startsWith("0x") ? t.address : "0x" + t.address}`;
-        if (Theme.animations) {
-            Hyprland.dispatch(`hl.dsp.window.set_prop({ window = "${w}", prop = "no_anim", value = "0" })`);
-            restoreNoAnim.window = w;
-            restoreNoAnim.restart();
-        }
+        allowAnimation(w);
         Hyprland.dispatch(`hl.dsp.window.center({ window = "${w}" })`);
+    }
+
+    // Lift no_anim on a window (selector "address:0x…") for the next move or
+    // resize; set again by the timer below. No-op when animations are off.
+    function allowAnimation(w: string): void {
+        if (!Theme.animations)
+            return;
+        Hyprland.dispatch(`hl.dsp.window.set_prop({ window = "${w}", prop = "no_anim", value = "0" })`);
+        restoreNoAnim.window = w;
+        restoreNoAnim.restart();
     }
     Timer {
         id: restoreNoAnim
@@ -311,6 +317,7 @@ Singleton {
     // HyprlandToplevel (with or without "0x").
     function resetWindow(address: string, width: int, height: int): void {
         const w = `address:${address.startsWith("0x") ? address : "0x" + address}`;
+        allowAnimation(w);   // glide (see centerWindowByTitle)
         Hyprland.dispatch(`hl.dsp.window.resize({ window = "${w}", x = ${width}, y = ${height} })`);
         Hyprland.dispatch(`hl.dsp.window.center({ window = "${w}" })`);
     }
