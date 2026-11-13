@@ -1,0 +1,9 @@
+# Quickshell / qmlls generated files
+.qmlls.ini
+*.qmlc
+*.jsc
+
+# Editors
+.vscode/
+.idea/
+*.swp
