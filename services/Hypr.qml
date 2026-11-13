@@ -282,13 +282,29 @@ Singleton {
             resetWindow(t.address, width, height);
     }
 
-    // Centre our floating window with this title, keeping its size.
+    // Centre our floating window with this title, keeping its size, gliding
+    // there. The Settings window has no_anim (see hypr/init.lua: Hyprland's
+    // open animation fought our own fade-in), which also makes moves jump, so
+    // no_anim is lifted just for the move and set again afterwards. The glide
+    // uses Hyprland's "windowsMove" animation (Altair's calm curve when
+    // Settings > Windows > Smooth resizing is on, else your own).
     function centerWindowByTitle(title: string): void {
         const t = Hyprland.toplevels.values.find(t => t.title === title);
-        if (t) {
-            const a = t.address.startsWith("0x") ? t.address : "0x" + t.address;
-            Hyprland.dispatch(`hl.dsp.window.center({ window = "address:${a}" })`);
+        if (!t)
+            return;
+        const w = `address:${t.address.startsWith("0x") ? t.address : "0x" + t.address}`;
+        if (Theme.animations) {
+            Hyprland.dispatch(`hl.dsp.window.set_prop({ window = "${w}", prop = "no_anim", value = "0" })`);
+            restoreNoAnim.window = w;
+            restoreNoAnim.restart();
         }
+        Hyprland.dispatch(`hl.dsp.window.center({ window = "${w}" })`);
+    }
+    Timer {
+        id: restoreNoAnim
+        property string window
+        interval: 900   // longer than any sensible windowsMove animation
+        onTriggered: Hyprland.dispatch(`hl.dsp.window.set_prop({ window = "${window}", prop = "no_anim", value = "1" })`)
     }
 
     // Give a floating window this size and centre it. address: from
