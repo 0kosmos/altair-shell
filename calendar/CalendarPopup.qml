@@ -20,8 +20,8 @@ AltairPanel {
     dock: Theme.barAtTop ? "top" : "bottom"
     fullWidth: false
     slideDistance: 12
-    panelWidth: 286 + (Config.bar.weekNumbers ? 27 : 0) + (Config.bar.analogClock ? 222 : 0)
-    panelHeight: 334
+    panelWidth: 272 + (Config.bar.weekNumbers ? 26 : 0) + (Config.bar.analogClock ? 282 : 0)
+    panelHeight: 322
 
     content: Component {
         FocusScope {
@@ -95,12 +95,12 @@ AltairPanel {
                 visible: Config.bar.analogClock
                 Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: Theme.space.xs
-                spacing: Theme.space.m
+                spacing: Theme.space.s
 
                 AnalogClock {
                     id: analog
                     Layout.alignment: Qt.AlignHCenter
-                    size: 180
+                    size: 240
                     showSeconds: Config.bar.clockSeconds
                 }
                 StyledText {
@@ -186,7 +186,7 @@ AltairPanel {
                         month: cal.month
                         today: clock.date
                         weekNumbers: Config.bar.weekNumbers
-                        cellSize: 34
+                        cellSize: 32
                     }
 
                     QtObject {
