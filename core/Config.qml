@@ -29,6 +29,7 @@ Singleton {
     readonly property alias appearance: adapter.appearance
     readonly property alias effects: adapter.effects
     readonly property alias performance: adapter.performance
+    readonly property alias apps: adapter.apps
 
     function reload(): void {
         file.reload();
@@ -103,6 +104,11 @@ Singleton {
                 property bool animations: true
                 property bool blur: true
                 property bool liquidGlass: false
+            }
+
+            property JsonObject apps: JsonObject {
+                // Terminal for apps that need one. Empty = $TERMINAL, else kitty.
+                property string terminal: ""
             }
 
             property JsonObject performance: JsonObject {

@@ -16,6 +16,9 @@
 --   nvidia_egl_only = true: load only NVIDIA's EGL driver into the shell. Saves
 --               ~100 MB RAM on NVIDIA-only desktops (Mesa is otherwise loaded too).
 --               Do NOT use on laptops where an Intel/AMD GPU drives the screen.
+--   icon_theme = icon theme for app/tray icons (default: your GTK icon theme from
+--               gtk-3.0/settings.ini; Qt alone often finds no theme on Hyprland)
+--   launcher_key = keys for the app launcher (default: MOD + SPACE, false = none)
 --
 -- The escape hatches below are plain Hyprland binds, so they work even when the
 -- shell has crashed or hangs:
@@ -26,6 +29,29 @@ local M = {}
 
 local NVIDIA_EGL = "/usr/share/glvnd/egl_vendor.d/10_nvidia.json"
 
+local function shell_quote(s)
+    return "'" .. s:gsub("'", "'\\''") .. "'"
+end
+
+-- Read gtk-icon-theme-name from the user's GTK 3 (or 4) settings, if any.
+local function gtk_icon_theme()
+    local base = os.getenv("XDG_CONFIG_HOME") or ((os.getenv("HOME") or "") .. "/.config")
+    for _, v in ipairs({ "gtk-3.0", "gtk-4.0" }) do
+        local f = io.open(base .. "/" .. v .. "/settings.ini", "r")
+        if f then
+            for line in f:lines() do
+                local name = line:match("^%s*gtk%-icon%-theme%-name%s*=%s*(.-)%s*$")
+                if name and name ~= "" then
+                    f:close()
+                    return name
+                end
+            end
+            f:close()
+        end
+    end
+    return nil
+end
+
 function M.setup(opts)
     opts = opts or {}
     local mod = opts.mod or "SUPER"
@@ -35,6 +61,10 @@ function M.setup(opts)
     local start = "qs -c altair -n -d"
     if opts.nvidia_egl_only then
         start = "__EGL_VENDOR_LIBRARY_FILENAMES=" .. NVIDIA_EGL .. " " .. start
+    end
+    local icon_theme = opts.icon_theme or gtk_icon_theme()
+    if icon_theme then
+        start = "QS_ICON_THEME=" .. shell_quote(icon_theme) .. " " .. start
     end
 
     -- Kill any running instance, wait for it to exit (max ~2 s), then start a
@@ -54,6 +84,12 @@ function M.setup(opts)
     -- Escape hatches.
     hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd(restart))
     hl.bind(mod .. " + SHIFT + Return", hl.dsp.exec_cmd(terminal))
+
+    -- Panels.
+    local ipc = "qs -c altair ipc call panels toggle "
+    if opts.launcher_key ~= false then
+        hl.bind(opts.launcher_key or (mod .. " + SPACE"), hl.dsp.exec_cmd(ipc .. "launcher"))
+    end
 
     -- Altair animates its own surfaces; stop Hyprland from animating them too.
     hl.layer_rule({

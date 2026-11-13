@@ -4,15 +4,22 @@ import QtQuick
 import Quickshell
 import qs.bar
 import qs.core
+import qs.launcher
+import qs.services
 import qs.theme
 
 ShellRoot {
     Ipc {}
     Bar {}
+    Launcher {}
 
-    // Singletons are created lazily; touching Config here makes sure the config
-    // file is loaded (or created) at startup rather than on first use.
-    Component.onCompleted: console.info("altair " + ShellState.version + " starting, config: " + Config.path)
+    // Singletons and Quickshell services start lazily, on first access.
+    // Touch the ones we want ready at startup: Config (load/create the file)
+    // and Apps (scan .desktop files now, not when the launcher first opens).
+    Component.onCompleted: {
+        console.info("altair " + ShellState.version + " starting, config: " + Config.path);
+        void Apps.list;
+    }
 
     Connections {
         target: Config

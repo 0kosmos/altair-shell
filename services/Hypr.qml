@@ -24,4 +24,26 @@ Singleton {
         const target = delta > 0 ? "e+1" : "e-1";
         dispatch(`hl.dsp.focus({ workspace = "${target}" })`, `workspace ${target}`);
     }
+
+    // Run a program through Hyprland, like a keybind would. Compared with
+    // starting it from Quickshell, the app gets Hyprland's environment (not
+    // ours, e.g. no EGL override), Hyprland's exec rules apply, and it isn't
+    // tied to the shell process in any way.
+    // argv: list of arguments (no shell parsing). cwd: optional directory.
+    function exec(argv: list<string>, cwd: string): void {
+        let cmd = argv.map(shellQuote).join(" ");
+        if (cwd)
+            cmd = "cd " + shellQuote(cwd) + " && " + cmd;
+        dispatch(`hl.dsp.exec_cmd(${luaString(cmd)})`, `exec ${cmd}`);
+    }
+
+    // 'it'\''s' — safe single-quoting for /bin/sh.
+    function shellQuote(s: string): string {
+        return "'" + String(s).replace(/'/g, "'\\''") + "'";
+    }
+
+    // A double-quoted Lua string literal.
+    function luaString(s: string): string {
+        return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n") + '"';
+    }
 }
