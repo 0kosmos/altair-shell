@@ -186,6 +186,8 @@ Singleton {
             property JsonObject bar: JsonObject {
                 property int workspaces: 5             // shown at least (1–10)
                 property bool showDate: true           // date next to the time
+                property bool clockPopup: true         // click the clock: calendar
+                property bool weekNumbers: false       // ISO week numbers in the calendar
             }
 
             property JsonObject performance: JsonObject {

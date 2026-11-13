@@ -34,6 +34,8 @@ Scope {
     property bool alignRight: false
     // "top"/"bottom": stretch along the edge, or keep panelWidth (centred).
     property bool fullWidth: true
+    // How far edge panels slide in from their edge, in px.
+    property int slideDistance: 24
     // dock "": centre vertically instead of using topOffset.
     property bool centerVertically: false
     // Several panels can share a name (e.g. two picker styles); only the
@@ -123,10 +125,14 @@ Scope {
                 // Starts hidden and animates in (see Component.onCompleted).
                 property bool shown: false
                 opacity: shown ? 1 : 0
-                // Edge panels slide in from their edge; others grow slightly.
-                scale: shown || root.dock === "top" || root.dock === "bottom" ? 1 : 0.97
+                // Edge panels slide in from their edge; others grow slightly
+                // (small edge panels, e.g. the calendar, do both, growing out
+                // of the bar).
+                readonly property bool edge: root.dock === "top" || root.dock === "bottom"
+                scale: shown || (edge && root.fullWidth) ? 1 : 0.97
+                transformOrigin: root.dock === "top" ? Item.Top : root.dock === "bottom" ? Item.Bottom : Item.Center
                 transform: Translate {
-                    y: body.shown ? 0 : root.dock === "bottom" ? 24 : root.dock === "top" ? -24 : 0
+                    y: body.shown ? 0 : root.dock === "bottom" ? root.slideDistance : root.dock === "top" ? -root.slideDistance : 0
                     Behavior on y {
                         NumberAnimation { duration: Theme.anim.normal; easing.type: Theme.anim.easingSlide }
                     }

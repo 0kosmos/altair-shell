@@ -51,4 +51,24 @@ Page {
             onToggled: value => Config.bar.showDate = value
         }
     }
+
+    SettingRow {
+        title: "Calendar on click"
+        description: "Click the clock for a month calendar. Arrows or the mouse wheel change the month; click the month name to go back to today."
+        Toggle {
+            checked: Config.bar.clockPopup
+            onToggled: value => Config.bar.clockPopup = value
+        }
+    }
+
+    SettingRow {
+        title: "Week numbers"
+        description: "ISO week numbers in the calendar."
+        enabled: Config.bar.clockPopup
+        opacity: enabled ? 1 : 0.5
+        Toggle {
+            checked: Config.bar.weekNumbers
+            onToggled: value => Config.bar.weekNumbers = value
+        }
+    }
 }

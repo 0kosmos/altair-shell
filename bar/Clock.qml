@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import QtQuick
-import QtQuick.Layouts
 import Quickshell
 import qs.components
 import qs.core
 import qs.theme
 
 // Date and time in the user's locale. Updates once a minute (SystemClock with
-// minute precision), so it costs nothing in between.
-RowLayout {
+// minute precision), so it costs nothing in between. Click: the calendar
+// popup (calendar/CalendarPopup.qml), unless turned off in Settings > Bar.
+BarButton {
+    interactive: Config.bar.clockPopup
     spacing: Theme.space.s
+    onClicked: ShellState.toggle("calendar")
 
     SystemClock {
         id: clock
@@ -19,7 +21,7 @@ RowLayout {
     StyledText {
         visible: Config.bar.showDate
         text: Qt.locale().toString(clock.date, "ddd d MMM")
-        color: Theme.fgMuted
+        color: ShellState.openPanel === "calendar" ? Theme.fg : Theme.fgMuted
     }
     StyledText {
         text: Qt.locale().toString(clock.date, Qt.locale().timeFormat(Locale.ShortFormat))

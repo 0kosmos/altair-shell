@@ -156,7 +156,7 @@ perf.sh shows no idle cost.
 ## Checklist
 
 - [x] 1. Window transparency
-- [ ] 2. Clock popup with calendar
+- [x] 2. Clock popup with calendar
 - [ ] 3. Smooth workspace switching + Alt+Tab
 - [ ] 4. Precise moving (snapping + dim)
 - [ ] 5. Desktop widgets + edit mode
@@ -169,3 +169,4 @@ perf.sh shows no idle cost.
 (Add one line per finished feature here.)
 
 - F1 transparency: services/WindowRules.qml sends named Lua rules `altair-opacity-<n>` via `hyprctl eval` (same name = replace, applies to open windows live; `opacity = "a override b override"` so it replaces the default instead of multiplying; a config reload drops them, re-sent on `configreloaded`). Default opacity = decoration.active/inactive_opacity in Hypr.qml (originals stored like blur). Kitty's own background_opacity was skipped (user's choice). JsonAdapter `var` lists arrive as Qt lists: use Array.from. Don't name QML properties `left`/`right` etc. (FINAL anchor lines).
+- F2 calendar: calendar/CalendarPopup.qml (an AltairPanel docked "top"/"bottom" with fullWidth false; new `slideDistance` + scale for small edge panels) and calendar/MonthView.qml (reusable 6x7 grid, ready for the dashboard; agenda slot marked under the grid). Popup has its own SystemClock (hours) so the bar clock still ticks per minute. Clicking the clock while open relies on the focus grab closing it (like the bell); mouse clicks could not be tested by Claude, keyboard was (send_shortcut). Gotchas: an `id` shadows a same-named property inside functions; StyledText (Text) has read-only implicitWidth/Height, use Layout.preferred*; hot reload is unreliable here, restart with `hyprctl eval 'hl.exec_cmd(require("altair").restart_cmd)'`.

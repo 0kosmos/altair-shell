@@ -3,6 +3,7 @@
 import QtQuick
 import Quickshell
 import qs.bar
+import qs.calendar
 import qs.core
 import qs.launcher
 import qs.notifications
@@ -18,6 +19,7 @@ ShellRoot {
     Launcher {}
     NotificationPopups {}
     NotificationCenter {}
+    CalendarPopup {}
     SettingsWindow {}
     WallpaperStrip {}
     WallpaperGrid {}
