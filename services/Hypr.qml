@@ -25,10 +25,13 @@ Singleton {
     // To switch back ("Hyprland's own setting") without a config reload (a
     // reload re-applies all window rules, which makes open windows jump), we
     // remember the user's original values:
-    //   - read from Hyprland before we change anything, and after every config
-    //     reload (the user may have edited hyprland.lua);
+    //   - read ONLY right after a config reload, while all of our changes are
+    //     held back, so what we read is guaranteed to be the user's own
+    //     (reading at any other time could pick up our own overrides);
     //   - stored per Hyprland session in $XDG_STATE_HOME/altair/hyprland-original.json,
-    //     so restarting the shell doesn't mistake our own overrides for theirs.
+    //     so restarting the shell reuses them without another reload.
+    // Without a stored record for this session (first start after login), we
+    // trigger one `hyprctl reload config-only` to get that clean read.
 
     // Blur strength 1–10, or -1 = keep Hyprland's own.
     readonly property int blurStrength: Config.ready ? Config.effects.blurStrength : -1
@@ -36,10 +39,10 @@ Singleton {
     // "accent": focused window in the accent colour, others a faint grey.
     // "none": invisible borders. "hyprland": as configured in hyprland.lua.
     //
-    // NOTE: "none" makes the borders fully transparent rather than 0 px wide.
-    // Changing border_size makes Hyprland resize every window (they visibly
-    // wobble with spring animations); colours can change without any layout
-    // change. The cost is an invisible 2 px edge around windows.
+    // NOTE: "none" sets border_size 0. (Transparent 2 px borders were tried:
+    // they avoid re-layout, but leave a see-through ring around every window.)
+    // Changing border_size makes Hyprland re-lay-out all windows; with smooth
+    // resizing on, that is a short glide using our calm curve.
     readonly property string borderMode: {
         const v = Config.ready ? Config.appearance.windowBorders : "hyprland";
         return v === true || v === "accent" ? "accent" : v === "none" ? "none" : "hyprland";
@@ -47,7 +50,39 @@ Singleton {
     readonly property string accentBorders:
         `active_border = "${rgba(Theme.accent, 0.93)}", inactive_border = "${rgba(Theme.fg, 0.18)}"`
 
-    // { borderSize, active, inactive, blurSize, blurPasses } — Lua values.
+    // Resize windows by dragging their edges.
+    readonly property bool resizeOnBorder: Config.ready ? Config.windows.resizeOnBorder : false
+    onResizeOnBorderChanged: applyResize()
+
+    function applyResize(): void {
+        if (!original || !Config.ready || reading)
+            return;
+        hyprEval(`hl.config({ general = { resize_on_border = ${resizeOnBorder ? "true" : String(original.resizeOnBorder)} } })`);
+    }
+
+    // Smooth manual resizing/dragging: Hyprland animates windows following the
+    // mouse (animate_manual_resizes / animate_mouse_windowdragging). Those use
+    // the "windowsMove" animation, which in many configs is a bouncy spring, so
+    // we also give it a calm, decelerating curve. Off = the user's own values.
+    readonly property bool smoothResize: Config.ready ? Config.windows.smoothResize : false
+    onSmoothResizeChanged: applySmooth()
+
+    function applySmooth(): void {
+        if (!original || !Config.ready || reading)
+            return;
+        if (smoothResize) {
+            hyprEval('hl.curve("altairSmooth", { type = "bezier", points = { {0.16, 1}, {0.3, 1} } }) '
+                + 'hl.animation({ leaf = "windowsMove", enabled = true, speed = 2.5, bezier = "altairSmooth" }) '
+                + 'hl.config({ misc = { animate_manual_resizes = true, animate_mouse_windowdragging = true } })');
+        } else {
+            const m = original.moveAnim;
+            hyprEval(`hl.animation({ leaf = "windowsMove", enabled = ${m.enabled}, speed = ${m.speed}, ${m.curve} }) `
+                + `hl.config({ misc = { animate_manual_resizes = ${original.animResize}, animate_mouse_windowdragging = ${original.animDrag} } })`);
+        }
+    }
+
+    // { borderSize, active, inactive, blurSize, blurPasses, resizeOnBorder,
+    //   animResize, animDrag, moveAnim } — Lua values.
     property var original: null
     readonly property string session: Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") ?? ""
 
@@ -56,7 +91,7 @@ Singleton {
     onAccentBordersChanged: if (borderMode === "accent") applyBorders()
 
     function applyBlur(): void {
-        if (!original || !Config.ready)
+        if (!original || !Config.ready || reading)
             return;
         const s = Math.min(10, blurStrength);
         const size = s < 1 ? original.blurSize : 2 + s;                          // 3 … 12
@@ -68,13 +103,13 @@ Singleton {
     property int appliedBorderSize: -1
 
     function applyBorders(): void {
-        if (!original || !Config.ready)
+        if (!original || !Config.ready || reading)
             return;
         const colors = borderMode === "accent" ? accentBorders
-            : borderMode === "none" ? `active_border = "rgba(00000000)", inactive_border = "rgba(00000000)"`
             : `active_border = ${original.active}, inactive_border = ${original.inactive}`;
-        const size = appliedBorderSize !== original.borderSize ? `border_size = ${original.borderSize}, ` : "";
-        appliedBorderSize = original.borderSize;
+        const wanted = borderMode === "none" ? 0 : original.borderSize;
+        const size = appliedBorderSize !== wanted ? `border_size = ${wanted}, ` : "";
+        appliedBorderSize = wanted;
         hyprEval(`hl.config({ general = { ${size}col = { ${colors} } } })`);
     }
 
@@ -96,18 +131,55 @@ Singleton {
         return cols.length === 1 && angle === 0 ? cols[0] : `{ colors = { ${cols.join(", ")} }, angle = ${angle} }`;
     }
 
+    // True from "we need the user's values" until they have been read.
+    property bool reading: false
+
+    // What "windowsMove" does in the user's config, as Lua arguments: its own
+    // settings if overridden, otherwise those of "windows" (which it inherits).
+    function moveAnimFrom(json: string): var {
+        try {
+            const d = JSON.parse(json);
+            const all = Array.isArray(d[0]) ? d[0] : d;
+            const move = all.find(a => a.name === "windowsMove");
+            const win = all.find(a => a.name === "windows");
+            const a = move && move.overridden ? move : win;
+            const curve = (a?.bezier ?? "").startsWith("spring:")
+                ? `spring = "${a.bezier.slice(7)}"` : `bezier = "${a?.bezier || "default"}"`;
+            return { enabled: a?.enabled !== false, speed: a?.speed || 5, curve };
+        } catch (e) {
+            console.warn("altair: could not read Hyprland animations: " + e);
+            return { enabled: true, speed: 5, curve: 'bezier = "default"' };
+        }
+    }
+
     function readOriginal(): void {
+        reading = true;
         reader.running = true;
+    }
+
+    // Get a guaranteed-clean read: reload the user's config; the
+    // "configreloaded" event then reads it (see Connections below).
+    function cleanRead(): void {
+        reading = true;
+        Quickshell.execDetached(["hyprctl", "reload", "config-only"]);
+        cleanReadFallback.restart();
+    }
+    // In case the reload event never arrives.
+    Timer {
+        id: cleanReadFallback
+        interval: 3000
+        onTriggered: if (root.reading && !reader.running) root.readOriginal()
     }
 
     Process {
         id: reader
-        command: ["sh", "-c", "for o in general:border_size general:col.active_border general:col.inactive_border decoration:blur:size decoration:blur:passes; do hyprctl getoption \"$o\" | head -n1; done"]
+        command: ["sh", "-c", "for o in general:border_size general:col.active_border general:col.inactive_border decoration:blur:size decoration:blur:passes general:resize_on_border misc:animate_manual_resizes misc:animate_mouse_windowdragging; do hyprctl getoption \"$o\" | head -n1; done; hyprctl animations -j | tr -d '\\n'"]
         stdout: StdioCollector {
             onStreamFinished: {
                 const l = this.text.trim().split("\n");
-                if (l.length < 5) {
+                if (l.length < 9) {
                     console.warn("altair: could not read Hyprland options: " + this.text);
+                    root.reading = false;
                     return;
                 }
                 const int = s => parseInt(s.replace(/^.*?:\s*/, ""));
@@ -116,12 +188,20 @@ Singleton {
                     active: root.gradientToLua(l[1]),
                     inactive: root.gradientToLua(l[2]),
                     blurSize: int(l[3]),
-                    blurPasses: int(l[4])
+                    blurPasses: int(l[4]),
+                    resizeOnBorder: /true|:\s*1/.test(l[5]),
+                    animResize: /true|:\s*1/.test(l[6]),
+                    animDrag: /true|:\s*1/.test(l[7]),
+                    moveAnim: root.moveAnimFrom(l.slice(8).join(""))
                 };
+                root.reading = false;
+                cleanReadFallback.stop();
                 store.session = root.session;
                 store.values = root.original;
                 root.applyBlur();
                 root.applyBorders();
+                root.applyResize();
+                root.applySmooth();
             }
         }
     }
@@ -134,15 +214,18 @@ Singleton {
         // Same Hyprland session as last time: our overrides may be active, so
         // trust the stored originals instead of reading Hyprland.
         onLoaded: {
-            if (store.session === root.session && store.values && store.values.blurSize !== undefined) {
+            if (store.session === root.session && store.values && store.values.moveAnim !== undefined) {
                 root.original = store.values;
                 root.applyBlur();
                 root.applyBorders();
+                root.applyResize();
+                root.applySmooth();
             } else {
-                root.readOriginal();
+                // No (complete) record for this Hyprland session.
+                root.cleanRead();
             }
         }
-        onLoadFailed: root.readOriginal()
+        onLoadFailed: root.cleanRead()
 
         JsonAdapter {
             id: store
@@ -169,6 +252,21 @@ Singleton {
 
     function focusWorkspace(id: int): void {
         dispatch(`hl.dsp.focus({ workspace = ${id} })`, `workspace ${id}`);
+    }
+
+    // Give our floating window with this title this size, and centre it.
+    function resetWindowByTitle(title: string, width: int, height: int): void {
+        const t = Hyprland.toplevels.values.find(t => t.title === title);
+        if (t)
+            resetWindow(t.address, width, height);
+    }
+
+    // Give a floating window this size and centre it. address: from
+    // HyprlandToplevel (with or without "0x").
+    function resetWindow(address: string, width: int, height: int): void {
+        const w = `address:${address.startsWith("0x") ? address : "0x" + address}`;
+        Hyprland.dispatch(`hl.dsp.window.resize({ window = "${w}", x = ${width}, y = ${height} })`);
+        Hyprland.dispatch(`hl.dsp.window.center({ window = "${w}" })`);
     }
 
     // Move to the next/previous existing workspace on the current monitor.

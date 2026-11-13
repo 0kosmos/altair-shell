@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
 import qs.components
+import qs.core
 import qs.theme
 
 // The top (or bottom) bar: one floating panel per screen.
@@ -56,6 +57,7 @@ Variants {
             anchors.leftMargin: Theme.space.s
             anchors.verticalCenter: parent.verticalCenter
             monitor: Hyprland.monitorFor(win.screen)
+            minCount: Math.max(1, Math.min(10, Config.bar.workspaces))
         }
 
         Clock {
@@ -73,6 +75,7 @@ Variants {
             NetworkStatus {}
             BatteryStatus {}
             NotificationButton {}
+            SettingsButton {}
         }
     }
 }

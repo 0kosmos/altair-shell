@@ -42,6 +42,11 @@ The developer's own machine (hardware, driver, monitor, measurements) is describ
 - Settings is a FloatingWindow (class org.quickshell, title "Altair Settings")
   with a window rule in hypr/init.lua (float, centre, rounding 18, no_anim; it
   fades itself in). Panels (launcher, notification centre) are layer surfaces.
+- Live (video) wallpapers play in a separate Quickshell process (video/shell.qml),
+  started only while a video wallpaper is set: decoding costs ~250–350 MB, which
+  must never live in the main shell. Paused via IPC (0 % CPU). It exits by itself
+  if the main shell dies. Hyprland originals are read only right after a config
+  reload (never while our overrides may be active).
 - Liquid glass = static shader (shaders/glass.frag, rebuild with
   scripts/build-shaders.sh). Real refraction is not possible (compositor only
   offers blur).

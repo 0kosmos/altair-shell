@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import qs.components
+import qs.core
 import qs.theme
 
 // Date and time in the user's locale. Updates once a minute (SystemClock with
@@ -16,6 +17,7 @@ RowLayout {
     }
 
     StyledText {
+        visible: Config.bar.showDate
         text: Qt.locale().toString(clock.date, "ddd d MMM")
         color: Theme.fgMuted
     }

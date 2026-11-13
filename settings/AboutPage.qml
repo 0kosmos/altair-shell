@@ -22,6 +22,7 @@ Page {
     Section { text: "Keys" }
     Info { label: "SUPER + Space"; value: "App launcher" }
     Info { label: "SUPER + N"; value: "Notification centre" }
+    Info { label: "SUPER + W"; value: "Wallpaper picker" }
     Info { label: "SUPER + ,"; value: "Settings" }
     Info { label: "SUPER + SHIFT + R"; value: "Restart Altair" }
     Info { label: "SUPER + SHIFT + Return"; value: "Terminal (works even if Altair is down)" }

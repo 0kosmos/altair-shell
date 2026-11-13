@@ -9,14 +9,18 @@ import qs.notifications
 import qs.services
 import qs.settings
 import qs.theme
+import qs.wallpaper
 
 ShellRoot {
     Ipc {}
+    Wallpaper {}
     Bar {}
     Launcher {}
     NotificationPopups {}
     NotificationCenter {}
     SettingsWindow {}
+    WallpaperStrip {}
+    WallpaperGrid {}
 
     // Singletons and Quickshell services start lazily, on first access.
     // Touch the ones we want ready at startup: Config (load/create the file),

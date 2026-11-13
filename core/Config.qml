@@ -31,9 +31,19 @@ Singleton {
     readonly property alias performance: adapter.performance
     readonly property alias apps: adapter.apps
     readonly property alias notifications: adapter.notifications
+    readonly property alias wallpaper: adapter.wallpaper
+    readonly property alias windows: adapter.windows
+    readonly property alias bar: adapter.bar
 
     function reload(): void {
         file.reload();
+    }
+
+    // Delays re-reading after an external change (see onFileChanged below).
+    Timer {
+        id: settle
+        interval: 150
+        onTriggered: file.reload()
     }
 
     FileView {
@@ -41,7 +51,10 @@ Singleton {
 
         path: root.path
         watchChanges: true
-        onFileChanged: reload()
+        // Wait a moment before re-reading: some editors (and scripts) empty the
+        // file first and then write it, and reading in between would see a
+        // half-written file.
+        onFileChanged: settle.restart()
 
         // Set while the default file is being created (see onLoadFailed / onSaved).
         property bool creating: false
@@ -95,7 +108,11 @@ Singleton {
 
             property JsonObject appearance: JsonObject {
                 property string theme: "dark"          // "dark" | "light"
-                property string accent: "#7aa2f7"      // #RRGGBB, or "mono" (adapts to the theme)
+                property string accent: "#7aa2f7"      // #RRGGBB, "mono" (adapts to the theme) or "palette"
+                // "default", a built-in palette id (theme/palettes.js) or "custom"
+                property string palette: "default"
+                // Background, surface, muted, text, accent.
+                property list<string> customPalette: ["#14151a", "#1f2128", "#3a3d47", "#e8e9ee", "#7aa2f7"]
                 property string barPosition: "top"     // "top" | "bottom"
                 // Hyprland window borders: "accent" (accent colour for the
                 // focused window, soft grey for others), "hyprland" (colours from
@@ -124,6 +141,36 @@ Singleton {
                 property bool doNotDisturb: false
                 // Play a short sound for new notifications (via pw-play).
                 property bool sound: false
+            }
+
+            property JsonObject wallpaper: JsonObject {
+                // Image drawn by Altair. Empty = Altair draws no wallpaper and
+                // Hyprland's own background shows.
+                property string path: ""
+                // Folder shown in the picker. Empty = ~/Pictures/Wallpapers.
+                property string folder: ""
+                property string fill: "crop"           // "crop" | "fit"
+                // Picker: "strip" (scrollable row, docked to an edge) or "grid".
+                property string picker: "strip"
+                property string pickerPosition: "bottom"   // "bottom" | "center" | "top"
+                // Live (video) wallpapers.
+                property JsonObject live: JsonObject {
+                    property bool enabled: true            // false = show a still frame
+                    property real speed: 1.0               // 0.25 – 2
+                    property string pauseWhen: "window"    // "window" | "fullscreen" | "never"
+                }
+            }
+
+            property JsonObject windows: JsonObject {
+                // Resize windows by dragging their edges (Hyprland resize_on_border).
+                property bool resizeOnBorder: true
+                // Windows glide when resized/dragged by hand, with a calm curve.
+                property bool smoothResize: true
+            }
+
+            property JsonObject bar: JsonObject {
+                property int workspaces: 5             // shown at least (1–10)
+                property bool showDate: true           // date next to the time
             }
 
             property JsonObject performance: JsonObject {

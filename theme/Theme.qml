@@ -4,6 +4,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import qs.core
+import "palettes.js" as Palettes
 
 // The single source of truth for how things look. Components bind to Theme only,
 // never to Config directly, so validation and derived values live in one place.
@@ -17,23 +18,43 @@ Singleton {
     readonly property bool liquidGlass: !lowPower && Config.effects.liquidGlass
 
     // ---- Colours ------------------------------------------------------------
-    readonly property bool dark: Config.appearance.theme !== "light"
+    // Palette: "default" (the built-in dark/light colours), the id of a
+    // built-in palette (theme/palettes.js), or "custom". A palette has five
+    // colours: background, surface, muted, text, accent.
+    readonly property var paletteColors: {
+        const id = Config.appearance.palette;
+        if (id === "custom") {
+            const c = Config.appearance.customPalette;
+            return c && c.length === 5 && c.every(v => /^#[0-9a-fA-F]{6}$/.test(v)) ? c : null;
+        }
+        const p = Palettes.find(id);
+        return p ? p.colors : null;
+    }
+    readonly property bool usingPalette: paletteColors !== null
+    readonly property var palettes: Palettes.list
+    readonly property var paletteRoles: Palettes.roles
 
-    // Accent setting: a colour (#RRGGBB), or "mono" = monochrome, which adapts
-    // to the theme (near-white on dark, dark grey on light). Custom colours are
-    // used exactly as chosen, even if that means white on the light theme.
+    // Dark or light: chosen by the user, or by the palette's background.
+    readonly property bool dark: usingPalette ? luminance(paletteColors[0]) < 0.2 : Config.appearance.theme !== "light"
+
+    // Accent setting: a colour (#RRGGBB); "mono" = monochrome, which adapts to
+    // the theme (near-white on dark, dark grey on light); or "palette" = the
+    // palette's accent. Custom colours are used exactly as chosen, even if that
+    // means white on the light theme.
     readonly property bool monoAccent: Config.appearance.accent === "mono"
-    readonly property color monoColor: dark ? "#e8e9ee" : "#2b2d33"
-    readonly property color chosenAccent: monoAccent ? monoColor : validColor(Config.appearance.accent, "#7aa2f7")
+    readonly property color monoColor: usingPalette ? paletteColors[3] : dark ? "#e8e9ee" : "#2b2d33"
+    readonly property color chosenAccent: monoAccent ? monoColor
+        : Config.appearance.accent === "palette" ? (usingPalette ? paletteColors[4] : "#7aa2f7")
+        : validColor(Config.appearance.accent, "#7aa2f7")
     readonly property color accent: chosenAccent
     // Text/icons drawn on top of the accent: whichever of dark/white reads better.
     readonly property color onAccent: contrast(accent, "#111216") > contrast(accent, "#ffffff") ? "#111216" : "#ffffff"
 
-    readonly property color base: dark ? "#14151a" : "#f3f4f7"     // panel colour, opaque
-    readonly property color fg: dark ? "#e8e9ee" : "#16171c"
+    readonly property color base: usingPalette ? paletteColors[0] : dark ? "#14151a" : "#f3f4f7"  // panel colour, opaque
+    readonly property color fg: usingPalette ? paletteColors[3] : dark ? "#e8e9ee" : "#16171c"
     readonly property color fgMuted: Qt.alpha(fg, 0.62)
     readonly property color fgDisabled: Qt.alpha(fg, 0.38)
-    readonly property color border: Qt.alpha(fg, dark ? 0.08 : 0.10)
+    readonly property color border: usingPalette ? Qt.alpha(paletteColors[2], 0.55) : Qt.alpha(fg, dark ? 0.08 : 0.10)
     readonly property color hover: Qt.alpha(fg, 0.06)
     readonly property color pressed: Qt.alpha(fg, 0.12)
     readonly property color critical: dark ? "#f7768e" : "#d1364f"
@@ -44,11 +65,18 @@ Singleton {
 
     // Liquid glass tints (straight rgba, for the shader): a lighter, more
     // transparent top fading into the base colour.
-    readonly property vector4d glassTop: dark ? Qt.vector4d(0.22, 0.23, 0.27, blur ? 0.40 : 0.85)
-                                              : Qt.vector4d(1.0, 1.0, 1.0, blur ? 0.50 : 0.90)
+    readonly property vector4d glassTop: usingPalette ? glassFrom(paletteColors[1], dark ? 0.40 : 0.50)
+        : dark ? Qt.vector4d(0.22, 0.23, 0.27, blur ? 0.40 : 0.85)
+               : Qt.vector4d(1.0, 1.0, 1.0, blur ? 0.50 : 0.90)
     readonly property vector4d glassBottom: Qt.vector4d(base.r, base.g, base.b, blur ? 0.58 : 0.92)
     readonly property real glassRim: dark ? 1.0 : 0.6
-    readonly property color surfaceRaised: Qt.alpha(fg, dark ? 0.05 : 0.04)
+    readonly property color surfaceRaised: usingPalette ? Qt.alpha(paletteColors[1], 0.75) : Qt.alpha(fg, dark ? 0.05 : 0.04)
+
+    // A palette colour, made a bit lighter, as a straight rgba glass tint.
+    function glassFrom(c: color, alpha: real): vector4d {
+        const l = Qt.lighter(c, dark ? 1.35 : 1.04);
+        return Qt.vector4d(l.r, l.g, l.b, blur ? alpha : 0.88);
+    }
 
     // ---- Spacing / shape (4px grid) ------------------------------------------
     readonly property QtObject space: QtObject {

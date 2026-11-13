@@ -13,7 +13,29 @@ Item {
     signal selected(var value)
 
     readonly property int index: options.findIndex(o => o.value === current)
-    readonly property int segment: 84
+    // All segments are equally wide: wide enough for the longest label plus
+    // padding on both sides (at least 84 px).
+    readonly property int labelPadding: 16
+    readonly property int segment: {
+        void measure.count;   // re-evaluate when the labels change
+        let widest = 0;
+        for (let i = 0; i < measure.count; i++)
+            widest = Math.max(widest, measure.itemAt(i)?.implicitWidth ?? 0);
+        return Math.max(84, Math.ceil(widest) + labelPadding * 2);
+    }
+
+    // Invisible copies of the labels, only to measure them.
+    Repeater {
+        id: measure
+        model: root.options
+        StyledText {
+            required property var modelData
+            visible: false
+            text: modelData.label
+            font.pixelSize: Theme.font.small + 1
+            font.weight: Font.Medium
+        }
+    }
 
     implicitWidth: options.length * segment + 4
     implicitHeight: 32

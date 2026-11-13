@@ -25,27 +25,52 @@ Scope {
     property int panelWidth: 560
     property int panelHeight: 420
     property real topOffset: 0.2
-    // false: centred, topOffset from the top (launcher).
-    // true: docked to the right edge next to the bar (notification centre).
+    // Where the panel sits:
+    //   ""        centred, topOffset from the top (launcher)
+    //   "right"   docked to the right edge next to the bar (notification centre)
+    //   "top"/"bottom"  full width along that edge (wallpaper strip)
+    // Docked panels respect the bar's exclusive zone, so they sit next to it.
+    property string dock: alignRight ? "right" : ""
     property bool alignRight: false
+    // "top"/"bottom": stretch along the edge, or keep panelWidth (centred).
+    property bool fullWidth: true
+    // dock "": centre vertically instead of using topOffset.
+    property bool centerVertically: false
+    // Several panels can share a name (e.g. two picker styles); only the
+    // available one opens.
+    property bool available: true
     property Component content
 
-    readonly property bool open: ShellState.openPanel === name
-    // True while the close animation plays; keeps the window alive until done.
-    property bool closing: false
-
-    onOpenChanged: if (!open) closing = true
+    readonly property bool docked: dock !== ""
+    readonly property bool open: available && ShellState.openPanel === name
+    // Whether the window exists: true on open, false only after the close
+    // animation. NOTE: one flag on purpose; "open || closing" let the loader
+    // see both false for a moment, destroy the window and build a new one.
+    property bool loaded: false
+    onOpenChanged: {
+        if (!open)
+            return;
+        if (loaded) {
+            // Reopened while still fading out: build a fresh window. Reusing
+            // the old one re-arms its click-outside grab, which Hyprland then
+            // reports as cleared at once, closing the panel again.
+            loaded = false;
+            Qt.callLater(() => root.loaded = root.open);
+        } else {
+            loaded = true;
+        }
+    }
 
     // Safety net: if the panel is closed before its fade-in started, opacity
     // never changes and the "faded out" check below would never fire.
     Timer {
-        running: root.closing
+        running: root.loaded && !root.open
         interval: Theme.anim.slow + 200
-        onTriggered: root.closing = false
+        onTriggered: root.loaded = false
     }
 
     LazyLoader {
-        active: root.open || root.closing
+        active: root.loaded
 
         PanelWindow {
             id: win
@@ -58,15 +83,19 @@ Scope {
             WlrLayershell.keyboardFocus: root.open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
             // Docked panels respect the bar's exclusive zone (sit next to it);
             // centred ones float over everything.
-            exclusionMode: root.alignRight ? ExclusionMode.Normal : ExclusionMode.Ignore
+            exclusionMode: root.docked ? ExclusionMode.Normal : ExclusionMode.Ignore
             exclusiveZone: 0
 
-            anchors.top: !root.alignRight || Theme.barAtTop
-            anchors.bottom: root.alignRight && !Theme.barAtTop
-            anchors.right: root.alignRight
-            margins.top: root.alignRight ? Theme.barGap : Math.round((screen?.height ?? 1080) * root.topOffset)
-            margins.bottom: root.alignRight ? Theme.barGap : 0
-            margins.right: root.alignRight ? Theme.barGap : 0
+            anchors.top: root.dock === "" || root.dock === "top" || (root.dock === "right" && Theme.barAtTop)
+            anchors.bottom: root.dock === "bottom" || (root.dock === "right" && !Theme.barAtTop)
+            anchors.right: root.dock === "right" || ((root.dock === "top" || root.dock === "bottom") && root.fullWidth)
+            anchors.left: (root.dock === "top" || root.dock === "bottom") && root.fullWidth
+            margins.top: root.docked ? Theme.barGap
+                : root.centerVertically ? Math.round(((screen?.height ?? 1080) - root.panelHeight) / 2)
+                : Math.round((screen?.height ?? 1080) * root.topOffset)
+            margins.bottom: root.docked ? Theme.barGap : 0
+            margins.right: root.docked ? Theme.barGap : 0
+            margins.left: root.docked ? Theme.barGap : 0
             implicitWidth: root.panelWidth
             implicitHeight: root.panelHeight
             color: "transparent"
@@ -94,7 +123,14 @@ Scope {
                 // Starts hidden and animates in (see Component.onCompleted).
                 property bool shown: false
                 opacity: shown ? 1 : 0
-                scale: shown ? 1 : 0.97
+                // Edge panels slide in from their edge; others grow slightly.
+                scale: shown || root.dock === "top" || root.dock === "bottom" ? 1 : 0.97
+                transform: Translate {
+                    y: body.shown ? 0 : root.dock === "bottom" ? 24 : root.dock === "top" ? -24 : 0
+                    Behavior on y {
+                        NumberAnimation { duration: Theme.anim.normal; easing.type: Theme.anim.easingSlide }
+                    }
+                }
                 Component.onCompleted: shown = Qt.binding(() => root.open)
 
                 Behavior on opacity {
@@ -110,7 +146,9 @@ Scope {
                     }
                 }
                 // Unload once fully faded out.
-                onOpacityChanged: if (opacity === 0 && !shown) root.closing = false
+                // (Only while closing: opacity also passes 0 while the panel is
+                // being built, and must not unload it then.)
+                onOpacityChanged: if (opacity === 0 && !shown && !root.open) root.loaded = false
 
                 GlassBackground {
                     id: background

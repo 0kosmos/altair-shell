@@ -21,6 +21,7 @@
 --   launcher_key = keys for the app launcher (default: MOD + SPACE, false = none)
 --   notifications_key = keys for the notification centre (default: MOD + N)
 --   settings_key = keys for Altair Settings (default: MOD + comma)
+--   wallpaper_key = keys for the wallpaper picker (default: MOD + W)
 --
 -- The escape hatches below are plain Hyprland binds, so they work even when the
 -- shell has crashed or hangs:
@@ -95,6 +96,9 @@ function M.setup(opts)
     if opts.notifications_key ~= false then
         hl.bind(opts.notifications_key or (mod .. " + N"), hl.dsp.exec_cmd(ipc .. "notifications"))
     end
+    if opts.wallpaper_key ~= false then
+        hl.bind(opts.wallpaper_key or (mod .. " + W"), hl.dsp.exec_cmd(ipc .. "wallpaper"))
+    end
     if opts.settings_key ~= false then
         hl.bind(opts.settings_key or (mod .. " + comma"), hl.dsp.exec_cmd(ipc .. "settings"))
     end
@@ -106,7 +110,7 @@ function M.setup(opts)
         match  = { class = "^org\\.quickshell$", title = "^Altair Settings$" },
         float  = true,
         center = true,
-        size   = { 820, 560 },
+        size   = { 1000, 700 },
         -- Matches the corner radius Altair draws (Theme.radius.l).
         rounding = 18,
         -- Altair animates the window's content itself (a calm fade-in). Hyprland's

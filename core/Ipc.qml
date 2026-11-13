@@ -58,7 +58,27 @@ Scope {
     }
 
     IpcHandler {
+        target: "wallpaper"
+
+        // Absolute path to an image; empty = back to Hyprland's own background.
+        function set(path: string): void {
+            Wallpapers.set(path);
+        }
+        function current(): string {
+            return Wallpapers.current;
+        }
+        function setFolder(path: string): void {
+            Config.wallpaper.folder = path;
+        }
+    }
+
+    IpcHandler {
         target: "settings"
+
+        // Settings window back to its default size, centred.
+        function recenter(): void {
+            Hypr.resetWindowByTitle("Altair Settings", 1000, 700);
+        }
 
         // "#RRGGBB", or "mono" for the theme-adaptive monochrome accent.
         function setAccent(value: string): void {
