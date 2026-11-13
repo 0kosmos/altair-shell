@@ -35,6 +35,7 @@ Singleton {
     readonly property alias windows: adapter.windows
     readonly property alias transparency: adapter.transparency
     readonly property alias bar: adapter.bar
+    readonly property alias alttab: adapter.alttab
 
     function reload(): void {
         file.reload();
@@ -185,6 +186,12 @@ Singleton {
                 //     inactiveOpacity, blur (blur behind), enabled }
                 // They replace the default above for matching windows.
                 property var rules: []
+            }
+
+            property JsonObject alttab: JsonObject {
+                // Still previews of the windows (captured once per open);
+                // false = app icons only.
+                property bool previews: true
             }
 
             property JsonObject bar: JsonObject {

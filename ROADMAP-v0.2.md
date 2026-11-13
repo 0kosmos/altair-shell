@@ -157,7 +157,7 @@ perf.sh shows no idle cost.
 
 - [x] 1. Window transparency
 - [x] 2. Clock popup with calendar
-- [ ] 3. Smooth workspace switching + Alt+Tab
+- [x] 3. Smooth workspace switching + Alt+Tab
 - [ ] 4. Precise moving (snapping + dim)
 - [ ] 5. Desktop widgets + edit mode
 - [ ] 6. Taskbar / dock
@@ -173,3 +173,4 @@ perf.sh shows no idle cost.
 - F2 extra (user request): round clock (calendar/AnalogClock.qml, reusable for the F5 clock widget) left of the calendar; options bar.analogClock / bar.clockSeconds. Hands jump like a quartz clock: an eased seconds tick cost ~4 % CPU while open (180 ms) or ~2 % (70 ms) on this CPU vs 0.2 % plain.
 - F3a workspaces (3b Alt+Tab still open, so not ticked): Hypr.applyWorkspaces sets the workspaces/In/Out animations at runtime (curve "altairWorkspace"; originals in hyprland-original.json `wsAnim`); bar pill uses Hypr.workspaceDuration + same bezier. Binds in hypr/init.lua (r-1 / r+1 / previous). Reader ignores reads that still contain "altair*" curves (overlapping instances during hot reload once stored our own values as the user's).
 - F3b plan (agreed): Alt+Tab via Hyprland binds -> hl.dsp.global -> Quickshell GlobalShortcut (no process per key); Alt release = bind "ALT + Alt_L" with release = true; Qt key release + "no Alt held" checks as backup; previews = ScreencopyView live:false with icons fallback. Test the release bind FIRST.
+- F3b Alt+Tab: alttab/AltTab.qml + WindowCard.qml; binds in hypr/init.lua -> hl.dsp.global("altair:alttab-*") -> GlobalShortcut (appid "altair"). Test without a keyboard: `hyprctl dispatch 'hl.dsp.global("altair:alttab-next")'` / `-release`. MRU kept from Hyprland.activeToplevel changes. Gotcha: while our overlay holds exclusive keyboard focus Hyprland ignores focus requests, so the focus dispatch waits 60 ms after closing. Quick tap (< 120 ms) never shows the overlay. Previews: ScreencopyView live:false (hyprland_toplevel_export) works on NVIDIA, +13 MiB while open, no leak over 11 opens.

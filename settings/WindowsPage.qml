@@ -68,8 +68,19 @@ Page {
         }
     }
 
+    Section { text: "Alt+Tab" }
+
+    SettingRow {
+        title: "Window previews"
+        description: "A still picture of each window, taken when the switcher opens. Off: app icons only (lighter)."
+        Toggle {
+            checked: Config.alttab.previews
+            onToggled: value => Config.alttab.previews = value
+        }
+    }
+
     SettingRow {
         title: "Keys"
-        description: "SUPER + CTRL + Left / Right: previous / next workspace. SUPER + Tab: back to the last workspace. Change them in your setup() call (see the README)."
+        description: "ALT + Tab / ALT + SHIFT + Tab: next / previous window, release ALT to switch, Escape to cancel. SUPER + CTRL + Left / Right: previous / next workspace. SUPER + Tab: back to the last workspace. Change them in your setup() call (see the README)."
     }
 }

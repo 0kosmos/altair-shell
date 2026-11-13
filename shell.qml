@@ -2,6 +2,7 @@
 // Altair — entry point. Run with `qs -c altair` (or `qs -p <repo>` while developing).
 import QtQuick
 import Quickshell
+import qs.alttab
 import qs.bar
 import qs.calendar
 import qs.core
@@ -20,6 +21,7 @@ ShellRoot {
     NotificationPopups {}
     NotificationCenter {}
     CalendarPopup {}
+    AltTab {}
     SettingsWindow {}
     WallpaperStrip {}
     WallpaperGrid {}

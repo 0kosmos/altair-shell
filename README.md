@@ -32,6 +32,9 @@ frosted glass, smooth motion and close to zero CPU when idle.
   and keywords; apps you use often rise to the top.
 - **Notifications**: popups with actions and images, a notification centre
   with history (`SUPER + N`), Do not disturb, optional sound.
+- **Alt+Tab** window switcher: most recently used first, still previews (or
+  app icons), switches workspace when needed. A quick tap jumps straight to
+  the previous window without showing anything.
 - **Wallpapers** (`SUPER + W`), drawn by Altair itself (no wallpaper daemon):
   - pictures (JPG, PNG, WebP, AVIF, JXL) and **live wallpapers** (MP4, WebM, MKV);
   - a carousel picker at the bottom, centre or top (hover or arrow keys to
@@ -141,6 +144,7 @@ and add `require("altair").setup({ terminal = "your-terminal" })` to the end of
 | `autostart` | `true` | start Altair with Hyprland |
 | `nvidia_egl_only` | `false` | on **NVIDIA-only** desktops: load only NVIDIA's EGL driver (saves ~100 MB). Don't use on laptops where an Intel/AMD GPU drives the screen. |
 | `icon_theme` | your GTK icon theme | icon theme for apps and tray |
+| `alttab` | `true` | the Alt+Tab switcher (`false` = leave ALT+Tab alone) |
 | `launcher_key`, `notifications_key`, `wallpaper_key`, `settings_key`, `workspace_prev_key`, `workspace_next_key`, `last_workspace_key` | see below | other keys (e.g. `"SUPER + CTRL + H"`), or `false` for none |
 
 ## Keys
@@ -151,6 +155,7 @@ and add `require("altair").setup({ terminal = "your-terminal" })` to the end of
 | `SUPER + W` | wallpaper picker |
 | `SUPER + N` | notification centre |
 | `SUPER + ,` | settings |
+| `ALT + Tab` / `ALT + SHIFT + Tab` | window switcher (release ALT to switch, Escape to cancel) |
 | `SUPER + CTRL + Left` / `Right` | previous / next workspace |
 | `SUPER + Tab` | back to the last-used workspace |
 | `SUPER + SHIFT + R` | restart Altair |

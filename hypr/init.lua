@@ -25,6 +25,7 @@
 --   workspace_prev_key = previous workspace by number (default: MOD + CTRL + left)
 --   workspace_next_key = next workspace by number (default: MOD + CTRL + right)
 --   last_workspace_key = back to the last-used workspace (default: MOD + Tab)
+--   alttab    = Alt+Tab window switcher (default: true)
 --   (any key option: false = no bind)
 --
 -- The escape hatches below are plain Hyprland binds, so they work even when the
@@ -121,6 +122,18 @@ function M.setup(opts)
     end
     if opts.last_workspace_key ~= false then
         hl.bind(opts.last_workspace_key or (mod .. " + Tab"), hl.dsp.focus({ workspace = "previous" }))
+    end
+
+    -- Alt+Tab. The keys reach the shell as global shortcuts (no process per
+    -- press). Releasing Alt commits; with Shift held the released key can be
+    -- Meta_L (US layouts), hence the extra binds. See alttab/AltTab.qml.
+    if opts.alttab ~= false then
+        local g = function(name) return hl.dsp.global("altair:alttab-" .. name) end
+        hl.bind("ALT + Tab", g("next"), { repeating = true })
+        hl.bind("ALT + SHIFT + Tab", g("prev"), { repeating = true })
+        hl.bind("ALT + Alt_L", g("release"), { release = true })
+        hl.bind("ALT + SHIFT + Alt_L", g("release"), { release = true })
+        hl.bind("ALT + SHIFT + Meta_L", g("release"), { release = true })
     end
 
     -- The Settings window is a normal toplevel window (class org.quickshell):
