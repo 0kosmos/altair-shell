@@ -35,7 +35,7 @@ frosted glass, smooth motion and close to zero CPU when idle.
 - **Alt+Tab** window switcher: most recently used first, still previews (or
   app icons), switches workspace when needed. A quick tap jumps straight to
   the previous window without showing anything.
-- **Desktop widgets** (`SUPER + D` to edit), up to 3 of each, frosted like
+- **Desktop widgets** (`SUPER + D` to edit), up to 2 of each, frosted like
   the panels, on the desktop (above the wallpaper, below windows):
   clock (4 styles), round clock (4 styles), music (Card, spinning Disc,
   Cover, Minimal; drag the song bar to seek; the player's own volume;

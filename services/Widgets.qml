@@ -23,7 +23,7 @@ Singleton {
     id: root
 
     // At most this many widgets of each type (all monitors together).
-    readonly property int maxPerType: 3
+    readonly property int maxPerType: 2
 
     // Edit mode (runtime only): widgets above the windows, with handles.
     property bool editing: false

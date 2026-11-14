@@ -109,19 +109,35 @@ Item {
                     fillColor: "transparent"
                     capStyle: ShapePath.RoundCap
                     joinStyle: ShapePath.RoundJoin
+                    // Through the animated knob positions, so it glides with them.
                     PathPolyline {
-                        path: Equalizer.gains.map((g, i) => Qt.point((i + 0.5) * bands.colW, bands.yOf(g)))
+                        path: {
+                            const l = [];
+                            for (let i = 0; i < cols.count; i++) {
+                                const c = cols.itemAt(i);
+                                l.push(Qt.point((i + 0.5) * bands.colW, bands.yOf(c ? c.shown : 0)));
+                            }
+                            return l;
+                        }
                     }
                 }
             }
 
             Repeater {
+                id: cols
                 model: bands.n
 
                 Item {
                     id: col
                     required property int index
                     readonly property real db: Equalizer.gains[index] ?? 0
+                    // Shown value: glides to presets and scroll steps, follows
+                    // the pointer exactly while dragging.
+                    property real shown: db
+                    Behavior on shown {
+                        enabled: !drag.pressed
+                        NumberAnimation { duration: Theme.anim.slow; easing.type: Theme.anim.easingSlide }
+                    }
                     x: index * bands.colW
                     width: bands.colW
                     height: bands.height
@@ -147,7 +163,7 @@ Item {
                         width: drag.containsMouse || drag.pressed ? 16 : 13
                         height: width
                         radius: width / 2
-                        y: bands.yOf(col.db) - height / 2
+                        y: bands.yOf(col.shown) - height / 2
                         color: Theme.fg
                         border.width: 2
                         border.color: Theme.accent
