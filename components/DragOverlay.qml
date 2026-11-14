@@ -87,6 +87,7 @@ Scope {
                         width: 2
                         height: win.height
                         color: Theme.accent
+                        NumberAnimation on opacity { from: 0; to: 1; duration: Theme.anim.fast; easing.type: Theme.anim.easing }
                     }
                 }
                 Repeater {
@@ -97,6 +98,7 @@ Scope {
                         height: 2
                         width: win.width
                         color: Theme.accent
+                        NumberAnimation on opacity { from: 0; to: 1; duration: Theme.anim.fast; easing.type: Theme.anim.easing }
                     }
                 }
             }

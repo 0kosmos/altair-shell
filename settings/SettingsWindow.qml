@@ -412,21 +412,27 @@ Scope {
                         reqY = o.at[1];
                         size = { w: o.size?.[0] ?? win.width, h: o.size?.[1] ?? win.height };
                         mon = Snap.monitorInfo(Hyprland.monitors.values.find(m => m.id === o.monitor) ?? Hyprland.focusedMonitor);
-                        Snap.begin(mon, 18);   // 18 = the window rounding (hypr/init.lua)
+                        // 18 = the window rounding (hypr/init.lua).
+                        Snap.begin(mon, 18, { x: reqX, y: reqY, w: size.w, h: size.h });
                         active = true;
                     }
                     const free = (mouse.modifiers & Qt.ShiftModifier) !== 0;
-                    const r = Snap.place({ x: reqX + p.x - pressAt.x, y: reqY + p.y - pressAt.y, w: size.w, h: size.h }, free);
-                    if (r.x !== reqX || r.y !== reqY) {
-                        reqX = r.x;
-                        reqY = r.y;
-                        Qt.callLater(flush);   // at most one move per event-loop pass
-                    }
+                    // reqX/Y = where we last put the window, i.e. where it is
+                    // (the pointer position is relative to that).
+                    Snap.update({ x: reqX + p.x - pressAt.x, y: reqY + p.y - pressAt.y, w: size.w, h: size.h }, free);
                 }
 
+                // Snap.rect also changes on its own while a snap glides.
+                readonly property var placed: active ? Snap.rect : null
+                onPlacedChanged: if (placed && (placed.x !== reqX || placed.y !== reqY)) Qt.callLater(flush)
+
+                // At most one move per event-loop pass.
                 function flush(): void {
-                    if (active)
-                        Hypr.moveWindow(address, reqX, reqY);
+                    if (!active || !Snap.rect)
+                        return;
+                    reqX = Snap.rect.x;
+                    reqY = Snap.rect.y;
+                    Hypr.moveWindow(address, reqX, reqY);
                 }
 
                 function release(): void {
