@@ -35,11 +35,12 @@ frosted glass, smooth motion and close to zero CPU when idle.
 - **Alt+Tab** window switcher: most recently used first, still previews (or
   app icons), switches workspace when needed. A quick tap jumps straight to
   the previous window without showing anything.
-- **Desktop widgets** (`SUPER + D` to edit): a clock and a round clock on
-  the desktop (above the wallpaper, below windows), frosted like the panels.
+- **Desktop widgets** (`SUPER + D` to edit): a clock (4 styles) and a round
+  clock (4 styles) on the desktop (above the wallpaper, below windows),
+  frosted like the panels.
   Edit mode dims the screen and shows a dock to add widgets; drag to move
   (with the same smooth snapping, also to other widgets), drag the corner to
-  resize, click a widget for its opacity slider and remove button. Several
+  resize, click a widget for its style, opacity and remove buttons. Several
   copies allowed; the layout is saved in `config.json`.
 - **Wallpapers** (`SUPER + W`), drawn by Altair itself (no wallpaper daemon):
   - pictures (JPG, PNG, WebP, AVIF, JXL) and **live wallpapers** (MP4, WebM, MKV);

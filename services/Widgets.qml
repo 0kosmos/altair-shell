@@ -9,7 +9,8 @@ import qs.core
 // Desktop widgets: the placed items (stored in config.json, widgets.items),
 // the available types, and edit mode. Drawn by widgets/WidgetLayer.qml.
 //
-// An item: { id, type, monitor, x, y, scale, opacity }
+// An item: { id, type, monitor, x, y, scale, opacity, style }
+//   style    one of the type's `styles` ids (missing = the first)
 //   x, y     position relative to the monitor's top-left (logical px)
 //   scale    0.5 – 2.5 (size = the type's base size × scale)
 //   opacity  0.2 – 1
@@ -25,8 +26,10 @@ Singleton {
     // Widget types. Add one: an entry here + a <Name>Widget.qml in widgets/
     // + a case in widgets/WidgetFrame.qml.
     readonly property var types: [
-        { type: "clock", name: "Clock", icon: "schedule", w: 320, h: 150 },
-        { type: "roundclock", name: "Round clock", icon: "nest_clock_farsight_analog", w: 220, h: 220 },
+        { type: "clock", name: "Clock", icon: "schedule", w: 320, h: 150,
+          styles: [{ id: "classic", name: "Classic" }, { id: "light", name: "Light" }, { id: "minimal", name: "Minimal" }, { id: "date", name: "Date" }] },
+        { type: "roundclock", name: "Round clock", icon: "nest_clock_farsight_analog", w: 220, h: 220,
+          styles: [{ id: "classic", name: "Classic" }, { id: "minimal", name: "Minimal" }, { id: "numbers", name: "Numbers" }, { id: "dots", name: "Dots" }] },
     ]
 
     // (JsonAdapter hands a `var` list over as a Qt list, not a JS array.)
@@ -63,6 +66,22 @@ Singleton {
         };
         save(items.concat([item]));
         selected = item.id;
+    }
+
+    // The item's style id (valid for its type; else the type's first).
+    function styleOf(item: var): string {
+        const styles = typeType(item?.type ?? "")?.styles ?? [];
+        return styles.find(s => s.id === item?.style)?.id ?? styles[0]?.id ?? "";
+    }
+
+    // Next style for this widget (the toolbar's style button).
+    function cycleStyle(id: string): void {
+        const item = byId(id);
+        const styles = typeType(item?.type ?? "")?.styles ?? [];
+        if (styles.length < 2)
+            return;
+        const i = styles.findIndex(s => s.id === styleOf(item));
+        update(id, { style: styles[(i + 1) % styles.length].id });
     }
 
     function update(id: string, changes: var): void {

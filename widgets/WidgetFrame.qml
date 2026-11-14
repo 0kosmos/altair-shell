@@ -68,6 +68,8 @@ Item {
         height: frame.type?.h ?? 0
         scale: frame.s
         transformOrigin: Item.TopLeft
+        // Style changes switch the widget's look in place.
+        onLoaded: item.style = Qt.binding(() => Widgets.styleOf(frame.item))
         source: {
             switch (frame.item?.type) {
             case "clock": return "ClockWidget.qml";
@@ -221,6 +223,42 @@ Item {
             anchors.centerIn: parent
             spacing: Theme.space.s
 
+            // Style: click to cycle through the type's styles.
+            MouseArea {
+                id: styleButton
+                readonly property var styles: frame.type?.styles ?? []
+                visible: styles.length > 1
+                implicitWidth: styleRow.implicitWidth + Theme.space.s * 2
+                implicitHeight: 26
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: Widgets.cycleStyle(frame.itemId)
+                Rectangle {
+                    anchors.fill: parent
+                    radius: height / 2
+                    color: styleButton.containsMouse ? Theme.hover : "transparent"
+                }
+                RowLayout {
+                    id: styleRow
+                    anchors.centerIn: parent
+                    spacing: 4
+                    Icon {
+                        name: "palette"
+                        size: 15
+                        color: Theme.fgMuted
+                    }
+                    StyledText {
+                        text: styleButton.styles.find(s => s.id === Widgets.styleOf(frame.item))?.name ?? ""
+                        font.pixelSize: Theme.font.small
+                    }
+                }
+            }
+            Rectangle {
+                visible: styleButton.visible
+                implicitWidth: 1
+                implicitHeight: 18
+                color: Theme.border
+            }
             Icon {
                 name: "opacity"
                 size: 16

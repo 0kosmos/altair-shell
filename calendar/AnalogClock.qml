@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import QtQuick
 import Quickshell
+import qs.components
 import qs.theme
 
 // A round analogue clock: minute marks, hour/minute hands, an optional
@@ -17,6 +18,9 @@ Item {
 
     property bool showSeconds: true
     property int size: 180
+    // "classic" (face, all minute marks), "minimal" (no face, 12 marks),
+    // "numbers" (hour numerals, faint minute marks), "dots" (dots for hours).
+    property string style: "classic"
 
     implicitWidth: size
     implicitHeight: size
@@ -32,31 +36,57 @@ Item {
     readonly property int m: clock.minutes
     readonly property int s: clock.seconds
 
-    // Face.
+    // Face (not in "minimal").
     Rectangle {
         anchors.fill: parent
+        visible: root.style !== "minimal"
         radius: width / 2
         color: Qt.alpha(Theme.fg, 0.04)
         border.width: 1
         border.color: Theme.border
     }
 
-    // Minute marks; every fifth one (the hours) longer and brighter.
+    // Marks. classic: 60, the hours longer and brighter; minimal: 12 bold
+    // hour marks; numbers: faint minute marks (numerals below); dots: 12 dots.
     Repeater {
-        model: 60
+        model: root.style === "minimal" || root.style === "dots" ? 12 : 60
         Item {
             required property int index
-            readonly property bool hour: index % 5 === 0
+            readonly property int minute: root.style === "minimal" || root.style === "dots" ? index * 5 : index
+            readonly property bool hour: minute % 5 === 0
+            readonly property bool quarter: minute % 15 === 0
             anchors.fill: parent
-            rotation: index * 6
+            rotation: minute * 6
+            // Numbers style: no marks where the numerals are.
+            visible: !(root.style === "numbers" && hour)
             Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
-                y: root.size * 0.05
-                width: parent.hour ? 2.5 : 1.5
-                height: parent.hour ? root.size * 0.07 : root.size * 0.03
+                readonly property bool dot: root.style === "dots"
+                y: root.size * (dot ? 0.07 : 0.05)
+                width: dot ? (parent.quarter ? 7 : 4.5) : root.style === "minimal" ? (parent.quarter ? 4 : 3) : parent.hour ? 2.5 : 1.5
+                height: dot ? width : root.style === "minimal" ? root.size * (parent.quarter ? 0.1 : 0.07)
+                    : parent.hour ? root.size * 0.07 : root.size * 0.03
                 radius: width / 2
-                color: parent.hour ? (parent.index % 15 === 0 ? Theme.fg : Theme.fgMuted) : Theme.fgDisabled
+                color: dot || root.style === "minimal" ? (parent.quarter ? Theme.fg : Theme.fgMuted)
+                    : parent.hour ? (parent.quarter ? Theme.fg : Theme.fgMuted) : Theme.fgDisabled
             }
+        }
+    }
+
+    // Numbers style: 1–12.
+    Repeater {
+        model: root.style === "numbers" ? 12 : 0
+        StyledText {
+            required property int index
+            readonly property real a: (index + 1) * Math.PI / 6
+            readonly property real r: root.size * 0.37
+            x: root.size / 2 + Math.sin(a) * r - width / 2
+            y: root.size / 2 - Math.cos(a) * r - height / 2
+            text: index + 1
+            font.pixelSize: Math.round(root.size * 0.085)
+            font.weight: (index + 1) % 3 === 0 ? Font.DemiBold : Font.Normal
+            color: (index + 1) % 3 === 0 ? Theme.fg : Theme.fgMuted
+            tabular: true
         }
     }
 

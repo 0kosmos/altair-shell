@@ -14,7 +14,7 @@ Page {
         title: "Edit widgets"
         description: (Widgets.items.length === 0 ? "No widgets on your desktop yet. "
                 : Widgets.items.length + (Widgets.items.length === 1 ? " widget" : " widgets") + " on your desktop. ")
-            + "In edit mode: add widgets from the dock at the bottom, drag to move (Shift: no snapping), drag the corner to resize, click a widget for its opacity slider and remove button. SUPER + D or Escape to leave."
+            + "In edit mode: add widgets from the dock at the bottom, drag to move (Shift: no snapping), drag the corner to resize, click a widget for its style, opacity and remove buttons. SUPER + D or Escape to leave."
         PillButton {
             text: "Edit"
             onClicked: {
