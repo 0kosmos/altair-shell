@@ -42,6 +42,39 @@ Page {
         }
     }
 
+    Section { text: "Moving" }
+
+    SettingRow {
+        title: "Snapping"
+        description: "Drag Settings by its sidebar or page title: it snaps to the screen edges, the centre lines and the edge of the bar. Hold Shift to move freely. (SUPER + drag is Hyprland's own and does not snap.)"
+        Toggle {
+            checked: Config.windows.snapping
+            onToggled: value => Config.windows.snapping = value
+        }
+    }
+
+    SettingRow {
+        title: "Dim while dragging"
+        description: "Darkens the rest of the screen while something is dragged."
+        Segmented {
+            options: [{ label: "Off", value: 0 }, { label: "Light", value: 0.15 }, { label: "Medium", value: 0.3 }, { label: "Strong", value: 0.45 }]
+            current: [0, 0.15, 0.3, 0.45].reduce((a, b) => Math.abs(b - Config.windows.dragDim) < Math.abs(a - Config.windows.dragDim) ? b : a)
+            onSelected: value => Config.windows.dragDim = value
+        }
+    }
+
+    SettingRow {
+        title: "Snap to grid"
+        description: "Positions also snap to a grid of this size (the guide lines win when both apply)."
+        enabled: Config.windows.snapping
+        opacity: enabled ? 1 : 0.5
+        Segmented {
+            options: [{ label: "Off", value: 0 }, { label: "8", value: 8 }, { label: "16", value: 16 }, { label: "32", value: 32 }, { label: "64", value: 64 }]
+            current: [0, 8, 16, 32, 64].indexOf(Config.windows.grid) !== -1 ? Config.windows.grid : 0
+            onSelected: value => Config.windows.grid = value
+        }
+    }
+
     Section { text: "Workspaces" }
 
     SettingRow {

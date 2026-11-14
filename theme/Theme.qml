@@ -126,6 +126,9 @@ Singleton {
         readonly property real pressScale: root.animations ? 0.94 : 1
     }
 
+    // How much the screen dims while something is dragged (Snap / DragOverlay).
+    readonly property real dragDim: Math.max(0, Math.min(0.6, Config.windows.dragDim))
+
     // ---- Bar ----------------------------------------------------------------------
     readonly property string barPosition: Config.appearance.barPosition === "bottom" ? "bottom" : "top"
     readonly property bool barAtTop: barPosition === "top"

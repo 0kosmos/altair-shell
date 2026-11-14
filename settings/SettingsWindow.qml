@@ -2,6 +2,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Hyprland
 import qs.components
 import qs.core
 import qs.services
@@ -109,13 +110,18 @@ Scope {
                     }
                 }
 
-                // Double-click on any empty spot (sidebar, margins): re-centre,
-                // keeping the current size (Ctrl+0 also resets the size).
-                // Controls on top take their own clicks;
-                // pages report theirs via backgroundDoubleClicked.
+                // Empty spots (sidebar, margins): drag to move the window (with
+                // snapping), double-click to re-centre keeping the size (Ctrl+0
+                // also resets the size). Controls on top take their own clicks;
+                // pages report double-clicks via backgroundDoubleClicked and
+                // drags on their title via dragController.
                 MouseArea {
                     anchors.fill: parent
                     onDoubleClicked: win.recenter()
+                    onPressed: mouse => dragger.press(this, mouse)
+                    onPositionChanged: mouse => dragger.move(this, mouse)
+                    onReleased: dragger.release()
+                    onCanceled: dragger.release()
                 }
 
                 // Radius deliberately SMALLER than Hyprland's window rounding (18,
@@ -313,6 +319,8 @@ Scope {
 
                             transform: Translate { id: pageShift }
 
+                            onLoaded: if (item.dragController !== undefined) item.dragController = dragger
+
                             Connections {
                                 target: pageLoader.item
                                 ignoreUnknownSignals: true
@@ -354,10 +362,116 @@ Scope {
             }
 
             function recenter(): void {
+                Placement.clear("settings");   // next time: centred again
                 Hypr.centerWindowByTitle(win.title);
             }
 
+            // ---- Moving with snapping (services/Snap.qml) -------------------
+            // Hyprland owns the window's position, so we move it ourselves:
+            // new position = last requested + (cursor - press point), both in
+            // window coordinates. (Events already in flight still use the old
+            // position; that error lasts one event and never accumulates.)
+            QtObject {
+                id: dragger
+
+                property bool pressed: false
+                property bool active: false
+                property point pressAt
+                property real reqX
+                property real reqY
+                property var size: null
+                property var mon: null
+                property string address
+
+                function scene(area: Item, mouse: var): point {
+                    return area.mapToItem(null, mouse.x, mouse.y);
+                }
+
+                function press(area: Item, mouse: var): void {
+                    pressed = true;
+                    active = false;
+                    pressAt = scene(area, mouse);
+                    // Fresh positions before the drag really starts (4 px later).
+                    Hyprland.refreshToplevels();
+                    Hyprland.refreshMonitors();
+                }
+
+                function move(area: Item, mouse: var): void {
+                    if (!pressed)
+                        return;
+                    const p = scene(area, mouse);
+                    if (!active) {
+                        if (Math.hypot(p.x - pressAt.x, p.y - pressAt.y) < 4)
+                            return;
+                        const t = Hypr.windowByTitle(win.title);
+                        const o = t?.lastIpcObject;
+                        if (!o?.at)
+                            return;
+                        address = t.address;
+                        reqX = o.at[0];
+                        reqY = o.at[1];
+                        size = { w: o.size?.[0] ?? win.width, h: o.size?.[1] ?? win.height };
+                        mon = Snap.monitorInfo(Hyprland.monitors.values.find(m => m.id === o.monitor) ?? Hyprland.focusedMonitor);
+                        Snap.begin(mon, 18);   // 18 = the window rounding (hypr/init.lua)
+                        active = true;
+                    }
+                    const free = (mouse.modifiers & Qt.ShiftModifier) !== 0;
+                    const r = Snap.place({ x: reqX + p.x - pressAt.x, y: reqY + p.y - pressAt.y, w: size.w, h: size.h }, free);
+                    if (r.x !== reqX || r.y !== reqY) {
+                        reqX = r.x;
+                        reqY = r.y;
+                        Qt.callLater(flush);   // at most one move per event-loop pass
+                    }
+                }
+
+                function flush(): void {
+                    if (active)
+                        Hypr.moveWindow(address, reqX, reqY);
+                }
+
+                function release(): void {
+                    if (active) {
+                        flush();
+                        Placement.set("settings", mon.name, { x: reqX - mon.x, y: reqY - mon.y });
+                        Snap.end();
+                    }
+                    pressed = false;
+                    active = false;
+                }
+            }
+
+            // Back where it was last dropped on this monitor (kept inside the
+            // usable area, e.g. after a resolution change). Hyprland's rule
+            // centres it first; the content is still fading in when we move it.
+            Timer {
+                id: restorer
+                property int tries: 0
+                interval: 40
+                repeat: true
+                running: true
+                Component.onCompleted: Hyprland.refreshMonitors()
+                onTriggered: {
+                    const t = Hypr.windowByTitle(win.title);
+                    if (!t?.lastIpcObject?.at) {
+                        if (++tries > 15)
+                            stop();
+                        else
+                            Hyprland.refreshToplevels();
+                        return;
+                    }
+                    stop();
+                    const o = t.lastIpcObject;
+                    const mon = Snap.monitorInfo(Hyprland.monitors.values.find(m => m.id === o.monitor) ?? Hyprland.focusedMonitor);
+                    const saved = Placement.get("settings", mon.name);
+                    if (!saved)
+                        return;
+                    const r = Snap.clampTo({ x: mon.x + saved.x, y: mon.y + saved.y, w: o.size?.[0] ?? win.width, h: o.size?.[1] ?? win.height }, mon);
+                    Hypr.moveWindow(t.address, r.x, r.y);
+                }
+            }
+
             function resetGeometry(): void {
+                Placement.clear("settings");
                 Hypr.resetWindowByTitle(win.title, win.implicitWidth, win.implicitHeight);
             }
 

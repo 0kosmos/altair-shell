@@ -356,6 +356,17 @@ Singleton {
             resetWindow(t.address, width, height);
     }
 
+    // Our (first) window with this title, or null.
+    function windowByTitle(title: string): var {
+        return Hyprland.toplevels.values.find(t => t.title === title) ?? null;
+    }
+
+    // Move a floating window to exact global layout coordinates, instantly.
+    function moveWindow(address: string, x: int, y: int): void {
+        const w = `address:${address.startsWith("0x") ? address : "0x" + address}`;
+        Hyprland.dispatch(`hl.dsp.window.move({ window = "${w}", x = ${x}, y = ${y} })`);
+    }
+
     // Centre our floating window with this title, keeping its size, gliding
     // there. The Settings window has no_anim (see hypr/init.lua: Hyprland's
     // open animation fought our own fade-in), which also makes moves jump, so

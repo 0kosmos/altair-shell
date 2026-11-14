@@ -172,6 +172,13 @@ Singleton {
                 // "hyprland" (your own animation from hyprland.lua).
                 property string workspaceAnim: "slide"
                 property string workspaceSpeed: "calm"     // "calm" | "normal" | "fast"
+                // Dragging the Settings window (and desktop widgets): snap to
+                // screen edges/centre lines (hold Shift to move freely), dim
+                // the rest of the screen by this much (0–0.6), optional grid
+                // in px (0 = off).
+                property bool snapping: true
+                property real dragDim: 0.3
+                property int grid: 0
             }
 
             // Window transparency (services/WindowRules.qml). Applied as Hyprland

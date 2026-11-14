@@ -158,7 +158,7 @@ perf.sh shows no idle cost.
 - [x] 1. Window transparency
 - [x] 2. Clock popup with calendar
 - [x] 3. Smooth workspace switching + Alt+Tab
-- [ ] 4. Precise moving (snapping + dim)
+- [x] 4. Precise moving (snapping + dim)
 - [ ] 5. Desktop widgets + edit mode
 - [ ] 6. Taskbar / dock
 - [ ] 7. UI sounds
@@ -175,3 +175,5 @@ perf.sh shows no idle cost.
 - F3b plan (agreed): Alt+Tab via Hyprland binds -> hl.dsp.global -> Quickshell GlobalShortcut (no process per key); Alt release = bind "ALT + Alt_L" with release = true; Qt key release + "no Alt held" checks as backup; previews = ScreencopyView live:false with icons fallback. Test the release bind FIRST.
 - F3b Alt+Tab: alttab/AltTab.qml + WindowCard.qml; binds in hypr/init.lua -> hl.dsp.global("altair:alttab-*") -> GlobalShortcut (appid "altair"). Test without a keyboard: `hyprctl dispatch 'hl.dsp.global("altair:alttab-next")'` / `-release`. MRU kept from Hyprland.activeToplevel changes. Gotcha: while our overlay holds exclusive keyboard focus Hyprland ignores focus requests, so the focus dispatch waits 60 ms after closing. Quick tap (< 120 ms) never shows the overlay. Previews: ScreencopyView live:false (hyprland_toplevel_export) works on NVIDIA, +13 MiB while open, no leak over 11 opens.
 - F3b fix: a global-shortcut event sent from a RELEASE bind only reaches the client with the next input event (0.57), so the Alt release is a bind with hl.dsp.event("altair:alttab-release") -> Hyprland rawEvent "custom" (event socket, immediate). Never add binds with hyprctl eval AND reload: duplicates make every Tab step twice.
+- F4 snapping: services/Snap.qml (begin/place/end, global layout coords; `targets` is where F5 widgets register their rects), components/DragOverlay.qml (Top layer, empty mask, dim = huge-border rounded rect so the hole matches the window radius), services/Placement.qml (positions per monitor in $XDG_STATE_HOME/altair/positions.json). Settings window drags itself: new pos = last requested + (cursor - press) in window coords, one hl.dsp.window.move per event-loop pass. Monitor geometry: HyprlandMonitor x/y/width/height/scale are always set, `reserved` only after refreshMonitors(). SUPER+drag (Hyprland's) cannot snap. Snap maths, overlay, move and restore were tested via a temporary IPC hook; the mouse drag itself needs the user (no pointer injection here).
+- Restart is now SIGKILL of exact PIDs (hypr/init.lua stop_cmd): `qs kill` + Quickshell's exit-time segfault + crash-handler relaunch once left no shell. If you see "Quickshell has crashed" on restart again, check ~/.cache/quickshell/crashes.

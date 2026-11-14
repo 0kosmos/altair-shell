@@ -14,6 +14,8 @@ Flickable {
 
     // Double-click on an empty part of the page (the window re-centres, keeping its size).
     signal backgroundDoubleClicked()
+    // Set by the Settings window: dragging the page title moves the window.
+    property QtObject dragController: null
 
     // Smooth keyboard scrolling (the window calls these for arrows, PageUp/
     // PageDown, Home/End). Repeated calls retarget the running animation, so
@@ -70,6 +72,18 @@ Flickable {
             text: root.title
             font.pixelSize: Theme.font.title + 4
             font.weight: Font.DemiBold
+
+            // Drag the title to move the window (the rest of the page scrolls).
+            MouseArea {
+                anchors.fill: parent
+                enabled: root.dragController !== null
+                preventStealing: true
+                onPressed: mouse => root.dragController.press(this, mouse)
+                onPositionChanged: mouse => root.dragController.move(this, mouse)
+                onReleased: root.dragController.release()
+                onCanceled: root.dragController.release()
+                onDoubleClicked: root.backgroundDoubleClicked()
+            }
         }
     }
 }

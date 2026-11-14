@@ -5,6 +5,7 @@ import Quickshell
 import qs.alttab
 import qs.bar
 import qs.calendar
+import qs.components
 import qs.core
 import qs.launcher
 import qs.notifications
@@ -22,6 +23,7 @@ ShellRoot {
     NotificationCenter {}
     CalendarPopup {}
     AltTab {}
+    DragOverlay {}
     SettingsWindow {}
     WallpaperStrip {}
     WallpaperGrid {}

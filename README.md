@@ -50,6 +50,12 @@ frosted glass, smooth motion and close to zero CPU when idle.
     their edges, smooth resizing;
   - workspace switching animation (slide, vertical slide, fade, off or your
     own) and speed; the bar's workspace indicator moves in sync;
+  - **snapping**: drag the Settings window by its sidebar or page title and
+    it snaps to the screen edges, the centre lines and the bar (hold Shift to
+    move freely), with the rest of the screen dimmed and guide lines shown;
+    optional grid; its position is remembered per monitor and kept on
+    screen. (Hyprland's own SUPER + drag does not snap: the shell cannot see
+    it.)
   - **window transparency**: a default opacity for focused and other
     windows, plus per-app rules (focused / unfocused opacity, blur behind),
     with one-click suggestions (kitty, Spotify, Discord, Firefox, Dolphin)
