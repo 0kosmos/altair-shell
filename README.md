@@ -38,8 +38,9 @@ frosted glass, smooth motion and close to zero CPU when idle.
 - **Desktop widgets** (`SUPER + D` to edit), up to 3 of each, frosted like
   the panels, on the desktop (above the wallpaper, below windows):
   clock (4 styles), round clock (4 styles), music (Card, spinning Disc,
-  Cover, Minimal; drag the song bar to seek; any MPRIS player), equalizer
-  (Bars, Mirror, Wave, Peaks, Circle; needs `cava`) and system (Bars,
+  Cover, Minimal; drag the song bar to seek; the player's own volume;
+  "Playing on Spotify"; any MPRIS player), visualizer (Bars, Mirror, Wave,
+  Peaks, Circle; needs `cava`) and system (Bars,
   Rings, Compact: CPU, memory, optional GPU temperature). Animated widgets
   pause while windows cover the desktop.
   Edit mode dims the screen and shows a dock to add widgets; drag to move
@@ -113,7 +114,7 @@ Installed by `install.sh` (all from the official repositories):
 
 Optional: `networkmanager` (network status), `upower` (battery),
 `libnotify` ("Send test" notification button), `cava` (music visualizer
-and Equalizer widget), `nvidia-utils` (GPU
+and Visualizer widget), `nvidia-utils` (GPU
 temperature in the System widget; comes with the NVIDIA driver). The Music
 widget works with any player that supports MPRIS.
 

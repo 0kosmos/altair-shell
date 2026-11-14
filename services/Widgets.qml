@@ -34,9 +34,9 @@ Singleton {
         { type: "roundclock", name: "Round clock", icon: "nest_clock_farsight_analog", w: 220, h: 220,
           styles: [{ id: "classic", name: "Classic" }, { id: "minimal", name: "Minimal" }, { id: "numbers", name: "Numbers" }, { id: "dots", name: "Dots" }] },
         { type: "music", name: "Music", icon: "music_note", w: 360, h: 120,
-          styles: [{ id: "card", name: "Card" }, { id: "disc", name: "Disc", w: 400, h: 150 },
-                   { id: "cover", name: "Cover", w: 230, h: 300 }, { id: "minimal", name: "Minimal", w: 320, h: 84 }] },
-        { type: "equalizer", name: "Equalizer", icon: "equalizer", w: 360, h: 130,
+          styles: [{ id: "card", name: "Card", w: 380, h: 136 }, { id: "disc", name: "Disc", w: 420, h: 156 },
+                   { id: "cover", name: "Cover", w: 236, h: 324 }, { id: "minimal", name: "Minimal", w: 320, h: 84 }] },
+        { type: "visualizer", name: "Visualizer", icon: "graphic_eq", w: 360, h: 130,
           styles: [{ id: "bars", name: "Bars" }, { id: "mirror", name: "Mirror" }, { id: "wave", name: "Wave" },
                    { id: "peaks", name: "Peaks" }, { id: "circle", name: "Circle", w: 240, h: 240 }] },
         { type: "stats", name: "System", icon: "monitoring", w: 300, h: 132,
@@ -48,7 +48,13 @@ Singleton {
     readonly property var items: {
         const l = Config.ready ? Config.widgets.items : null;
         return l && typeof l === "object" && l.length !== undefined
-            ? Array.from(l).filter(i => i && i.id && typeType(i.type)) : [];
+            ? Array.from(l).map(migrate).filter(i => i && i.id && typeType(i.type)) : [];
+    }
+
+    // Older names: the sound-wave widget was called "equalizer" before the
+    // real equalizer existed.
+    function migrate(i: var): var {
+        return i && i.type === "equalizer" ? Object.assign({}, i, { type: "visualizer" }) : i;
     }
 
     function typeType(type: string): var {

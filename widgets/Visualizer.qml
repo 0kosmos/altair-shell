@@ -10,7 +10,7 @@ import qs.theme
 //   wave    a smooth line through the levels, softly filled below
 //   peaks   bars with a cap on top that falls back slowly
 //   circle  bars radiating from a ring (mirrored left/right), leaving the
-//           middle free (the Equalizer widget puts the album art there)
+//           middle free (the Visualizer widget puts the album art there)
 // It redraws only when cava delivers a frame (at the chosen fps), never at
 // the monitor's refresh rate; with no data (paused, cava missing) the bars
 // rest as small dots.

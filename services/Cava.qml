@@ -19,7 +19,7 @@ Singleton {
     property int users: 0
     readonly property int bars: 28
     readonly property int fps: Config.ready && [20, 30, 60].indexOf(Config.widgets.visualizerFps) !== -1 ? Config.widgets.visualizerFps : 30
-    // Shown if a music widget has the visualizer on, or an Equalizer widget exists.
+    // Shown if a music widget has the visualizer on, or a Visualizer widget exists.
     readonly property bool enabled: users > 0
     // Sensitivity: "auto" adapts to the loudness (cava's autosens); the fixed
     // levels don't, so quiet and loud songs look different.

@@ -6,7 +6,7 @@ import qs.core
 import qs.services
 import qs.theme
 
-// A standalone music visualizer ("equalizer"). Effects = styles: Bars,
+// A standalone music visualizer (sound bars). Effects = styles: Bars,
 // Mirror, Wave, Peaks, Circle (with the album art in the middle). Base size
 // 360 x 130 (Circle 240 x 240). Data from cava (services/Cava.qml), which
 // only runs while something plays and the desktop isn't covered.
