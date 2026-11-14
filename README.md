@@ -40,7 +40,9 @@ frosted glass, smooth motion and close to zero CPU when idle.
   clock (4 styles), round clock (4 styles), music (Card, spinning Disc,
   Cover, Minimal; drag the song bar to seek; the player's own volume;
   "Playing on Spotify"; any MPRIS player), visualizer (Bars, Mirror, Wave,
-  Peaks, Circle; needs `cava`), **equalizer** (16 presets + 6 bands you can
+  Peaks, Circle; needs `cava`), **weather** (Card, Forecast, Hourly,
+  Minimal; Open-Meteo, no account; attaches to any widget, e.g. under a
+  clock), **equalizer** (16 presets + 6 bands you can
   drag, for the music player only, live; built on PipeWire's own filter, no
   extra daemon) and system (Bars,
   Rings, Compact: CPU, memory, optional GPU temperature). Drop a Visualizer
