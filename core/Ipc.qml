@@ -124,4 +124,18 @@ Scope {
             return Widgets.items.length;
         }
     }
+
+    IpcHandler {
+        target: "recorder"
+
+        // Start/stop recording the focused monitor (60 fps). Returns whether
+        // it is recording afterwards.
+        function toggle(): bool {
+            Recorder.toggle();
+            return !Recorder.recording;
+        }
+        function recording(): bool {
+            return Recorder.recording;
+        }
+    }
 }

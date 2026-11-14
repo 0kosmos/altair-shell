@@ -74,6 +74,7 @@ Variants {
             Volume {}
             NetworkStatus {}
             BatteryStatus {}
+            RecordButton {}
             NotificationButton {}
             SettingsButton {}
         }

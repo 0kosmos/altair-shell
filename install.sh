@@ -41,6 +41,7 @@ OPTIONAL=(
     libnotify                      # "Send test" notification button
     cava                           # music visualizer (Music widget)
     libpulse                       # pactl: routes the music player into the equalizer
+    gpu-screen-recorder            # screen recorder button (60 fps, GPU-encoded)
 )
 MIN_HYPRLAND="0.55"                # first version with the Lua config
 

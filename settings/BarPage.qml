@@ -3,10 +3,13 @@ import QtQuick
 import QtQuick.Layouts
 import qs.components
 import qs.core
+import qs.services
 import qs.theme
 
 Page {
     title: "Bar"
+
+    Component.onCompleted: Recorder.recheck()
 
     SettingRow {
         title: "Position"
@@ -14,6 +17,29 @@ Page {
             options: [{ label: "Top", value: "top" }, { label: "Bottom", value: "bottom" }]
             current: Theme.barPosition
             onSelected: value => Config.appearance.barPosition = value
+        }
+    }
+
+    Section { text: "Screen recorder" }
+
+    SettingRow {
+        title: "Record button"
+        description: Recorder.available || !Recorder.checked
+            ? "Click it to record the screen you are on at 60 fps, click again to save. Encoded on the graphics card, so it barely uses the CPU. Saved to " + Recorder.folder.replace(/^\/home\/[^/]+/, "~") + "."
+            : "Needs gpu-screen-recorder, which is not installed: sudo pacman -S gpu-screen-recorder"
+        Toggle {
+            checked: Config.recorder.showButton
+            onToggled: value => Config.recorder.showButton = value
+        }
+    }
+
+    SettingRow {
+        title: "Sound"
+        description: "Record the computer's sound, and optionally your microphone too."
+        Segmented {
+            options: [{ label: "Off", value: "none" }, { label: "System", value: "system" }, { label: "System + mic", value: "both" }]
+            current: ["none", "both"].indexOf(Config.recorder.audio) !== -1 ? Config.recorder.audio : "system"
+            onSelected: value => Config.recorder.audio = value
         }
     }
 

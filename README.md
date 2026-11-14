@@ -24,6 +24,10 @@ frosted glass, smooth motion and close to zero CPU when idle.
 - **Bar**: workspaces (sliding indicator), clock, system tray with themed
   menus, volume, network, battery (laptops), notifications and settings.
   Top or bottom.
+- **Screen recorder**: a button in the bar records the screen you are on at
+  60 fps, encoded on the graphics card (barely any CPU), with system sound
+  (optionally the microphone too); click again to save to
+  `~/Videos/Recordings`. Needs `gpu-screen-recorder`.
 - **Calendar**: click the clock for a month calendar next to a round
   analogue clock (today highlighted, your locale's first weekday, optional
   ISO week numbers and seconds hand). Arrows, mouse wheel or
@@ -121,7 +125,7 @@ Installed by `install.sh` (all from the official repositories):
 | `xdg-utils` | opening folders (fallback) |
 
 Optional: `networkmanager` (network status), `upower` (battery),
-`libnotify` ("Send test" notification button), `libpulse` (`pactl`, routes
+`libnotify` ("Send test" notification button), `gpu-screen-recorder` (screen recorder), `libpulse` (`pactl`, routes
 the music player into the equalizer), `cava` (music visualizer
 and Visualizer widget), `nvidia-utils` (GPU
 temperature in the System widget; comes with the NVIDIA driver). The Music
@@ -206,6 +210,7 @@ Altair can also be controlled from scripts or your own keybinds:
 qs -c altair ipc show                                # everything available
 qs -c altair ipc call panels toggle launcher         # launcher | notifications | wallpaper | calendar | settings
 qs -c altair ipc call widgets toggleEdit           # desktop widgets' edit mode
+qs -c altair ipc call recorder toggle              # start/stop screen recording
 qs -c altair ipc call wallpaper set ~/Pictures/Wallpapers/forest.jpg
 qs -c altair ipc call settings setAccent '#7aa2f7'   # or "mono"
 qs -c altair ipc call settings toggleLowPower

@@ -38,6 +38,7 @@ Singleton {
     readonly property alias alttab: adapter.alttab
     readonly property alias widgets: adapter.widgets
     readonly property alias equalizer: adapter.equalizer
+    readonly property alias recorder: adapter.recorder
 
     function reload(): void {
         file.reload();
@@ -234,6 +235,12 @@ Singleton {
                 property bool enabled: false
                 property string preset: "flat"
                 property var custom: [0, 0, 0, 0, 0, 0]
+            }
+
+            // Screen recorder (services/Recorder.qml, needs gpu-screen-recorder).
+            property JsonObject recorder: JsonObject {
+                property bool showButton: true         // record button in the bar
+                property string audio: "system"        // "none" | "system" | "both" (+ microphone)
             }
 
             property JsonObject alttab: JsonObject {
