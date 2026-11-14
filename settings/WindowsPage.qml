@@ -65,12 +65,12 @@ Page {
 
     SettingRow {
         title: "Snap to grid"
-        description: "Positions also snap to a grid of this size (the guide lines win when both apply)."
+        description: "When you let go, it glides onto the nearest point of a grid this size."
         enabled: Config.windows.snapping
         opacity: enabled ? 1 : 0.5
         Segmented {
-            options: [{ label: "Off", value: 0 }, { label: "4", value: 4 }, { label: "8", value: 8 }, { label: "16", value: 16 }, { label: "32", value: 32 }, { label: "64", value: 64 }]
-            current: [0, 4, 8, 16, 32, 64].indexOf(Config.windows.grid) !== -1 ? Config.windows.grid : 0
+            options: [{ label: "Off", value: 0 }, { label: "4", value: 4 }, { label: "8", value: 8 }, { label: "16", value: 16 }]
+            current: [0, 4, 8, 16].indexOf(Config.windows.grid) !== -1 ? Config.windows.grid : 0
             onSelected: value => Config.windows.grid = value
         }
     }

@@ -10,75 +10,67 @@ import qs.theme
 // Shared drag/snap logic (Settings window now, desktop widgets later).
 //
 // All rectangles are in Hyprland's global layout coordinates (logical px).
-// A drag:  begin(monitor) -> update(rawRect, free) on every pointer move ->
-// end(). Read the placed rectangle from `rect` (it changes on its own while a
-// snap glides in or out, so follow onRectChanged). While a drag runs,
-// components/DragOverlay.qml shows the dim and guides from this state; when
-// nothing is dragged this costs nothing.
+// A drag:  begin(monitor, radius, startRect) -> update(rawRect, free) on every
+// pointer move -> end(). Follow `rect` (onRectChanged) to place the thing; it
+// keeps moving for a moment after end() while it settles, then `settled(rect)`
+// fires with the final position. components/DragOverlay.qml shows the dim and
+// guides from this state. Nothing runs when nothing is dragged.
 //
-// How snapping feels:
-//   - glide: the thing eases onto a line (and back to the pointer when it lets
-//     go) over `glideMs` instead of jumping;
-//   - hysteresis: catches within `engage` px, lets go only beyond `release` px,
-//     so it never flickers at the edge of the snap zone;
-//   - speed: only catches when moving slower than `maxSpeed`, so sweeping
-//     across the screen doesn't stick to every line on the way.
+// Feel:
+//   - `target` is where the thing should be: the pointer position, pulled
+//     onto a nearby line (screen edges and centres, the bar, other widgets);
+//   - `rect` follows `target` smoothly every frame (exponential easing, time
+//     constant `tau`), so following the pointer, catching a line and letting
+//     go of it all glide instead of jump;
+//   - lines catch within `engage` px, only while moving slowly (`maxSpeed`),
+//     and let go beyond `release` px (no flicker at the edge of the zone);
+//   - the grid applies on drop only: the thing glides onto the nearest grid
+//     point when released, instead of stepping while dragged.
 Singleton {
     id: root
 
+    signal settled(var rect)
+
     // ---- Options ----------------------------------------------------------------
     readonly property bool enabled: Config.ready ? Config.windows.snapping : true
-    readonly property int grid: Config.ready ? Math.max(0, Config.windows.grid) : 0
+    readonly property int grid: Config.ready && [4, 8, 16].indexOf(Config.windows.grid) !== -1 ? Config.windows.grid : 0
     readonly property int engage: 8
-    readonly property int release: 16
-    readonly property real maxSpeed: 1400      // px/s
-    readonly property int glideMs: Theme.animations ? 180 : 0
+    readonly property int release: 20
+    readonly property real maxSpeed: 900       // px/s
+    readonly property real tau: 0.055          // s; higher = smoother but trails more
 
-    // ---- Drag state (read by DragOverlay) ---------------------------------------
-    property bool dragging: false
+    // ---- State (read by DragOverlay and the dragged thing) ---------------------
+    property bool dragging: false              // pointer is down
+    property bool settling: false              // released, gliding to rest
+    readonly property bool moving: dragging || settling
     property string screenName: ""
-    property var monitor: null          // { x, y, w, h }
-    property var usable: null           // monitor minus reserved space (the bar)
-    property real radius: 18            // corner radius of the dragged thing
+    property var monitor: null                 // { x, y, w, h }
+    property var usable: null                  // monitor minus reserved space (the bar)
+    property real radius: 18                   // corner radius of the dragged thing
 
-    property var raw: null              // where the pointer puts it (unsnapped)
-    // Current snap per axis: { line, off } (off = 0 / size/2 / size: which of
-    // start / centre / end sits on the line), or null. `held*` is the last
-    // one, kept while the snap glides out.
-    property var lineX: null
+    property var raw: null                     // where the pointer puts it
+    property var lineX: null                   // current snap { line, off } per axis, or null
     property var lineY: null
-    property var heldX: null
-    property var heldY: null
-    // 0 = follows the pointer, 1 = on the line; animated.
-    property real kx: 0
-    property real ky: 0
+    property var target: null                  // where it should be
+    property var rect: null                    // where it is (follows target smoothly)
 
     readonly property var guidesX: lineX ? [lineX.line] : []
     readonly property var guidesY: lineY ? [lineY.line] : []
 
-    // The placed rectangle: pointer position blended towards the snap line,
-    // else the grid, kept inside the usable area (never under the bar).
-    readonly property var rect: {
-        if (!raw || !usable)
-            return null;
-        const gx = grid > 0 && enabled ? usable.x + Math.round((raw.x - usable.x) / grid) * grid : raw.x;
-        const gy = grid > 0 && enabled ? usable.y + Math.round((raw.y - usable.y) / grid) * grid : raw.y;
-        let x = heldX ? gx + kx * (heldX.line - heldX.off - gx) : gx;
-        let y = heldY ? gy + ky * (heldY.line - heldY.off - gy) : gy;
-        x = Math.max(usable.x, Math.min(usable.x + usable.w - raw.w, x));
-        y = Math.max(usable.y, Math.min(usable.y + usable.h - raw.h, y));
-        return { x: Math.round(x), y: Math.round(y), w: raw.w, h: raw.h };
-    }
-
     // Other things to align with: [{ x, y, w, h }] (desktop widgets register here).
     property var targets: []
 
-    NumberAnimation { id: animX; target: root; property: "kx"; duration: root.glideMs; easing.type: Easing.OutCubic }
-    NumberAnimation { id: animY; target: root; property: "ky"; duration: root.glideMs; easing.type: Easing.OutCubic }
-
-    // Pointer speed, smoothed a little.
     property real speed: 0
     property real lastT: 0
+    // Exact (unrounded) smoothed position.
+    property real fx: 0
+    property real fy: 0
+
+    // Runs only while something is dragged or settling.
+    FrameAnimation {
+        running: root.moving
+        onTriggered: root.step(frameTime)
+    }
 
     // The Hyprland monitor as { name, x, y, w, h, usable }.
     // Position, size and scale are always known; the reserved space (the bar)
@@ -101,76 +93,97 @@ Singleton {
     }
 
     function begin(mon: var, radius: real, start: var): void {
-        animX.stop();
-        animY.stop();
         screenName = mon.name;
         monitor = { x: mon.x, y: mon.y, w: mon.w, h: mon.h };
         usable = mon.usable;
         root.radius = radius;
-        lineX = lineY = heldX = heldY = null;
-        kx = ky = 0;
+        lineX = lineY = null;
         speed = 0;
         lastT = Date.now();
         raw = start;
+        target = clamp(start);
+        fx = target.x;
+        fy = target.y;
+        rect = { x: Math.round(fx), y: Math.round(fy), w: target.w, h: target.h };
+        settling = false;
         dragging = true;
     }
 
+    // Released: glide onto the grid (if any) and settle.
     function end(): void {
-        animX.stop();
-        animY.stop();
+        if (!dragging)
+            return;
         dragging = false;
         lineX = lineY = null;
+        let t = target;
+        if (grid > 0 && enabled)
+            t = clamp({ x: usable.x + Math.round((t.x - usable.x) / grid) * grid,
+                        y: usable.y + Math.round((t.y - usable.y) / grid) * grid, w: t.w, h: t.h });
+        target = t;
+        settling = true;
+        if (!Theme.animations)
+            step(1);
     }
 
     // The pointer moved: `r` is where it puts the thing ({ x, y, w, h }).
     // `free` (Shift held) lets go of / skips snapping.
     function update(r: var, free: bool): void {
+        if (!dragging)
+            return;
         const now = Date.now();
-        if (raw) {
-            const dt = Math.max(1, now - lastT) / 1000;
-            const v = Math.hypot(r.x - raw.x, r.y - raw.y) / dt;
-            speed = speed * 0.5 + v * 0.5;
-        }
+        const dt = Math.max(1, now - lastT) / 1000;
+        speed = speed * 0.6 + (Math.hypot(r.x - raw.x, r.y - raw.y) / dt) * 0.4;
         lastT = now;
         raw = r;
 
         const on = enabled && !free;
-        // Assigned only on change: the guides would otherwise be rebuilt (and
-        // fade in again) on every pointer move.
-        const nx = axis(lineX, on, r.x, r.w, linesX(), animX, "kx", "heldX");
-        const ny = axis(lineY, on, r.y, r.h, linesY(), animY, "ky", "heldY");
+        const nx = axis(lineX, on, r.x, r.w, linesX());
+        const ny = axis(lineY, on, r.y, r.h, linesY());
+        // Assigned only on change (the guides are rebuilt on change).
         if (nx !== lineX) lineX = nx;
         if (ny !== lineY) lineY = ny;
+        target = clamp({ x: lineX ? lineX.line - lineX.off : r.x, y: lineY ? lineY.line - lineY.off : r.y, w: r.w, h: r.h });
+        if (!Theme.animations)
+            step(1);
     }
 
-    // One axis: keep the current snap while within `release`, else catch a new
-    // line within `engage` (only when moving slowly), else let go. Starts the
-    // glide in or out when that changes.
-    function axis(cur: var, on: bool, pos: real, size: real, lines: var, anim: var, k: string, held: string): var {
-        let next = null;
-        if (on && cur && Math.abs(pos + cur.off - cur.line) <= release)
-            next = cur;
-        else if (on && speed < maxSpeed)
-            next = nearest(pos, size, lines);
-
-        const same = cur && next && cur.line === next.line && cur.off === next.off;
-        if (!same) {
-            if (next) {
-                // New line: start the glide from where the thing is now.
-                if (cur)
-                    root[k] = 0;
-                root[held] = next;
-                anim.stop();
-                anim.to = 1;
-                anim.start();
-            } else if (cur) {
-                // Let go: glide back to the pointer (heldX/Y stays for that).
-                anim.stop();
-                anim.to = 0;
-                anim.start();
-            }
+    // One frame of smoothing towards `target`.
+    function step(dt: real): void {
+        if (!target)
+            return;
+        const a = Theme.animations ? 1 - Math.exp(-Math.max(0, dt) / tau) : 1;
+        fx += (target.x - fx) * a;
+        fy += (target.y - fy) * a;
+        const done = Math.abs(target.x - fx) < 0.5 && Math.abs(target.y - fy) < 0.5;
+        if (done) {
+            fx = target.x;
+            fy = target.y;
         }
-        return next;
+        const x = Math.round(fx), y = Math.round(fy);
+        if (!rect || rect.x !== x || rect.y !== y || rect.w !== target.w || rect.h !== target.h)
+            rect = { x, y, w: target.w, h: target.h };
+        if (settling && done) {
+            settling = false;
+            settled(rect);
+        }
+    }
+
+    // One axis: keep the current line while within `release`, else catch the
+    // nearest within `engage` (only when moving slowly), else none.
+    function axis(cur: var, on: bool, pos: real, size: real, lines: var): var {
+        if (!on)
+            return null;
+        if (cur && Math.abs(pos + cur.off - cur.line) <= release)
+            return cur;
+        return speed < maxSpeed ? nearest(pos, size, lines) : null;
+    }
+
+    function clamp(r: var): var {
+        return {
+            x: Math.max(usable.x, Math.min(usable.x + usable.w - r.w, r.x)),
+            y: Math.max(usable.y, Math.min(usable.y + usable.h - r.h, r.y)),
+            w: r.w, h: r.h
+        };
     }
 
     // Keep `r` fully inside a monitor's usable area (e.g. a saved position

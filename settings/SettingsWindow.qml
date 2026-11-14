@@ -388,6 +388,9 @@ Scope {
                 }
 
                 function press(area: Item, mouse: var): void {
+                    // Grabbed again while still settling: start a fresh drag.
+                    if (active)
+                        Snap.settling = false;
                     pressed = true;
                     active = false;
                     pressAt = scene(area, mouse);
@@ -422,7 +425,8 @@ Scope {
                     Snap.update({ x: reqX + p.x - pressAt.x, y: reqY + p.y - pressAt.y, w: size.w, h: size.h }, free);
                 }
 
-                // Snap.rect also changes on its own while a snap glides.
+                // Snap.rect follows the pointer smoothly, every frame, and
+                // keeps gliding for a moment after release.
                 readonly property var placed: active ? Snap.rect : null
                 onPlacedChanged: if (placed && (placed.x !== reqX || placed.y !== reqY)) Qt.callLater(flush)
 
@@ -435,14 +439,23 @@ Scope {
                     Hypr.moveWindow(address, reqX, reqY);
                 }
 
+                // Let go: Snap glides it to rest (onto the grid, if set); the
+                // final spot is saved once it has settled.
                 function release(): void {
-                    if (active) {
-                        flush();
-                        Placement.set("settings", mon.name, { x: reqX - mon.x, y: reqY - mon.y });
-                        Snap.end();
-                    }
                     pressed = false;
-                    active = false;
+                    if (active)
+                        Snap.end();
+                }
+
+                property Connections settle: Connections {
+                    target: Snap
+                    function onSettled(rect) {
+                        if (!dragger.active)
+                            return;
+                        dragger.flush();
+                        Placement.set("settings", dragger.mon.name, { x: rect.x - dragger.mon.x, y: rect.y - dragger.mon.y });
+                        dragger.active = false;
+                    }
                 }
             }
 

@@ -175,7 +175,7 @@ Singleton {
                 // Dragging the Settings window (and desktop widgets): snap to
                 // screen edges/centre lines (hold Shift to move freely), dim
                 // the rest of the screen by this much (0–0.6), optional grid
-                // in px (0 = off).
+                // in px applied on drop (0 = off; 4, 8 or 16).
                 property bool snapping: true
                 property real dragDim: 0.45
                 property int grid: 0
