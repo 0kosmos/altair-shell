@@ -60,6 +60,10 @@ Singleton {
 
     // Other things to align with: [{ x, y, w, h }] (desktop widgets register here).
     property var targets: []
+    // A spot the dragged thing is pulled into instead of following the
+    // pointer (e.g. a widget's magnetic attach slot), or null. It still
+    // glides there smoothly.
+    property var pin: null
 
     property real speed: 0
     property real lastT: 0
@@ -102,6 +106,7 @@ Singleton {
         usable = mon.usable;
         root.radius = radius;
         lineX = lineY = null;
+        pin = null;
         speed = 0;
         lastT = Date.now();
         raw = start;
@@ -120,7 +125,7 @@ Singleton {
         dragging = false;
         lineX = lineY = null;
         let t = target;
-        if (grid > 0 && enabled)
+        if (grid > 0 && enabled && !pin)
             t = clamp({ x: usable.x + Math.round((t.x - usable.x) / grid) * grid,
                         y: usable.y + Math.round((t.y - usable.y) / grid) * grid, w: t.w, h: t.h });
         target = t;
@@ -140,6 +145,14 @@ Singleton {
         lastT = now;
         raw = r;
 
+        if (pin) {
+            if (lineX) lineX = null;
+            if (lineY) lineY = null;
+            target = clamp(pin);
+            if (!Theme.animations)
+                step(1);
+            return;
+        }
         const on = enabled && !free;
         const nx = axis(lineX, on, r.x, r.w, linesX());
         const ny = axis(lineY, on, r.y, r.h, linesY());
@@ -149,6 +162,13 @@ Singleton {
         target = clamp({ x: lineX ? lineX.line - lineX.off : r.x, y: lineY ? lineY.line - lineY.off : r.y, w: r.w, h: r.h });
         if (!Theme.animations)
             step(1);
+    }
+
+    // Change the pin while dragging (e.g. on entering/leaving a magnet slot).
+    function setPin(r: var): void {
+        pin = r;
+        if (dragging && raw)
+            update(raw, false);
     }
 
     // One frame of smoothing towards `target`.

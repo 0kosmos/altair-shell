@@ -28,8 +28,10 @@ Singleton {
     onEditingChanged: selected = ""
     // In edit mode: the widget whose toolbar is shown (last clicked or added).
     property string selected: ""
-    // While dragging: the widget it would attach to on drop (it glows).
+    // While dragging into a magnet slot: the widget it would attach to, and
+    // the dragged one (the group is previewed as joined).
     property string attachHint: ""
+    property string attachChild: ""
 
     // Widget types. Add one: an entry here + a <Name>Widget.qml in widgets/
     // + a case in widgets/WidgetFrame.qml.

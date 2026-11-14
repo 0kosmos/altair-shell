@@ -34,11 +34,20 @@ Item {
     readonly property var parentFrame: item?.attachedTo ? siblings.find(f => f && f.itemId === item.attachedTo) ?? null : null
     readonly property var childFrame: siblings.find(f => f && f !== frame && f.item?.attachedTo === itemId) ?? null
     readonly property bool attached: parentFrame !== null && !owning
-    readonly property bool hasChild: childFrame !== null && childFrame.attached
+    // While dragged into a magnet slot: shown as if attached (live preview).
+    property var previewParent: null
+    readonly property bool joined: attached || (owning && previewParent !== null)
+    // The frame being dragged into this one's slot, if any.
+    readonly property var previewChild: Widgets.attachHint === itemId
+        ? siblings.find(f => f && f.itemId === Widgets.attachChild) ?? null : null
+    readonly property var belowFrame: previewChild ?? (childFrame !== null && childFrame.attached ? childFrame : null)
+    readonly property bool hasChild: belowFrame !== null
     // Height of this widget plus everything attached below it.
-    readonly property real groupHeight: height + (hasChild ? childFrame.groupHeight : 0)
-    // Dropping a widget within this distance of a group's bottom attaches it.
+    readonly property real groupHeight: height + (hasChild ? belowFrame.groupHeight : 0)
+    // A dragged widget is pulled into a group's slot within this distance of
+    // its bottom edge, and only lets go beyond `magnetRelease`.
     readonly property int magnet: 28
+    readonly property int magnetRelease: 48
 
     // The frames hanging below this one (not valid attach targets for it).
     function subtree(): var {
@@ -68,18 +77,22 @@ Item {
     // Where `r` ({ x, y, w } relative to the monitor) would attach: a frame
     // in a music group with nothing below it yet, whose bottom edge is close
     // to r's top edge and which overlaps it sideways. Else null.
-    function attachTarget(r: var): var {
+    // `keep`: the current target, held until `magnetRelease` (hysteresis).
+    function attachTarget(r: var, keep: var): var {
         if (!canAttach)
             return null;
         const mine = subtree();
-        return siblings.find(f => {
-            if (!f || mine.indexOf(f) !== -1 || f.hasChild)
+        const fits = (f, dist) => {
+            if (!f || mine.indexOf(f) !== -1 || (f.hasChild && f.previewChild !== frame))
                 return false;
             if (f.item?.type !== "music" && !f.attached)
                 return false;
             const overlap = Math.min(r.x + r.w, f.x + f.width) - Math.max(r.x, f.x);
-            return Math.abs(r.y - (f.y + f.height)) <= magnet && overlap > Math.min(r.w, f.width) * 0.4;
-        }) ?? null;
+            return Math.abs(r.y - (f.y + f.height)) <= dist && overlap > Math.min(r.w, f.width) * 0.3;
+        };
+        if (keep && fits(keep, magnetRelease))
+            return keep;
+        return siblings.find(f => fits(f, magnet)) ?? null;
     }
 
     readonly property var item: Widgets.byId(itemId)
@@ -90,8 +103,16 @@ Item {
     // While resizing, `liveScale` is shown and only saved on release.
     property real liveScale: -1
     // Attached: as wide as the widget above.
-    readonly property real s: attached ? parentFrame.width / Math.max(1, base.w)
+    // Previewing an attach: grows/shrinks smoothly to the group's width.
+    readonly property real targetScale: attached ? parentFrame.width / Math.max(1, base.w)
+        : previewParent && owning ? previewParent.width / Math.max(1, base.w)
         : liveScale > 0 ? liveScale : Math.max(0.5, Math.min(2.5, item?.scale ?? 1))
+    property bool animateScale: false
+    property real s: targetScale
+    Behavior on s {
+        enabled: frame.animateScale
+        NumberAnimation { duration: Theme.anim.normal; easing.type: Theme.anim.easingSlide }
+    }
     // Base size (depends on the style), then scaled.
     readonly property var base: Widgets.sizeOf(item)
     width: Math.round(base.w * s)
@@ -107,22 +128,6 @@ Item {
         : attached ? parentFrame.y + parentFrame.height
         : Math.max(0, Math.min(mon.h - groupHeight, item?.y ?? 0))
 
-    // Glide into the slot right after attaching (only then: otherwise it
-    // would trail behind when the group is dragged).
-    property bool glide: false
-    Timer {
-        id: glideOff
-        interval: Theme.anim.normal + 50
-        onTriggered: frame.glide = false
-    }
-    Behavior on x {
-        enabled: frame.glide
-        NumberAnimation { duration: Theme.anim.normal; easing.type: Theme.anim.easingSlide }
-    }
-    Behavior on y {
-        enabled: frame.glide
-        NumberAnimation { duration: Theme.anim.normal; easing.type: Theme.anim.easingSlide }
-    }
 
     readonly property real radius: Theme.radius.l * s
     // Attached widgets above the group background drawn by the top one; the
@@ -140,8 +145,8 @@ Item {
         y: frame.y
         width: frame.visible ? frame.width : 0
         height: frame.visible ? frame.height : 0
-        topLeftRadius: frame.attached ? 0 : frame.radius
-        topRightRadius: frame.attached ? 0 : frame.radius
+        topLeftRadius: frame.joined ? 0 : frame.radius
+        topRightRadius: frame.joined ? 0 : frame.radius
         bottomLeftRadius: frame.hasChild ? 0 : frame.radius
         bottomRightRadius: frame.hasChild ? 0 : frame.radius
     }
@@ -155,14 +160,14 @@ Item {
 
     // The group's background: the top widget draws it for the whole group.
     GlassBackground {
-        visible: !frame.attached
+        visible: !frame.joined
         width: parent.width
         height: frame.groupHeight
         radius: frame.radius
     }
     // Attached: a hairline between it and the widget above.
     Rectangle {
-        visible: frame.attached
+        visible: frame.joined
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
@@ -170,17 +175,6 @@ Item {
         anchors.rightMargin: 14 * frame.s
         height: 1
         color: Theme.border
-    }
-    // While a widget is dragged close enough to attach here: a glowing edge.
-    Rectangle {
-        visible: Widgets.attachHint === frame.itemId
-        anchors.bottom: parent.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
-        width: parent.width - 2 * frame.radius
-        height: 3
-        radius: 1.5
-        color: Theme.accent
-        z: 2
     }
 
     // The widget, drawn at its base size and scaled (text stays sharp: Qt's
@@ -266,10 +260,19 @@ Item {
                 frame.owning = true;
             }
             const free = (mouse.modifiers & Qt.ShiftModifier) !== 0;
-            Snap.update({ x: start.x + p.x - pressAt.x, y: start.y + p.y - pressAt.y, w: frame.width, h: frame.groupHeight }, free);
-            // Show where it would attach.
-            const t = Snap.rect ? frame.attachTarget({ x: Snap.rect.x - frame.mon.x, y: Snap.rect.y - frame.mon.y, w: frame.width }) : null;
-            Widgets.attachHint = t ? t.itemId : "";
+            const raw = { x: start.x + p.x - pressAt.x, y: start.y + p.y - pressAt.y, w: frame.width, h: frame.groupHeight };
+            // Magnet: near a group's bottom, preview the attached result at
+            // once (pulled into the slot, at the group's width).
+            const t = free ? null : frame.attachTarget({ x: raw.x - frame.mon.x, y: raw.y - frame.mon.y, w: frame.width }, frame.previewParent);
+            if (t !== frame.previewParent) {
+                frame.animateScale = true;
+                frame.previewParent = t;
+                Widgets.attachChild = t ? frame.itemId : "";
+                Widgets.attachHint = t ? t.itemId : "";
+            }
+            Snap.pin = t ? { x: frame.mon.x + t.x, y: frame.mon.y + t.y + t.height,
+                             w: t.width, h: frame.groupHeight * t.width / Math.max(1, frame.width) } : null;
+            Snap.update(raw, free);
         }
         onReleased: if (start) Snap.end()
         onCanceled: if (start) Snap.end()
@@ -279,15 +282,14 @@ Item {
         target: Snap
         enabled: frame.owning
         function onSettled(rect) {
-            const r = { x: rect.x - frame.mon.x, y: rect.y - frame.mon.y, w: frame.width };
-            const t = frame.attachTarget(r);
-            Widgets.attachHint = "";
-            if (t) {
-                frame.glide = true;
-                glideOff.restart();
-            }
+            const t = frame.previewParent;
+            const r = { x: rect.x - frame.mon.x, y: rect.y - frame.mon.y };
             Widgets.update(frame.itemId, t ? { x: r.x, y: r.y, attachedTo: t.itemId } : { x: r.x, y: r.y });
+            frame.previewParent = null;
+            Widgets.attachHint = "";
+            Widgets.attachChild = "";
             frame.owning = false;
+            frame.animateScale = false;
         }
     }
 
