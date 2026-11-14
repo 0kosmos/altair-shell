@@ -12,7 +12,8 @@ import qs.theme
 //   disc     a vinyl record with the art as its label, spinning while playing
 //   cover    big album art, title/artist and controls below
 //   minimal  title, artist, small controls, a thin progress line
-// Card and Disc show the visualizer below when it is on (Settings > Widgets).
+// A Visualizer and/or Equalizer widget can attach below it (magnetic groups,
+// see WidgetFrame.qml).
 // With nothing playing: a compact "Nothing playing", or hidden.
 //
 // Cost notes: MPRIS doesn't push the playback position, so it is asked for
@@ -27,7 +28,6 @@ Item {
     readonly property bool idle: !Media.hasTrack
     // Read by WidgetFrame: hide the whole widget (outside edit mode).
     readonly property bool hidden: idle && Config.widgets.musicHideIdle
-    readonly property bool withVisualizer: Config.widgets.visualizer !== "off" && (style === "card" || style === "disc")
     readonly property real progress: Math.max(0, Math.min(1, (player?.position ?? 0) / Math.max(1, player?.length ?? 1)))
     readonly property bool hasLength: (player?.lengthSupported ?? false) && (player?.length ?? 0) > 0
 
@@ -297,25 +297,10 @@ Item {
     // ---- Now playing -----------------------------------------------------------------
     Loader {
         id: layout
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        height: parent.height - (root.withVisualizer ? Widgets.visualizerHeight : 0)
+        anchors.fill: parent
         visible: !root.idle
         sourceComponent: root.style === "disc" ? disc : root.style === "cover" ? cover
             : root.style === "minimal" ? minimal : card
-    }
-
-    Visualizer {
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.margins: 14
-        anchors.topMargin: 0
-        height: Widgets.visualizerHeight - 18
-        visible: root.withVisualizer && !root.idle
-        active: visible && root.live
-        style: Config.widgets.visualizer
     }
 
     Component {

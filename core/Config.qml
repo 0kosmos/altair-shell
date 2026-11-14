@@ -207,9 +207,11 @@ Singleton {
                 // System widget: GPU temperature via nvidia-smi (every 5 s,
                 // only while the widget exists). NVIDIA only.
                 property bool gpuTemp: false
-                // Music visualizer (needs cava): "off" | "bars" | "mirror" | "wave",
-                // and its frame rate (20 | 30 | 60). Only runs while playing.
+                // Old built-in visualizer of the music widget ("off" | "bars" |
+                // "mirror" | "wave"); now migrated to an attached Visualizer
+                // widget (services/Widgets.qml) and set back to "off".
                 property string visualizer: "off"
+                // Visualizer widget frame rate (20 | 30 | 60). Only runs while playing.
                 property int visualizerFps: 30
                 // "auto" | "low" | "medium" | "high"
                 property string visualizerSensitivity: "auto"

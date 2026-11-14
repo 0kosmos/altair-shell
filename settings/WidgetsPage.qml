@@ -31,30 +31,27 @@ Page {
 
     SettingRow {
         title: "Hide when nothing plays"
-        description: "Off: the widget shows a small \"Nothing playing\". Works with any player that supports MPRIS (Spotify, browsers, mpv, ...)."
+        description: "Off: the widget shows a small \"Nothing playing\". Works with any player that supports MPRIS (Spotify, browsers, mpv, ...). Tip: drop a Visualizer or Equalizer right under a Music widget and it attaches."
         Toggle {
             checked: Config.widgets.musicHideIdle
             onToggled: value => Config.widgets.musicHideIdle = value
         }
     }
 
-    SettingRow {
-        title: "Visualizer"
-        description: !Cava.available && Cava.checked
-            ? "Needs cava, which is not installed. Install it with: sudo pacman -S cava"
-            : "Bars that move with the music, under the Card and Disc styles. Runs only while something plays. The Visualizer widget always shows them. While it moves it costs CPU: here about 6–7 % of one core at 30 fps, 13–15 % at 60 (plus ~2.5 % for cava); nothing while paused or covered by windows."
-        Segmented {
-            enabled: Cava.available || !Cava.checked
-            opacity: enabled ? 1 : 0.5
-            options: [{ label: "Off", value: "off" }, { label: "Bars", value: "bars" }, { label: "Mirror", value: "mirror" }, { label: "Wave", value: "wave" }]
-            current: ["bars", "mirror", "wave"].indexOf(Config.widgets.visualizer) !== -1 ? Config.widgets.visualizer : "off"
-            onSelected: value => Config.widgets.visualizer = value
-        }
+    Section { text: "Visualizer" }
+
+    StyledText {
+        Layout.fillWidth: true
+        visible: !Cava.available && Cava.checked
+        text: "The Visualizer widget needs cava, which is not installed. Install it with: sudo pacman -S cava"
+        color: Theme.accent
+        font.pixelSize: Theme.font.small
+        wrapMode: Text.Wrap
     }
 
     SettingRow {
         title: "Visualizer speed"
-        description: "Frames per second, for the visualizer and the Visualizer widget. 60 looks smoothest but costs about twice as much CPU as 30."
+        description: "Frames per second of the Visualizer widget. While it moves it costs CPU: here about 6–7 % of one core at 30 fps, 13–15 % at 60 (plus ~2.5 % for cava); nothing while paused or covered by windows."
         Segmented {
             options: [{ label: "20", value: 20 }, { label: "30", value: 30 }, { label: "60", value: 60 }]
             current: [20, 60].indexOf(Config.widgets.visualizerFps) !== -1 ? Config.widgets.visualizerFps : 30

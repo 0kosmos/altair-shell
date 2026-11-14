@@ -43,7 +43,9 @@ frosted glass, smooth motion and close to zero CPU when idle.
   Peaks, Circle; needs `cava`), **equalizer** (16 presets + 6 bands you can
   drag, for the music player only, live; built on PipeWire's own filter, no
   extra daemon) and system (Bars,
-  Rings, Compact: CPU, memory, optional GPU temperature). Animated widgets
+  Rings, Compact: CPU, memory, optional GPU temperature). Drop a Visualizer
+  or Equalizer right under a Music widget and it attaches like a magnet:
+  one card that moves together (drag it away to detach). Animated widgets
   pause while windows cover the desktop.
   Edit mode dims the screen and shows a dock to add widgets; drag to move
   (with the same smooth snapping, also to other widgets), drag the corner to

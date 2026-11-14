@@ -9,8 +9,11 @@ import qs.core
 // Desktop widgets: the placed items (stored in config.json, widgets.items),
 // the available types, and edit mode. Drawn by widgets/WidgetLayer.qml.
 //
-// An item: { id, type, monitor, x, y, scale, opacity, style }
-//   style    one of the type's `styles` ids (missing = the first)
+// An item: { id, type, monitor, x, y, scale, opacity, style, attachedTo }
+//   style       one of the type's `styles` ids (missing = the first)
+//   attachedTo  id of the widget it hangs under (Visualizer/Equalizer under
+//               Music, see widgets/WidgetFrame.qml); its x/y/scale then only
+//               matter once it is detached
 //   x, y     position relative to the monitor's top-left (logical px)
 //   scale    0.5 – 2.5 (size = the type's base size × scale)
 //   opacity  0.2 – 1
@@ -25,6 +28,8 @@ Singleton {
     onEditingChanged: selected = ""
     // In edit mode: the widget whose toolbar is shown (last clicked or added).
     property string selected: ""
+    // While dragging: the widget it would attach to on drop (it glows).
+    property string attachHint: ""
 
     // Widget types. Add one: an entry here + a <Name>Widget.qml in widgets/
     // + a case in widgets/WidgetFrame.qml.
@@ -99,16 +104,37 @@ Singleton {
 
     // Base size of an item ({ w, h }): its style's size if it has one, else
     // the type's. Music in Card/Disc style grows by the visualizer.
-    readonly property int visualizerHeight: 44
     function sizeOf(item: var): var {
         const t = typeType(item?.type ?? "");
         if (!t)
             return { w: 100, h: 100 };
         const st = (t.styles ?? []).find(s => s.id === styleOf(item));
-        let w = st?.w ?? t.w, h = st?.h ?? t.h;
-        if (t.type === "music" && Config.widgets.visualizer !== "off" && (st?.id === "card" || st?.id === "disc"))
-            h += visualizerHeight;
-        return { w, h };
+        return { w: st?.w ?? t.w, h: st?.h ?? t.h };
+    }
+
+    // The music widget used to have a built-in visualizer (Settings >
+    // Widgets). It is now a separate widget that attaches under it: turn the
+    // old setting into one attached Visualizer per music widget, once.
+    Connections {
+        target: Config
+        function onReadyChanged() { Qt.callLater(root.migrateVisualizer); }
+    }
+    Component.onCompleted: if (Config.ready) Qt.callLater(migrateVisualizer)
+    function migrateVisualizer(): void {
+        const old = Config.widgets.visualizer;
+        if (!old || old === "off")
+            return;
+        const style = ["bars", "mirror", "wave"].indexOf(old) !== -1 ? old : "bars";
+        let list = items.slice();
+        for (const m of items.filter(i => i.type === "music")) {
+            if (list.some(i => i.attachedTo === m.id) || list.filter(i => i.type === "visualizer").length >= maxPerType)
+                continue;
+            list.push({ id: Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36) + m.id.slice(-3),
+                        type: "visualizer", monitor: m.monitor, x: m.x, y: m.y, scale: 1, opacity: m.opacity ?? 1,
+                        style, attachedTo: m.id });
+        }
+        save(list);
+        Config.widgets.visualizer = "off";
     }
 
     // Next style for this widget (the toolbar's style button).
