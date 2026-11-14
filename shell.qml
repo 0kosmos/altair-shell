@@ -13,6 +13,7 @@ import qs.services
 import qs.settings
 import qs.theme
 import qs.wallpaper
+import qs.widgets
 
 ShellRoot {
     Ipc {}
@@ -24,6 +25,7 @@ ShellRoot {
     CalendarPopup {}
     AltTab {}
     DragOverlay {}
+    WidgetLayer {}
     SettingsWindow {}
     WallpaperStrip {}
     WallpaperGrid {}

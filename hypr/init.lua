@@ -26,6 +26,7 @@
 --   workspace_next_key = next workspace by number (default: MOD + CTRL + right)
 --   last_workspace_key = back to the last-used workspace (default: MOD + Tab)
 --   alttab    = Alt+Tab window switcher (default: true)
+--   widgets_key = desktop widgets' edit mode (default: MOD + D)
 --   (any key option: false = no bind)
 --
 -- The escape hatches below are plain Hyprland binds, so they work even when the
@@ -114,6 +115,9 @@ function M.setup(opts)
     end
     if opts.wallpaper_key ~= false then
         hl.bind(opts.wallpaper_key or (mod .. " + W"), hl.dsp.exec_cmd(ipc .. "wallpaper"))
+    end
+    if opts.widgets_key ~= false then
+        hl.bind(opts.widgets_key or (mod .. " + D"), hl.dsp.exec_cmd("qs -c altair ipc call widgets toggleEdit"))
     end
     if opts.settings_key ~= false then
         hl.bind(opts.settings_key or (mod .. " + comma"), hl.dsp.exec_cmd(ipc .. "settings"))

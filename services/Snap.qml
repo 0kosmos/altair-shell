@@ -47,6 +47,7 @@ Singleton {
     property var monitor: null                 // { x, y, w, h }
     property var usable: null                  // monitor minus reserved space (the bar)
     property real radius: 18                   // corner radius of the dragged thing
+    property bool dim: true                    // DragOverlay dims the screen (off in widget edit mode, which dims already)
 
     property var raw: null                     // where the pointer puts it
     property var lineX: null                   // current snap { line, off } per axis, or null
@@ -92,7 +93,10 @@ Singleton {
         };
     }
 
-    function begin(mon: var, radius: real, start: var): void {
+    // opts (optional): { targets: [{ x, y, w, h }] to align with, dim: false }
+    function begin(mon: var, radius: real, start: var, opts: var): void {
+        targets = opts?.targets ?? [];
+        dim = opts?.dim ?? true;
         screenName = mon.name;
         monitor = { x: mon.x, y: mon.y, w: mon.w, h: mon.h };
         usable = mon.usable;

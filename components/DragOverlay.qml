@@ -50,10 +50,11 @@ Scope {
                 // Dim with a rounded hole: a rectangle around the dragged thing
                 // whose (huge) border is the dim. Qt draws the inner edge with
                 // radius - border.width, i.e. exactly the thing's own radius.
+                // (Not when the dragger already dims, e.g. widget edit mode.)
                 Rectangle {
                     readonly property real b: Math.max(win.width, win.height) * 2
                     readonly property var r: Snap.rect
-                    visible: r !== null
+                    visible: r !== null && Snap.dim
                     x: (r?.x ?? 0) - win.ox - b
                     y: (r?.y ?? 0) - win.oy - b
                     width: (r?.w ?? 0) + b * 2

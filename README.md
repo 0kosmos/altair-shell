@@ -35,6 +35,12 @@ frosted glass, smooth motion and close to zero CPU when idle.
 - **Alt+Tab** window switcher: most recently used first, still previews (or
   app icons), switches workspace when needed. A quick tap jumps straight to
   the previous window without showing anything.
+- **Desktop widgets** (`SUPER + D` to edit): a clock and a round clock on
+  the desktop (above the wallpaper, below windows), frosted like the panels.
+  Edit mode dims the screen and shows a dock to add widgets; drag to move
+  (with the same smooth snapping, also to other widgets), drag the corner to
+  resize, click a widget for its opacity slider and remove button. Several
+  copies allowed; the layout is saved in `config.json`.
 - **Wallpapers** (`SUPER + W`), drawn by Altair itself (no wallpaper daemon):
   - pictures (JPG, PNG, WebP, AVIF, JXL) and **live wallpapers** (MP4, WebM, MKV);
   - a carousel picker at the bottom, centre or top (hover or arrow keys to
@@ -151,7 +157,7 @@ and add `require("altair").setup({ terminal = "your-terminal" })` to the end of
 | `nvidia_egl_only` | `false` | on **NVIDIA-only** desktops: load only NVIDIA's EGL driver (saves ~100 MB). Don't use on laptops where an Intel/AMD GPU drives the screen. |
 | `icon_theme` | your GTK icon theme | icon theme for apps and tray |
 | `alttab` | `true` | the Alt+Tab switcher (`false` = leave ALT+Tab alone) |
-| `launcher_key`, `notifications_key`, `wallpaper_key`, `settings_key`, `workspace_prev_key`, `workspace_next_key`, `last_workspace_key` | see below | other keys (e.g. `"SUPER + CTRL + H"`), or `false` for none |
+| `launcher_key`, `notifications_key`, `wallpaper_key`, `settings_key`, `workspace_prev_key`, `workspace_next_key`, `last_workspace_key`, `widgets_key` | see below | other keys (e.g. `"SUPER + CTRL + H"`), or `false` for none |
 
 ## Keys
 
@@ -162,6 +168,7 @@ and add `require("altair").setup({ terminal = "your-terminal" })` to the end of
 | `SUPER + N` | notification centre |
 | `SUPER + ,` | settings |
 | `ALT + Tab` / `ALT + SHIFT + Tab` | window switcher (release ALT to switch, Escape to cancel) |
+| `SUPER + D` | edit desktop widgets (Escape or Done to leave) |
 | `SUPER + CTRL + Left` / `Right` | previous / next workspace |
 | `SUPER + Tab` | back to the last-used workspace |
 | `SUPER + SHIFT + R` | restart Altair |
@@ -180,6 +187,7 @@ Altair can also be controlled from scripts or your own keybinds:
 ```sh
 qs -c altair ipc show                                # everything available
 qs -c altair ipc call panels toggle launcher         # launcher | notifications | wallpaper | calendar | settings
+qs -c altair ipc call widgets toggleEdit           # desktop widgets' edit mode
 qs -c altair ipc call wallpaper set ~/Pictures/Wallpapers/forest.jpg
 qs -c altair ipc call settings setAccent '#7aa2f7'   # or "mono"
 qs -c altair ipc call settings toggleLowPower

@@ -56,6 +56,7 @@ Scope {
                 { id: "bar", label: "Bar", icon: "toolbar", group: "Personalise" },
                 { id: "windows", label: "Windows", icon: "select_window", group: "Desktop" },
                 { id: "transparency", label: "Transparency", icon: "opacity", group: "Desktop" },
+                { id: "widgets", label: "Widgets", icon: "widgets", group: "Desktop" },
                 { id: "effects", label: "Effects", icon: "auto_awesome", group: "Desktop" },
                 { id: "notifications", label: "Notifications", icon: "notifications", group: "System" },
                 { id: "performance", label: "Performance", icon: "speed", group: "System" },
@@ -500,6 +501,7 @@ Scope {
                 case "bar": return "BarPage.qml";
                 case "windows": return "WindowsPage.qml";
                 case "transparency": return "TransparencyPage.qml";
+                case "widgets": return "WidgetsPage.qml";
                 case "effects": return "EffectsPage.qml";
                 case "notifications": return "NotificationsPage.qml";
                 case "performance": return "PerformancePage.qml";

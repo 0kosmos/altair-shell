@@ -108,4 +108,20 @@ Scope {
             Config.appearance.barPosition = position === "bottom" ? "bottom" : "top";
         }
     }
+
+    IpcHandler {
+        target: "widgets"
+
+        // Desktop widgets' edit mode (SUPER + D).
+        function toggleEdit(): bool {
+            Widgets.editing = !Widgets.editing;
+            return Widgets.editing;
+        }
+        function edit(on: bool): void {
+            Widgets.editing = on;
+        }
+        function count(): int {
+            return Widgets.items.length;
+        }
+    }
 }

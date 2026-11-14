@@ -36,6 +36,7 @@ Singleton {
     readonly property alias transparency: adapter.transparency
     readonly property alias bar: adapter.bar
     readonly property alias alttab: adapter.alttab
+    readonly property alias widgets: adapter.widgets
 
     function reload(): void {
         file.reload();
@@ -193,6 +194,12 @@ Singleton {
                 //     inactiveOpacity, blur (blur behind), enabled }
                 // They replace the default above for matching windows.
                 property var rules: []
+            }
+
+            property JsonObject widgets: JsonObject {
+                // Placed desktop widgets (see services/Widgets.qml):
+                //   { id, type, monitor, x, y, scale, opacity }
+                property var items: []
             }
 
             property JsonObject alttab: JsonObject {

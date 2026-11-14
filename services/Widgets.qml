@@ -1,0 +1,80 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma Singleton
+
+import QtQuick
+import Quickshell
+import Quickshell.Hyprland
+import qs.core
+
+// Desktop widgets: the placed items (stored in config.json, widgets.items),
+// the available types, and edit mode. Drawn by widgets/WidgetLayer.qml.
+//
+// An item: { id, type, monitor, x, y, scale, opacity }
+//   x, y     position relative to the monitor's top-left (logical px)
+//   scale    0.5 – 2.5 (size = the type's base size × scale)
+//   opacity  0.2 – 1
+Singleton {
+    id: root
+
+    // Edit mode (runtime only): widgets above the windows, with handles.
+    property bool editing: false
+    onEditingChanged: selected = ""
+    // In edit mode: the widget whose toolbar is shown (last clicked or added).
+    property string selected: ""
+
+    // Widget types. Add one: an entry here + a <Name>Widget.qml in widgets/
+    // + a case in widgets/WidgetFrame.qml.
+    readonly property var types: [
+        { type: "clock", name: "Clock", icon: "schedule", w: 320, h: 150 },
+        { type: "roundclock", name: "Round clock", icon: "nest_clock_farsight_analog", w: 220, h: 220 },
+    ]
+
+    // (JsonAdapter hands a `var` list over as a Qt list, not a JS array.)
+    readonly property var items: {
+        const l = Config.ready ? Config.widgets.items : null;
+        return l && typeof l === "object" && l.length !== undefined
+            ? Array.from(l).filter(i => i && i.id && typeType(i.type)) : [];
+    }
+
+    function typeType(type: string): var {
+        return types.find(t => t.type === type) ?? null;
+    }
+
+    function itemsOn(monitor: string): var {
+        return items.filter(i => i.monitor === monitor);
+    }
+
+    function byId(id: string): var {
+        return items.find(i => i.id === id) ?? null;
+    }
+
+    // New widget of `type`, centred in `area` ({ x, y, w, h } relative to
+    // the monitor) on monitor `monitor`.
+    function add(type: string, monitor: string, area: var): void {
+        const t = typeType(type);
+        if (!t)
+            return;
+        const item = {
+            id: Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36),
+            type, monitor,
+            x: Math.round(area.x + (area.w - t.w) / 2),
+            y: Math.round(area.y + (area.h - t.h) / 2),
+            scale: 1, opacity: 1
+        };
+        save(items.concat([item]));
+        selected = item.id;
+    }
+
+    function update(id: string, changes: var): void {
+        save(items.map(i => i.id === id ? Object.assign({}, i, changes) : i));
+    }
+
+    function remove(id: string): void {
+        save(items.filter(i => i.id !== id));
+    }
+
+    // Replaced as a whole so JsonAdapter notices and saves it.
+    function save(list: var): void {
+        Config.widgets.items = list;
+    }
+}
