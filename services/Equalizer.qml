@@ -100,7 +100,9 @@ Singleton {
     // Kill an equalizer left over from an earlier shell (e.g. after SIGKILL).
     Process {
         id: cleanup
-        command: ["pkill", "-f", "-x", "pipewire -c " + root.confPath]
+        // (Matched at the end of the command line: it runs as
+        // "/usr/bin/pipewire -c <path>"; dots escaped for the regex.)
+        command: ["pkill", "-f", "pipewire -c " + root.confPath.replace(/\./g, "\\.") + "$"]
         onExited: root.update()
     }
 
