@@ -152,12 +152,12 @@ function M.setup(opts)
     end
 
     -- The Settings window is a normal toplevel window (class org.quickshell):
-    -- float it, centred, at a sensible size instead of tiling it.
-    hl.window_rule({
+    -- float it at a sensible size instead of tiling it; centred, or where the
+    -- user last dropped it (see M.place_settings).
+    local settings_rule = {
         name   = "altair-settings",
         match  = { class = "^org\\.quickshell$", title = "^Altair Settings$" },
         float  = true,
-        center = true,
         size   = { 1120, 700 },
         -- Matches the corner radius Altair draws (Theme.radius.l).
         rounding = 18,
@@ -167,7 +167,18 @@ function M.setup(opts)
         -- Never made see-through by a default window opacity (Settings >
         -- Transparency); it draws its own translucent glass.
         opacity = "1 override 1 override",
-    })
+    }
+    -- Where Settings opens: at x, y (global layout px) or, without them,
+    -- centred. Altair calls this right before opening Settings, so the window
+    -- appears at its saved spot instead of jumping there from the centre:
+    --   hyprctl eval 'require("altair").place_settings(100, 150)'
+    function M.place_settings(x, y)
+        local r = {}
+        for k, v in pairs(settings_rule) do r[k] = v end
+        if x and y then r.move = { x, y } else r.center = true end
+        hl.window_rule(r)   -- same name: replaces the rule
+    end
+    M.place_settings()
 
     -- Altair animates its own surfaces; stop Hyprland from animating them too.
     hl.layer_rule({

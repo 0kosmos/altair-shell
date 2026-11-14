@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Io
 import qs.components
 import qs.core
 import qs.services
@@ -25,7 +26,35 @@ Scope {
     // false for a moment on close, destroy the window and build a new one.
     property bool loaded: false
     readonly property bool wanted: ShellState.settingsOpen
-    onWantedChanged: if (wanted) loaded = true
+    onWantedChanged: if (wanted && !loaded) placer.open()
+
+    // Before the window exists, tell Hyprland where it goes (its saved spot on
+    // the focused monitor, kept on screen; else centred), so it appears there
+    // instead of jumping from the centre. See M.place_settings in hypr/init.lua.
+    Process {
+        id: placer
+
+        function open(): void {
+            const mon = Snap.monitorInfo(Hyprland.focusedMonitor);
+            const saved = Placement.get("settings", mon.name);
+            let args = "";
+            if (saved) {
+                const r = Snap.clampTo({ x: mon.x + saved.x, y: mon.y + saved.y, w: 1120, h: 700 }, mon);
+                args = r.x + ", " + r.y;
+            }
+            // pcall: an older hypr/init.lua without place_settings just centres.
+            command = ["hyprctl", "eval", `local ok, a = pcall(require, "altair") if ok and a.place_settings then a.place_settings(${args}) end`];
+            running = true;
+            placeFallback.restart();
+        }
+        onExited: if (settings.wanted) settings.loaded = true
+    }
+    // In case hyprctl hangs or cannot start: open anyway.
+    Timer {
+        id: placeFallback
+        interval: 400
+        onTriggered: if (settings.wanted) settings.loaded = true
+    }
     // Safety net, in case the fade-out never finishes.
     Timer {
         running: settings.loaded && !settings.wanted
@@ -140,7 +169,15 @@ Scope {
                 FocusScope {
                     anchors.fill: parent
                     focus: true
-                    Keys.onEscapePressed: ShellState.settingsOpen = false
+                    // A panel opened on top (wallpaper picker, launcher, ...) owns
+                    // the keyboard: Escape closes it first, and Settings ignores
+                    // its own keys while it is open.
+                    Keys.onEscapePressed: {
+                        if (ShellState.openPanel !== "")
+                            ShellState.close();
+                        else
+                            ShellState.settingsOpen = false;
+                    }
                     // Keyboard: Ctrl+0 resets to the default size, centred; Tab / Shift+Tab and Left/Right
                     // switch pages; Up/Down scroll, and at the end of a page (or on
                     // a page that fits) move to the next/previous page (only on a
@@ -148,6 +185,8 @@ Scope {
                     // PageUp/PageDown, Home/End scroll. Focused controls get keys
                     // first (text fields, sliders), so they keep working.
                     Keys.onPressed: event => {
+                        if (ShellState.openPanel !== "")
+                            return;
                         const page = pageLoader.item;
                         const ctrl = event.modifiers & Qt.ControlModifier;
                         if (event.key === Qt.Key_0 && ctrl)
@@ -486,7 +525,10 @@ Scope {
                     if (!saved)
                         return;
                     const r = Snap.clampTo({ x: mon.x + saved.x, y: mon.y + saved.y, w: o.size?.[0] ?? win.width, h: o.size?.[1] ?? win.height }, mon);
-                    Hypr.moveWindow(t.address, r.x, r.y);
+                    // Normally Hyprland already placed it there (placer above);
+                    // this only corrects it (e.g. with an older hypr/init.lua).
+                    if (Math.abs(o.at[0] - r.x) > 2 || Math.abs(o.at[1] - r.y) > 2)
+                        Hypr.moveWindow(t.address, r.x, r.y);
                 }
             }
 

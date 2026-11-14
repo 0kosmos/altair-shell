@@ -40,6 +40,7 @@ ShellRoot {
         void Notifs.count;
         void Hypr.blurStrength;   // apply the saved blur strength and border colours
         void WindowRules.rules;   // re-send per-app transparency rules
+        void Placement.get;       // load saved positions now (Settings opens at its spot)
     }
 
     Connections {

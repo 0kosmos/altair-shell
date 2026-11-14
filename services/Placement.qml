@@ -33,6 +33,9 @@ Singleton {
     FileView {
         path: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/altair/positions.json"
         printErrors: false
+        // Tiny file, read synchronously: positions must be known the moment
+        // something opens (e.g. Settings is placed before its window exists).
+        blockLoading: true
         onAdapterUpdated: writeAdapter()
 
         JsonAdapter {
