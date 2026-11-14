@@ -9,11 +9,13 @@ import qs.core
 // Desktop widgets: the placed items (stored in config.json, widgets.items),
 // the available types, and edit mode. Drawn by widgets/WidgetLayer.qml.
 //
-// An item: { id, type, monitor, x, y, scale, opacity, style, attachedTo }
+// An item: { id, type, monitor, x, y, scale, opacity, style, attachedTo, attachSide }
 //   style       one of the type's `styles` ids (missing = the first)
-//   attachedTo  id of the widget it hangs under (Visualizer/Equalizer under
-//               Music, see widgets/WidgetFrame.qml); its x/y/scale then only
-//               matter once it is detached
+//   attachedTo  id of the widget it hangs on (Visualizer/Equalizer on Music,
+//               see widgets/WidgetFrame.qml); its x/y/scale then only matter
+//               once it is detached
+//   attachSide  which side of that widget: "bottom" (default), "top",
+//               "left", "right"
 //   x, y     position relative to the monitor's top-left (logical px)
 //   scale    0.5 – 2.5 (size = the type's base size × scale)
 //   opacity  0.2 – 1
@@ -31,6 +33,7 @@ Singleton {
     // While dragging into a magnet slot: the widget it would attach to, and
     // the dragged one (the group is previewed as joined).
     property string attachHint: ""
+    property string attachSideHint: ""
     property string attachChild: ""
 
     // Widget types. Add one: an entry here + a <Name>Widget.qml in widgets/

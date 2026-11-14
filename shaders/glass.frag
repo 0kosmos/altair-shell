@@ -28,6 +28,8 @@ layout(std140, binding = 0) uniform buf {
     vec4 topTint;       // straight (non-premultiplied) rgba
     vec4 bottomTint;
     vec4 rimColor;      // straight rgb; alpha unused
+    vec4 open;          // 1 = this side joins another surface: top, right, bottom, left
+    vec2 tintRange;     // gradient over a group: (this item's top inside the group, group height) in px; height 0 = own
 };
 
 // Signed distance to a rounded box centred at the origin (< 0 inside).
@@ -37,12 +39,21 @@ float sdRoundBox(vec2 p, vec2 halfSize, float r) {
 }
 
 void main() {
-    vec2 p = qt_TexCoord0 * size - size * 0.5;
-    float d = sdRoundBox(p, size * 0.5, radius);
+    // Open sides (joined to a neighbour, e.g. widgets in a group): the shape
+    // continues past them, so there is no edge, corner, rim or glow there.
+    vec2 px = qt_TexCoord0 * size;
+    float ext = 4.0 * radius + 64.0;
+    vec2 lo = vec2(-ext * open.w, -ext * open.x);
+    vec2 hi = size + vec2(ext * open.y, ext * open.z);
+    vec2 halfSize = (hi - lo) * 0.5;
+    vec2 p = px - (lo + hi) * 0.5;
+    float d = sdRoundBox(p, halfSize, radius);
+    // Vertical position for the tint gradient (over the whole group).
+    float ty = tintRange.y > 0.0 ? clamp((px.y + tintRange.x) / tintRange.y, 0.0, 1.0) : qt_TexCoord0.y;
     float coverage = clamp(0.5 - d, 0.0, 1.0);               // 1 px anti-aliased edge
 
     // Body tint.
-    vec4 tint = mix(topTint, bottomTint, smoothstep(0.0, 1.0, qt_TexCoord0.y));
+    vec4 tint = mix(topTint, bottomTint, smoothstep(0.0, 1.0, ty));
     vec3 rgb = tint.rgb * tint.a;                             // premultiply
     float a = tint.a;
 
@@ -51,7 +62,7 @@ void main() {
 
     // Light: inner glow (white) + specular rim (rimColor), added over the tint.
     float glow = pow(1.0 - inner, 3.0) * 0.08;
-    vec2 n = normalize(p / (size * 0.5) + vec2(1e-4));
+    vec2 n = normalize(p / halfSize + vec2(1e-4));
     float facing = clamp(dot(n, normalize(vec2(-0.35, -1.0))), 0.0, 1.0);
     float band = clamp(1.0 - abs(d + 1.0), 0.0, 1.0);        // ~2 px line, 1 px inside
     float rim = band * (0.08 + 0.55 * facing) * rimStrength;
@@ -61,7 +72,7 @@ void main() {
     a = a + light * (1.0 - a);
 
     // Depth: darken toward the bottom inner edge.
-    float shade = (1.0 - inner) * smoothstep(0.55, 1.0, qt_TexCoord0.y) * 0.10;
+    float shade = (1.0 - inner) * smoothstep(0.55, 1.0, ty) * 0.10;
     rgb *= (1.0 - shade);
     a = a + shade * (1.0 - a);
 

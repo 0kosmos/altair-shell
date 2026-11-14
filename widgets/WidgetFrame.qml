@@ -12,11 +12,15 @@ import qs.theme
 // other widgets, services/Snap.qml), drag the corner to resize, a small
 // toolbar with an opacity slider and a remove button.
 //
-// Magnetic groups: a Visualizer or Equalizer dropped right under a Music
-// widget (or under one already attached to it) attaches: it then sits flush
-// below it, takes its width, moves with it, and the group shares one glass
-// background (drawn by the top widget). Dragging an attached widget detaches
-// it (with whatever hangs below it).
+// Magnetic groups: a Visualizer or Equalizer dropped next to a Music widget
+// attaches to it: on its top or bottom, and with the wide music styles (Card,
+// Disc) also on its left or right. Widgets attached at the
+// top/bottom take the Music widget's width, at the left/right its height; an
+// attached widget can take another one further out on the same side. The
+// group moves as one and looks like one surface (touching sides are square
+// and edgeless, and the liquid-glass tint runs over the whole group). While
+// dragging near a slot, the result is previewed at once. Dragging an attached
+// widget detaches it (with whatever hangs further out).
 Item {
     id: frame
 
@@ -32,67 +36,147 @@ Item {
     // ---- Magnetic groups ------------------------------------------------------------
     readonly property bool canAttach: item?.type === "visualizer" || item?.type === "eq"
     readonly property var parentFrame: item?.attachedTo ? siblings.find(f => f && f.itemId === item.attachedTo) ?? null : null
-    readonly property var childFrame: siblings.find(f => f && f !== frame && f.item?.attachedTo === itemId) ?? null
+    // The side of its parent this widget hangs on.
+    readonly property string side: ["top", "left", "right"].indexOf(item?.attachSide) !== -1 ? item.attachSide : "bottom"
     readonly property bool attached: parentFrame !== null && !owning
-    // While dragged into a magnet slot: shown as if attached (live preview).
+    // While dragged into a magnet slot: shown as if attached there.
     property var previewParent: null
-    readonly property bool joined: attached || (owning && previewParent !== null)
-    // The frame being dragged into this one's slot, if any.
-    readonly property var previewChild: Widgets.attachHint === itemId
-        ? siblings.find(f => f && f.itemId === Widgets.attachChild) ?? null : null
-    readonly property var belowFrame: previewChild ?? (childFrame !== null && childFrame.attached ? childFrame : null)
-    readonly property bool hasChild: belowFrame !== null
-    // Height of this widget plus everything attached below it.
-    readonly property real groupHeight: height + (hasChild ? belowFrame.groupHeight : 0)
-    // A dragged widget is pulled into a group's slot within this distance of
-    // its bottom edge, and only lets go beyond `magnetRelease`.
+    property string previewSide: "bottom"
+    readonly property bool previewing: owning && previewParent !== null
+    // The side of the parent it is joined to ("" = not joined).
+    readonly property string joinSide: attached ? side : previewing ? previewSide : ""
+    readonly property var joinParent: attached ? parentFrame : previewing ? previewParent : null
+
+    // What is joined to this frame on a side (attached, or being previewed).
+    function childOn(sd: string): var {
+        if (Widgets.attachHint === itemId && Widgets.attachSideHint === sd)
+            return siblings.find(f => f && f.itemId === Widgets.attachChild) ?? null;
+        return siblings.find(f => f && f !== frame && f.attached && f.item?.attachedTo === itemId && f.side === sd) ?? null;
+    }
+    readonly property var childTop: childOn("top")
+    readonly property var childBottom: childOn("bottom")
+    readonly property var childLeft: childOn("left")
+    readonly property var childRight: childOn("right")
+
+    // Sides touching another widget of the group.
+    readonly property bool joinedTop: joinSide === "bottom" || childTop !== null
+    readonly property bool joinedBottom: joinSide === "top" || childBottom !== null
+    readonly property bool joinedLeft: joinSide === "right" || childLeft !== null
+    readonly property bool joinedRight: joinSide === "left" || childRight !== null
+
+    // Bounding box of this frame and everything joined further out.
+    readonly property rect groupBox: {
+        let x0 = x, y0 = y, x1 = x + width, y1 = y + height;
+        for (const c of [childTop, childBottom, childLeft, childRight]) {
+            if (!c)
+                continue;
+            const b = c.groupBox;
+            x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y);
+            x1 = Math.max(x1, b.x + b.width); y1 = Math.max(y1, b.y + b.height);
+        }
+        return Qt.rect(x0, y0, x1 - x0, y1 - y0);
+    }
+    readonly property var groupRoot: joinParent ? joinParent.groupRoot : frame
+
+    // A dragged widget is pulled into a slot within this distance, and only
+    // lets go beyond `magnetRelease`.
     readonly property int magnet: 28
     readonly property int magnetRelease: 48
 
-    // The frames hanging below this one (not valid attach targets for it).
+    // This frame and everything attached further out (not valid targets).
     function subtree(): var {
-        const l = [frame];
-        let c = childFrame;
-        while (c && l.indexOf(c) === -1) {
-            l.push(c);
-            c = c.childFrame;
-        }
+        const l = [];
+        const add = f => {
+            if (!f || l.indexOf(f) !== -1)
+                return;
+            l.push(f);
+            for (const c of [f.childTop, f.childBottom, f.childLeft, f.childRight])
+                if (c && c.joinParent === f && c !== frame)
+                    add(c);
+        };
+        add(frame);
         return l;
     }
 
-    // Detach from the widget above, staying where it is (moved a little
-    // down so it visibly comes loose).
+    // Detach, staying put (nudged away from the group so it visibly comes loose).
     function detach(): void {
-        Widgets.update(itemId, { attachedTo: "", x: x, y: Math.min(mon.h - groupHeight, y + 16), scale: Math.round(s * 100) / 100 });
+        const d = 16;
+        Widgets.update(itemId, {
+            attachedTo: "", attachSide: "bottom", scale: Math.round(s * 100) / 100,
+            x: Math.max(0, Math.min(mon.w - width, x + (side === "left" ? -d : side === "right" ? d : 0))),
+            y: Math.max(0, Math.min(mon.h - height, y + (side === "top" ? -d : side === "bottom" ? d : 0)))
+        });
     }
 
-    // Remove: whatever hangs below moves up to the widget above (or, without
-    // one, stays where this widget was).
+    // Remove: what hangs further out on the same side moves in to the widget
+    // this one hangs on; anything else stays where it is, detached.
     function removeSelf(): void {
-        if (hasChild)
-            Widgets.update(childFrame.itemId, { attachedTo: item?.attachedTo ?? "", x: x, y: y, scale: Math.round(childFrame.s * 100) / 100 });
+        for (const c of [childTop, childBottom, childLeft, childRight]) {
+            if (!c || !c.attached)
+                continue;
+            const passOn = attached && c.side === side;
+            Widgets.update(c.itemId, passOn ? { attachedTo: item.attachedTo, attachSide: side }
+                : { attachedTo: "", attachSide: "bottom", x: c.x, y: c.y, scale: Math.round(c.s * 100) / 100 });
+        }
         Widgets.remove(itemId);
     }
 
-    // Where `r` ({ x, y, w } relative to the monitor) would attach: a frame
-    // in a music group with nothing below it yet, whose bottom edge is close
-    // to r's top edge and which overlaps it sideways. Else null.
-    // `keep`: the current target, held until `magnetRelease` (hysteresis).
+    // Free slots: a Music widget has all four sides; an attached widget only
+    // its own side, further out.
+    function slotsOf(f: var): var {
+        if (f.item?.type === "music" && !f.attached) {
+            // Sides only for the wide styles: next to a tall one (Cover) an
+            // attached widget would get as tall and become huge.
+            const wide = ["card", "disc"].indexOf(Widgets.styleOf(f.item)) !== -1;
+            return wide ? ["top", "bottom", "left", "right"] : ["top", "bottom"];
+        }
+        return f.attached ? [f.side] : [];
+    }
+
+    // Where `r` ({ x, y, w, h } relative to the monitor) would attach:
+    // { frame, side } for the nearest free slot within `magnet` px (the
+    // facing edges close, overlapping sideways), else null. `keep` (the
+    // current one) is held until `magnetRelease`.
     function attachTarget(r: var, keep: var): var {
         if (!canAttach)
             return null;
         const mine = subtree();
-        const fits = (f, dist) => {
-            if (!f || mine.indexOf(f) !== -1 || (f.hasChild && f.previewChild !== frame))
-                return false;
-            if (f.item?.type !== "music" && !f.attached)
-                return false;
-            const overlap = Math.min(r.x + r.w, f.x + f.width) - Math.max(r.x, f.x);
-            return Math.abs(r.y - (f.y + f.height)) <= dist && overlap > Math.min(r.w, f.width) * 0.3;
+        const gap = (f, sd) => {
+            const ox = Math.min(r.x + r.w, f.x + f.width) - Math.max(r.x, f.x);
+            const oy = Math.min(r.y + r.h, f.y + f.height) - Math.max(r.y, f.y);
+            switch (sd) {
+            case "bottom": return ox > Math.min(r.w, f.width) * 0.3 ? Math.abs(r.y - (f.y + f.height)) : 1e9;
+            case "top": return ox > Math.min(r.w, f.width) * 0.3 ? Math.abs(r.y + r.h - f.y) : 1e9;
+            case "right": return oy > Math.min(r.h, f.height) * 0.3 ? Math.abs(r.x - (f.x + f.width)) : 1e9;
+            default: return oy > Math.min(r.h, f.height) * 0.3 ? Math.abs(r.x + r.w - f.x) : 1e9;
+            }
         };
-        if (keep && fits(keep, magnetRelease))
+        const free = (f, sd) => {
+            const c = f.childOn(sd);
+            return !c || c === frame;
+        };
+        if (keep && mine.indexOf(keep.frame) === -1 && free(keep.frame, keep.side) && gap(keep.frame, keep.side) <= magnetRelease)
             return keep;
-        return siblings.find(f => fits(f, magnet)) ?? null;
+        let best = null;
+        for (const f of siblings) {
+            if (!f || mine.indexOf(f) !== -1 || !f.visible)
+                continue;
+            for (const sd of slotsOf(f)) {
+                const d = gap(f, sd);
+                if (d <= magnet && free(f, sd) && (!best || d < best.d))
+                    best = { frame: f, side: sd, d };
+            }
+        }
+        return best ? { frame: best.frame, side: best.side } : null;
+    }
+
+    // Scale and position in the slot `sd` of frame `f`.
+    function scaleIn(f: var, sd: string): real {
+        return sd === "left" || sd === "right" ? f.height / Math.max(1, base.h) : f.width / Math.max(1, base.w);
+    }
+    function slotPos(f: var, sd: string, w: real, h: real): point {
+        return Qt.point(sd === "left" ? f.x - w : sd === "right" ? f.x + f.width : f.x,
+                        sd === "top" ? f.y - h : sd === "bottom" ? f.y + f.height : f.y);
     }
 
     readonly property var item: Widgets.byId(itemId)
@@ -102,10 +186,9 @@ Item {
     // ---- Geometry ---------------------------------------------------------------
     // While resizing, `liveScale` is shown and only saved on release.
     property real liveScale: -1
-    // Attached: as wide as the widget above.
-    // Previewing an attach: grows/shrinks smoothly to the group's width.
-    readonly property real targetScale: attached ? parentFrame.width / Math.max(1, base.w)
-        : previewParent && owning ? previewParent.width / Math.max(1, base.w)
+    // Joined (or previewing): as wide/tall as the widget it hangs on; the
+    // preview grows/shrinks to that smoothly.
+    readonly property real targetScale: joinParent ? scaleIn(joinParent, joinSide)
         : liveScale > 0 ? liveScale : Math.max(0.5, Math.min(2.5, item?.scale ?? 1))
     property bool animateScale: false
     property real s: targetScale
@@ -122,17 +205,16 @@ Item {
     // settling after release); otherwise its saved spot, kept on screen.
     property bool owning: false
     x: owning && Snap.rect ? Snap.rect.x - mon.x
-        : attached ? parentFrame.x
+        : attached ? slotPos(parentFrame, side, width, height).x
         : Math.max(0, Math.min(mon.w - width, item?.x ?? 0))
     y: owning && Snap.rect ? Snap.rect.y - mon.y
-        : attached ? parentFrame.y + parentFrame.height
-        : Math.max(0, Math.min(mon.h - groupHeight, item?.y ?? 0))
+        : attached ? slotPos(parentFrame, side, width, height).y
+        : Math.max(0, Math.min(mon.h - height, item?.y ?? 0))
 
 
     readonly property real radius: Theme.radius.l * s
-    // Attached widgets above the group background drawn by the top one; the
-    // selected widget (and its toolbar) above everything.
-    z: Widgets.selected === itemId ? 3 : attached ? 1 : 0
+    // The selected widget (and its toolbar) above the others.
+    z: Widgets.selected === itemId ? 3 : 0
 
     // A widget may ask to be hidden outside edit mode (music, when idle).
     visible: editing || !(content.item?.hidden ?? false)
@@ -145,10 +227,10 @@ Item {
         y: frame.y
         width: frame.visible ? frame.width : 0
         height: frame.visible ? frame.height : 0
-        topLeftRadius: frame.joined ? 0 : frame.radius
-        topRightRadius: frame.joined ? 0 : frame.radius
-        bottomLeftRadius: frame.hasChild ? 0 : frame.radius
-        bottomRightRadius: frame.hasChild ? 0 : frame.radius
+        topLeftRadius: frame.joinedTop || frame.joinedLeft ? 0 : frame.radius
+        topRightRadius: frame.joinedTop || frame.joinedRight ? 0 : frame.radius
+        bottomLeftRadius: frame.joinedBottom || frame.joinedLeft ? 0 : frame.radius
+        bottomRightRadius: frame.joinedBottom || frame.joinedRight ? 0 : frame.radius
     }
 
     // ---- Look -------------------------------------------------------------------
@@ -158,22 +240,26 @@ Item {
         NumberAnimation { duration: Theme.anim.fast }
     }
 
-    // The group's background: the top widget draws it for the whole group.
+    // Each widget draws its own glass; in a group the touching sides are
+    // open (square, edgeless) and the tint runs over the whole group.
     GlassBackground {
-        visible: !frame.joined
-        width: parent.width
-        height: frame.groupHeight
+        anchors.fill: parent
         radius: frame.radius
+        openTop: frame.joinedTop
+        openBottom: frame.joinedBottom
+        openLeft: frame.joinedLeft
+        openRight: frame.joinedRight
+        tintOffset: frame.joinParent || frame.childTop || frame.childBottom ? frame.y - frame.groupRoot.groupBox.y : 0
+        tintSpan: frame.joinParent || frame.childTop || frame.childBottom ? frame.groupRoot.groupBox.height : 0
     }
-    // Attached: a hairline between it and the widget above.
+    // A hairline on the side joined to the widget it hangs on.
     Rectangle {
-        visible: frame.joined
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.leftMargin: 14 * frame.s
-        anchors.rightMargin: 14 * frame.s
-        height: 1
+        visible: frame.joinSide !== ""
+        readonly property bool horizontal: frame.joinSide === "top" || frame.joinSide === "bottom"
+        x: horizontal ? 14 * frame.s : frame.joinSide === "right" ? 0 : frame.width - 1
+        y: !horizontal ? 14 * frame.s : frame.joinSide === "bottom" ? 0 : frame.height - 1
+        width: horizontal ? frame.width - 28 * frame.s : 1
+        height: horizontal ? 1 : frame.height - 28 * frame.s
         color: Theme.border
     }
 
@@ -248,30 +334,49 @@ Item {
                 if (Math.hypot(p.x - pressAt.x, p.y - pressAt.y) < 4)
                     return;
                 start = { x: frame.mon.x + frame.x, y: frame.mon.y + frame.y };
-                // Dragging an attached widget detaches it (keeping its size).
-                if (frame.attached)
-                    Widgets.update(frame.itemId, { attachedTo: "", x: frame.x, y: frame.y, scale: Math.round(frame.s * 100) / 100 });
+                // Dragging an attached widget detaches it (keeping its size);
+                // it starts out previewed in its old slot, so it only comes
+                // loose once pulled away.
+                if (frame.attached) {
+                    frame.previewParent = frame.parentFrame;
+                    frame.previewSide = frame.side;
+                    Widgets.attachHint = frame.parentFrame.itemId;
+                    Widgets.attachSideHint = frame.side;
+                    Widgets.attachChild = frame.itemId;
+                    Widgets.update(frame.itemId, { attachedTo: "", attachSide: "bottom", x: frame.x, y: frame.y, scale: Math.round(frame.s * 100) / 100 });
+                }
                 const mine = frame.subtree();
                 const others = frame.siblings.filter(f => f && mine.indexOf(f) === -1 && f.visible)
                     .map(f => ({ x: frame.mon.x + f.x, y: frame.mon.y + f.y, w: f.width, h: f.height }));
-                // The whole group moves (and is kept on screen) as one.
-                Snap.begin(frame.mon, frame.radius, { x: start.x, y: start.y, w: frame.width, h: frame.groupHeight },
+                Snap.begin(frame.mon, frame.radius, { x: start.x, y: start.y, w: frame.width, h: frame.height },
                            { targets: others, dim: false });
                 frame.owning = true;
             }
             const free = (mouse.modifiers & Qt.ShiftModifier) !== 0;
-            const raw = { x: start.x + p.x - pressAt.x, y: start.y + p.y - pressAt.y, w: frame.width, h: frame.groupHeight };
-            // Magnet: near a group's bottom, preview the attached result at
-            // once (pulled into the slot, at the group's width).
-            const t = free ? null : frame.attachTarget({ x: raw.x - frame.mon.x, y: raw.y - frame.mon.y, w: frame.width }, frame.previewParent);
-            if (t !== frame.previewParent) {
+            // Pointer position at the widget's own (not previewed) size.
+            const own = frame.item?.scale ?? frame.s;
+            const rw = frame.base.w * own, rh = frame.base.h * own;
+            const raw = { x: start.x + p.x - pressAt.x, y: start.y + p.y - pressAt.y, w: frame.width, h: frame.height };
+            // Magnet: near a free slot, preview the attached result at once
+            // (pulled into the slot, at the group's width or height).
+            const keep = frame.previewParent ? { frame: frame.previewParent, side: frame.previewSide } : null;
+            const t = free ? null : frame.attachTarget({ x: raw.x - frame.mon.x, y: raw.y - frame.mon.y, w: rw, h: rh }, keep);
+            if ((t?.frame ?? null) !== frame.previewParent || (t && t.side !== frame.previewSide)) {
                 frame.animateScale = true;
-                frame.previewParent = t;
+                frame.previewParent = t ? t.frame : null;
+                frame.previewSide = t ? t.side : "bottom";
                 Widgets.attachChild = t ? frame.itemId : "";
-                Widgets.attachHint = t ? t.itemId : "";
+                Widgets.attachHint = t ? t.frame.itemId : "";
+                Widgets.attachSideHint = t ? t.side : "";
             }
-            Snap.pin = t ? { x: frame.mon.x + t.x, y: frame.mon.y + t.y + t.height,
-                             w: t.width, h: frame.groupHeight * t.width / Math.max(1, frame.width) } : null;
+            if (t) {
+                const sc = frame.scaleIn(t.frame, t.side);
+                const w = frame.base.w * sc, h = frame.base.h * sc;
+                const at = frame.slotPos(t.frame, t.side, w, h);
+                Snap.pin = { x: frame.mon.x + at.x, y: frame.mon.y + at.y, w, h };
+            } else {
+                Snap.pin = null;
+            }
             Snap.update(raw, free);
         }
         onReleased: if (start) Snap.end()
@@ -284,9 +389,10 @@ Item {
         function onSettled(rect) {
             const t = frame.previewParent;
             const r = { x: rect.x - frame.mon.x, y: rect.y - frame.mon.y };
-            Widgets.update(frame.itemId, t ? { x: r.x, y: r.y, attachedTo: t.itemId } : { x: r.x, y: r.y });
+            Widgets.update(frame.itemId, t ? { x: r.x, y: r.y, attachedTo: t.itemId, attachSide: frame.previewSide } : { x: r.x, y: r.y });
             frame.previewParent = null;
             Widgets.attachHint = "";
+            Widgets.attachSideHint = "";
             Widgets.attachChild = "";
             frame.owning = false;
             frame.animateScale = false;
@@ -294,7 +400,7 @@ Item {
     }
 
     // Resize: drag the bottom-right corner (keeps the proportions). Attached
-    // widgets take the width of the one above instead.
+    // widgets take their size from the widget they hang on instead.
     Item {
         visible: frame.editing && !frame.attached
         width: 34

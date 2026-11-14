@@ -21,6 +21,17 @@ Item {
     // corners the compositor cuts with a larger radius (Settings window):
     // there the rim is clipped at the corners and reads as a stray line.
     property real rim: 1
+    // Sides joined to a neighbour (widget groups): square corners and no
+    // edge there, so the surfaces read as one.
+    property bool openTop: false
+    property bool openRight: false
+    property bool openBottom: false
+    property bool openLeft: false
+    readonly property bool anyOpen: openTop || openRight || openBottom || openLeft
+    // Liquid glass tint over a whole group: this item's top inside the group
+    // and the group's height (0 = just this item).
+    property real tintOffset: 0
+    property real tintSpan: 0
 
     function solid(v: vector4d): vector4d {
         return Qt.vector4d(v.x, v.y, v.z, v.w + (1 - v.w) * solidity);
@@ -30,8 +41,13 @@ Item {
         anchors.fill: parent
         visible: !Theme.liquidGlass
         radius: root.radius
+        topLeftRadius: root.openTop || root.openLeft ? 0 : root.radius
+        topRightRadius: root.openTop || root.openRight ? 0 : root.radius
+        bottomLeftRadius: root.openBottom || root.openLeft ? 0 : root.radius
+        bottomRightRadius: root.openBottom || root.openRight ? 0 : root.radius
         color: Qt.alpha(root.color, root.color.a + (1 - root.color.a) * root.solidity)
-        border.width: root.bordered ? 1 : 0
+        // (No border in a group: the seams would show as double lines.)
+        border.width: root.bordered && !root.anyOpen ? 1 : 0
         border.color: Theme.border
 
         Behavior on color {
@@ -50,6 +66,8 @@ Item {
             readonly property vector4d rimColor: Theme.glassRimColor
             readonly property vector4d topTint: root.solid(Theme.glassTop)
             readonly property vector4d bottomTint: root.solid(Theme.glassBottom)
+            readonly property vector4d open: Qt.vector4d(root.openTop ? 1 : 0, root.openRight ? 1 : 0, root.openBottom ? 1 : 0, root.openLeft ? 1 : 0)
+            readonly property point tintRange: Qt.point(root.tintOffset, root.tintSpan)
 
             fragmentShader: Qt.resolvedUrl("../shaders/glass.frag.qsb")
         }
