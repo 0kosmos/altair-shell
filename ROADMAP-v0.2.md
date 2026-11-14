@@ -159,7 +159,7 @@ perf.sh shows no idle cost.
 - [x] 2. Clock popup with calendar
 - [x] 3. Smooth workspace switching + Alt+Tab
 - [x] 4. Precise moving (snapping + dim)
-- [ ] 5. Desktop widgets + edit mode
+- [x] 5. Desktop widgets + edit mode
 - [ ] 6. Taskbar / dock
 - [ ] 7. UI sounds
 - [ ] Release v0.2.0 (README screenshots, changelog, tag)
@@ -178,3 +178,4 @@ perf.sh shows no idle cost.
 - F4 snapping: services/Snap.qml (begin/place/end, global layout coords; `targets` is where F5 widgets register their rects), components/DragOverlay.qml (Top layer, empty mask, dim = huge-border rounded rect so the hole matches the window radius), services/Placement.qml (positions per monitor in $XDG_STATE_HOME/altair/positions.json). Settings window drags itself: new pos = last requested + (cursor - press) in window coords, one hl.dsp.window.move per event-loop pass. Monitor geometry: HyprlandMonitor x/y/width/height/scale are always set, `reserved` only after refreshMonitors(). SUPER+drag (Hyprland's) cannot snap. Snap maths, overlay, move and restore were tested via a temporary IPC hook; the mouse drag itself needs the user (no pointer injection here).
 - Restart is now SIGKILL of exact PIDs (hypr/init.lua stop_cmd): `qs kill` + Quickshell's exit-time segfault + crash-handler relaunch once left no shell. If you see "Quickshell has crashed" on restart again, check ~/.cache/quickshell/crashes.
 - F5a widgets (5b = music + stats, not ticked yet): services/Widgets.qml (types, items in config.json widgets.items, editing, selected), widgets/WidgetLayer.qml (per monitor, Bottom layer, Top + full input in edit mode, mask/blur = union of frame Regions, ScriptModel objectProp "id"), WidgetFrame.qml (move via Snap with targets = other widgets and dim:false, corner resize -> scale, toolbar for the selected widget), EditDock.qml. Add a type: entry in Widgets.types + <Name>Widget.qml + case in WidgetFrame. Cost: anything ticking per second on the blurred widget layer is ~0.75 % CPU here (so the round-clock widget has no seconds hand); 0 widgets = no layer at all.
+- F5b: services/Media.qml (MPRIS: playing > last played > first), services/SysStats.qml (/proc every 2 s, nvidia-smi every 5 s if enabled; only while `users` > 0, paused when the focused workspace is fullscreen). MusicWidget asks for the position every 2 s only while playing (MPRIS doesn't push it). A widget can set `hidden` (music when idle) and WidgetFrame drops it from the blur/click region. Measured: clock + round clock + music (playing) + system with GPU: 0.23 % shell CPU, plus nvidia-smi ~13 ms CPU per call (~0.26 % at 5 s, so off by default).

@@ -43,9 +43,16 @@ Item {
     // The selected widget (and its toolbar) above the others.
     z: Widgets.selected === itemId ? 1 : 0
 
-    // Click/blur region of this widget (used by WidgetLayer).
+    // A widget may ask to be hidden outside edit mode (music, when idle).
+    visible: editing || !(content.item?.hidden ?? false)
+
+    // Click/blur region of this widget (used by WidgetLayer); empty while
+    // hidden, so no blur or click area is left behind.
     readonly property Region region: Region {
-        item: frame
+        x: frame.x
+        y: frame.y
+        width: frame.visible ? frame.width : 0
+        height: frame.visible ? frame.height : 0
         radius: frame.radius
     }
 
@@ -64,6 +71,7 @@ Item {
     // The widget, drawn at its base size and scaled (text stays sharp: Qt's
     // default text rendering scales without blurring).
     Loader {
+        id: content
         width: frame.type?.w ?? 0
         height: frame.type?.h ?? 0
         scale: frame.s
@@ -74,6 +82,8 @@ Item {
             switch (frame.item?.type) {
             case "clock": return "ClockWidget.qml";
             case "roundclock": return "RoundClockWidget.qml";
+            case "music": return "MusicWidget.qml";
+            case "stats": return "StatsWidget.qml";
             default: return "";
             }
         }

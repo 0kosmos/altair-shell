@@ -200,6 +200,12 @@ Singleton {
                 // Placed desktop widgets (see services/Widgets.qml):
                 //   { id, type, monitor, x, y, scale, opacity }
                 property var items: []
+                // Music widget: hide it while nothing is playing (else a
+                // compact "Nothing playing").
+                property bool musicHideIdle: false
+                // System widget: GPU temperature via nvidia-smi (every 5 s,
+                // only while the widget exists). NVIDIA only.
+                property bool gpuTemp: false
             }
 
             property JsonObject alttab: JsonObject {

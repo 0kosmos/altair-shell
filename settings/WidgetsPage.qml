@@ -24,4 +24,26 @@ Page {
             }
         }
     }
+
+    Section { text: "Music" }
+
+    SettingRow {
+        title: "Hide when nothing plays"
+        description: "Off: the widget shows a small \"Nothing playing\". Works with any player that supports MPRIS (Spotify, browsers, mpv, ...)."
+        Toggle {
+            checked: Config.widgets.musicHideIdle
+            onToggled: value => Config.widgets.musicHideIdle = value
+        }
+    }
+
+    Section { text: "System" }
+
+    SettingRow {
+        title: "GPU temperature"
+        description: "Shown in the System widget. Read with nvidia-smi every 5 s, only while the widget is on the desktop (NVIDIA cards only)."
+        Toggle {
+            checked: Config.widgets.gpuTemp
+            onToggled: value => Config.widgets.gpuTemp = value
+        }
+    }
 }

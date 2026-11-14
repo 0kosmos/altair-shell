@@ -35,9 +35,10 @@ frosted glass, smooth motion and close to zero CPU when idle.
 - **Alt+Tab** window switcher: most recently used first, still previews (or
   app icons), switches workspace when needed. A quick tap jumps straight to
   the previous window without showing anything.
-- **Desktop widgets** (`SUPER + D` to edit): a clock (4 styles) and a round
-  clock (4 styles) on the desktop (above the wallpaper, below windows),
-  frosted like the panels.
+- **Desktop widgets** (`SUPER + D` to edit): clock (4 styles), round clock
+  (4 styles), music (album art, progress, controls; any MPRIS player) and
+  system (CPU, memory, optional GPU temperature) on the desktop (above the
+  wallpaper, below windows), frosted like the panels.
   Edit mode dims the screen and shows a dock to add widgets; drag to move
   (with the same smooth snapping, also to other widgets), drag the corner to
   resize, click a widget for its style, opacity and remove buttons. Several
@@ -108,7 +109,9 @@ Installed by `install.sh` (all from the official repositories):
 | `xdg-utils` | opening folders (fallback) |
 
 Optional: `networkmanager` (network status), `upower` (battery),
-`libnotify` ("Send test" notification button).
+`libnotify` ("Send test" notification button), `nvidia-utils` (GPU
+temperature in the System widget; comes with the NVIDIA driver). The Music
+widget works with any player that supports MPRIS.
 
 ## Install
 

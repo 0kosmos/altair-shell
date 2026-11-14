@@ -30,6 +30,8 @@ Singleton {
           styles: [{ id: "classic", name: "Classic" }, { id: "light", name: "Light" }, { id: "minimal", name: "Minimal" }, { id: "date", name: "Date" }] },
         { type: "roundclock", name: "Round clock", icon: "nest_clock_farsight_analog", w: 220, h: 220,
           styles: [{ id: "classic", name: "Classic" }, { id: "minimal", name: "Minimal" }, { id: "numbers", name: "Numbers" }, { id: "dots", name: "Dots" }] },
+        { type: "music", name: "Music", icon: "music_note", w: 360, h: 120 },
+        { type: "stats", name: "System", icon: "monitoring", w: 300, h: 132 },
     ]
 
     // (JsonAdapter hands a `var` list over as a Qt list, not a JS array.)
