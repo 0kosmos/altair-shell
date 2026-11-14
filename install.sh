@@ -39,6 +39,7 @@ OPTIONAL=(
     networkmanager                 # network status in the bar
     upower                         # battery in the bar (laptops)
     libnotify                      # "Send test" notification button
+    cava                           # music visualizer (Music widget)
 )
 MIN_HYPRLAND="0.55"                # first version with the Lua config
 

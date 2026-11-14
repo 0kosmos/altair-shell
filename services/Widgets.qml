@@ -33,8 +33,12 @@ Singleton {
           styles: [{ id: "classic", name: "Classic" }, { id: "light", name: "Light" }, { id: "minimal", name: "Minimal" }, { id: "date", name: "Date" }] },
         { type: "roundclock", name: "Round clock", icon: "nest_clock_farsight_analog", w: 220, h: 220,
           styles: [{ id: "classic", name: "Classic" }, { id: "minimal", name: "Minimal" }, { id: "numbers", name: "Numbers" }, { id: "dots", name: "Dots" }] },
-        { type: "music", name: "Music", icon: "music_note", w: 360, h: 120 },
-        { type: "stats", name: "System", icon: "monitoring", w: 300, h: 132 },
+        { type: "music", name: "Music", icon: "music_note", w: 360, h: 120,
+          styles: [{ id: "card", name: "Card" }, { id: "disc", name: "Disc", w: 400, h: 150 },
+                   { id: "cover", name: "Cover", w: 230, h: 300 }, { id: "minimal", name: "Minimal", w: 320, h: 84 }] },
+        { type: "stats", name: "System", icon: "monitoring", w: 300, h: 132,
+          styles: [{ id: "bars", name: "Bars" }, { id: "rings", name: "Rings", w: 300, h: 140 },
+                   { id: "compact", name: "Compact", w: 360, h: 52 }] },
     ]
 
     // (JsonAdapter hands a `var` list over as a Qt list, not a JS array.)
@@ -81,6 +85,20 @@ Singleton {
     function styleOf(item: var): string {
         const styles = typeType(item?.type ?? "")?.styles ?? [];
         return styles.find(s => s.id === item?.style)?.id ?? styles[0]?.id ?? "";
+    }
+
+    // Base size of an item ({ w, h }): its style's size if it has one, else
+    // the type's. Music in Card/Disc style grows by the visualizer.
+    readonly property int visualizerHeight: 44
+    function sizeOf(item: var): var {
+        const t = typeType(item?.type ?? "");
+        if (!t)
+            return { w: 100, h: 100 };
+        const st = (t.styles ?? []).find(s => s.id === styleOf(item));
+        let w = st?.w ?? t.w, h = st?.h ?? t.h;
+        if (t.type === "music" && Config.widgets.visualizer !== "off" && (st?.id === "card" || st?.id === "disc"))
+            h += visualizerHeight;
+        return { w, h };
     }
 
     // Next style for this widget (the toolbar's style button).

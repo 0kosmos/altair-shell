@@ -22,6 +22,26 @@ Scope {
             required property var modelData
             readonly property var mine: Widgets.itemsOn(modelData.name)
 
+            // The desktop on this monitor is covered when its workspace has a
+            // tiled or fullscreen window (floating ones usually leave most of
+            // it free). Covered widgets aren't "live": anything animated or
+            // polled (spinning disc, visualizer, readings) pauses. Hyprland
+            // keeps asking covered layers for frames, so this saves real CPU.
+            readonly property bool covered: {
+                if (Widgets.editing)
+                    return false;
+                const ws = Hyprland.monitorFor(modelData)?.activeWorkspace;
+                return (ws?.toplevels?.values ?? []).some(t => t.lastIpcObject?.floating === false || (t.lastIpcObject?.fullscreen ?? 0) > 0);
+            }
+            // Window state in lastIpcObject only updates on a refresh.
+            Connections {
+                target: Hyprland
+                function onRawEvent(event) {
+                    if (["openwindow", "closewindow", "movewindowv2", "changefloatingmode", "fullscreen"].indexOf(event.name) !== -1)
+                        Qt.callLater(Hyprland.refreshToplevels);
+                }
+            }
+
             // Kept a moment after leaving edit mode, for the fade-out.
             property bool lingering: false
             Connections {
@@ -101,6 +121,7 @@ Scope {
                                 required property var modelData
                                 itemId: modelData.id
                                 mon: win.mon
+                                live: !per.covered
                                 siblings: win.frameList
                             }
                         }

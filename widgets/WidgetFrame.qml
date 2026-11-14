@@ -19,6 +19,9 @@ Item {
     required property var mon
     // The other frames on this layer (to snap to).
     property var siblings: []
+    // False while windows cover the desktop: the widget pauses animations
+    // and polling (see WidgetLayer.covered).
+    property bool live: true
 
     readonly property var item: Widgets.byId(itemId)
     readonly property var type: Widgets.typeType(item?.type ?? "")
@@ -28,8 +31,10 @@ Item {
     // While resizing, `liveScale` is shown and only saved on release.
     property real liveScale: -1
     readonly property real s: liveScale > 0 ? liveScale : Math.max(0.5, Math.min(2.5, item?.scale ?? 1))
-    width: Math.round((type?.w ?? 100) * s)
-    height: Math.round((type?.h ?? 100) * s)
+    // Base size (depends on the style), then scaled.
+    readonly property var base: Widgets.sizeOf(item)
+    width: Math.round(base.w * s)
+    height: Math.round(base.h * s)
 
     // While this frame is moved, it follows Snap.rect (smooth, also while
     // settling after release); otherwise its saved spot, kept on screen.
@@ -72,12 +77,16 @@ Item {
     // default text rendering scales without blurring).
     Loader {
         id: content
-        width: frame.type?.w ?? 0
-        height: frame.type?.h ?? 0
+        width: frame.base.w
+        height: frame.base.h
         scale: frame.s
         transformOrigin: Item.TopLeft
         // Style changes switch the widget's look in place.
-        onLoaded: item.style = Qt.binding(() => Widgets.styleOf(frame.item))
+        onLoaded: {
+            item.style = Qt.binding(() => Widgets.styleOf(frame.item));
+            if (item.live !== undefined)
+                item.live = Qt.binding(() => frame.live);
+        }
         source: {
             switch (frame.item?.type) {
             case "clock": return "ClockWidget.qml";
@@ -196,9 +205,9 @@ Item {
                 if (!pressed)
                     return;
                 const dx = mapToItem(null, mouse.x, mouse.y).x - pressX;
-                const t = frame.type?.w ?? 100;
+                const t = frame.base.w;
                 // Not past the screen's right/bottom edge.
-                const maxS = Math.min(2.5, (frame.mon.w - frame.x) / t, (frame.mon.h - frame.y) / (frame.type?.h ?? 100));
+                const maxS = Math.min(2.5, (frame.mon.w - frame.x) / t, (frame.mon.h - frame.y) / frame.base.h);
                 frame.liveScale = Math.max(0.5, Math.min(maxS, (startW + dx) / t));
             }
             onReleased: {

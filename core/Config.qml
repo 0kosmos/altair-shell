@@ -206,6 +206,12 @@ Singleton {
                 // System widget: GPU temperature via nvidia-smi (every 5 s,
                 // only while the widget exists). NVIDIA only.
                 property bool gpuTemp: false
+                // Music visualizer (needs cava): "off" | "bars" | "mirror" | "wave",
+                // and its frame rate (20 | 30 | 60). Only runs while playing.
+                property string visualizer: "off"
+                property int visualizerFps: 30
+                // Music "Disc" style: the record spins while playing.
+                property bool discSpin: true
             }
 
             property JsonObject alttab: JsonObject {

@@ -10,6 +10,8 @@ import qs.theme
 Page {
     title: "Widgets"
 
+    Component.onCompleted: Cava.recheck()
+
     SettingRow {
         title: "Edit widgets"
         description: (Widgets.items.length === 0 ? "No widgets on your desktop yet. "
@@ -33,6 +35,41 @@ Page {
         Toggle {
             checked: Config.widgets.musicHideIdle
             onToggled: value => Config.widgets.musicHideIdle = value
+        }
+    }
+
+    SettingRow {
+        title: "Visualizer"
+        description: !Cava.available && Cava.checked
+            ? "Needs cava, which is not installed. Install it with: sudo pacman -S cava"
+            : "Bars that move with the music, under the Card and Disc styles. Runs only while something plays. Uses some CPU (about 3.5 % of one core at 30 fps here)."
+        Segmented {
+            enabled: Cava.available || !Cava.checked
+            opacity: enabled ? 1 : 0.5
+            options: [{ label: "Off", value: "off" }, { label: "Bars", value: "bars" }, { label: "Mirror", value: "mirror" }, { label: "Wave", value: "wave" }]
+            current: ["bars", "mirror", "wave"].indexOf(Config.widgets.visualizer) !== -1 ? Config.widgets.visualizer : "off"
+            onSelected: value => Config.widgets.visualizer = value
+        }
+    }
+
+    SettingRow {
+        title: "Visualizer speed"
+        description: "Frames per second. Smoother costs more CPU."
+        enabled: Config.widgets.visualizer !== "off"
+        opacity: enabled ? 1 : 0.5
+        Segmented {
+            options: [{ label: "20", value: 20 }, { label: "30", value: 30 }, { label: "60", value: 60 }]
+            current: [20, 60].indexOf(Config.widgets.visualizerFps) !== -1 ? Config.widgets.visualizerFps : 30
+            onSelected: value => Config.widgets.visualizerFps = value
+        }
+    }
+
+    SettingRow {
+        title: "Spinning disc"
+        description: "In the Disc style, the record turns while music plays (20 steps a second)."
+        Toggle {
+            checked: Config.widgets.discSpin
+            onToggled: value => Config.widgets.discSpin = value
         }
     }
 
