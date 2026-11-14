@@ -93,6 +93,17 @@ Page {
         }
     }
 
+    Section { text: "Equalizer" }
+
+    SettingRow {
+        title: "Music equalizer"
+        description: "Only the music player's audio goes through it (" + Equalizer.presetName + "). Pick presets and drag the 6 bands in the Equalizer widget. Off or Flat: nothing is running and the audio is untouched."
+        Toggle {
+            checked: Equalizer.enabled
+            onToggled: value => Equalizer.setEnabled(value)
+        }
+    }
+
     Section { text: "System" }
 
     SettingRow {

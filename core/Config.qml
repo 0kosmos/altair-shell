@@ -37,6 +37,7 @@ Singleton {
     readonly property alias bar: adapter.bar
     readonly property alias alttab: adapter.alttab
     readonly property alias widgets: adapter.widgets
+    readonly property alias equalizer: adapter.equalizer
 
     function reload(): void {
         file.reload();
@@ -216,6 +217,15 @@ Singleton {
                 property string visualizerSmoothing: "balanced"
                 // Music "Disc" style: the record spins while playing.
                 property bool discSpin: true
+            }
+
+            // Music equalizer (services/Equalizer.qml): only the music
+            // player's audio. preset: an id from Equalizer.presets; custom:
+            // 6 gains in dB (60 Hz … 15 kHz), used by the "custom" preset.
+            property JsonObject equalizer: JsonObject {
+                property bool enabled: false
+                property string preset: "flat"
+                property var custom: [0, 0, 0, 0, 0, 0]
             }
 
             property JsonObject alttab: JsonObject {

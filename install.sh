@@ -40,6 +40,7 @@ OPTIONAL=(
     upower                         # battery in the bar (laptops)
     libnotify                      # "Send test" notification button
     cava                           # music visualizer (Music widget)
+    libpulse                       # pactl: routes the music player into the equalizer
 )
 MIN_HYPRLAND="0.55"                # first version with the Lua config
 

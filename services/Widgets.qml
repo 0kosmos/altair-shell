@@ -39,6 +39,7 @@ Singleton {
         { type: "visualizer", name: "Visualizer", icon: "graphic_eq", w: 360, h: 130,
           styles: [{ id: "bars", name: "Bars" }, { id: "mirror", name: "Mirror" }, { id: "wave", name: "Wave" },
                    { id: "peaks", name: "Peaks" }, { id: "circle", name: "Circle", w: 240, h: 240 }] },
+        { type: "eq", name: "Equalizer", icon: "tune", w: 380, h: 230 },
         { type: "stats", name: "System", icon: "monitoring", w: 300, h: 132,
           styles: [{ id: "bars", name: "Bars" }, { id: "rings", name: "Rings", w: 300, h: 140 },
                    { id: "compact", name: "Compact", w: 360, h: 52 }] },

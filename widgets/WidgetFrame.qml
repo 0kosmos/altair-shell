@@ -93,6 +93,7 @@ Item {
             case "roundclock": return "RoundClockWidget.qml";
             case "music": return "MusicWidget.qml";
             case "visualizer": return "VisualizerWidget.qml";
+            case "eq": return "EqualizerWidget.qml";
             case "stats": return "StatsWidget.qml";
             default: return "";
             }

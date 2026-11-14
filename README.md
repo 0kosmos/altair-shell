@@ -40,7 +40,9 @@ frosted glass, smooth motion and close to zero CPU when idle.
   clock (4 styles), round clock (4 styles), music (Card, spinning Disc,
   Cover, Minimal; drag the song bar to seek; the player's own volume;
   "Playing on Spotify"; any MPRIS player), visualizer (Bars, Mirror, Wave,
-  Peaks, Circle; needs `cava`) and system (Bars,
+  Peaks, Circle; needs `cava`), **equalizer** (16 presets + 6 bands you can
+  drag, for the music player only, live; built on PipeWire's own filter, no
+  extra daemon) and system (Bars,
   Rings, Compact: CPU, memory, optional GPU temperature). Animated widgets
   pause while windows cover the desktop.
   Edit mode dims the screen and shows a dock to add widgets; drag to move
@@ -113,7 +115,8 @@ Installed by `install.sh` (all from the official repositories):
 | `xdg-utils` | opening folders (fallback) |
 
 Optional: `networkmanager` (network status), `upower` (battery),
-`libnotify` ("Send test" notification button), `cava` (music visualizer
+`libnotify` ("Send test" notification button), `libpulse` (`pactl`, routes
+the music player into the equalizer), `cava` (music visualizer
 and Visualizer widget), `nvidia-utils` (GPU
 temperature in the System widget; comes with the NVIDIA driver). The Music
 widget works with any player that supports MPRIS.
