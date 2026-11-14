@@ -297,6 +297,7 @@ Item {
             case "visualizer": return "VisualizerWidget.qml";
             case "eq": return "EqualizerWidget.qml";
             case "weather": return "WeatherWidget.qml";
+            case "lyrics": return "LyricsWidget.qml";
             case "stats": return "StatsWidget.qml";
             default: return "";
             }
