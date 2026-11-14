@@ -9,9 +9,9 @@ import qs.core
 
 // Audio spectrum for the music visualizer, from cava (optional dependency).
 //
-// cava runs ONLY while: a visualizer is shown (`users` > 0), the visualizer is
-// on (Settings > Widgets), something is playing, and the focused workspace is
-// not fullscreen. Otherwise it is stopped (no process, no CPU). Its raw output
+// cava runs ONLY while: a visualizer is shown and not covered by windows
+// (`users` > 0), something is playing, and the focused workspace is not
+// fullscreen. Otherwise it is stopped (no process, no CPU). Its raw output
 // (one line of `bars` numbers 0–100 per frame) becomes `values` (0–1).
 Singleton {
     id: root
@@ -19,7 +19,18 @@ Singleton {
     property int users: 0
     readonly property int bars: 28
     readonly property int fps: Config.ready && [20, 30, 60].indexOf(Config.widgets.visualizerFps) !== -1 ? Config.widgets.visualizerFps : 30
-    readonly property bool enabled: Config.ready && Config.widgets.visualizer !== "off"
+    // Shown if a music widget has the visualizer on, or an Equalizer widget exists.
+    readonly property bool enabled: users > 0
+    // Sensitivity: "auto" adapts to the loudness (cava's autosens); the fixed
+    // levels don't, so quiet and loud songs look different.
+    readonly property string sensitivity: Config.ready ? Config.widgets.visualizerSensitivity : "auto"
+    // How quickly the bars follow the music (cava's noise reduction).
+    readonly property string smoothing: Config.ready ? Config.widgets.visualizerSmoothing : "balanced"
+    readonly property string tuning: fps + sensitivity + smoothing
+    // New settings: restart cava with a new config once the old one has
+    // exited (it doesn't stop instantly).
+    property bool restartPending: false
+    onTuningChanged: if (proc.running) { restartPending = true; proc.running = false; }
     readonly property bool paused: Hyprland.focusedMonitor?.activeWorkspace?.hasFullscreen ?? false
 
     // Whether `cava` is installed (checked once, when first needed).
@@ -28,7 +39,6 @@ Singleton {
 
     readonly property bool wanted: users > 0 && enabled && Media.playing && !paused
     onWantedChanged: update()
-    onFpsChanged: if (proc.running) { proc.running = false; Qt.callLater(update); }
 
     property var values: []
 
@@ -71,7 +81,10 @@ Singleton {
             "[general]",
             "framerate = " + fps,
             "bars = " + bars,
-            "autosens = 1",
+            "autosens = " + (sensitivity === "auto" || ["low", "medium", "high"].indexOf(sensitivity) === -1 ? 1 : 0),
+            "sensitivity = " + ({ low: 60, medium: 120, high: 250 }[sensitivity] ?? 100),
+            "lower_cutoff_freq = 50",
+            "higher_cutoff_freq = 12000",
             "[input]",
             "method = pipewire",
             "source = auto",
@@ -82,8 +95,12 @@ Singleton {
             "ascii_max_range = 100",
             "bar_delimiter = 59",
             "frame_delimiter = 10",
+            // Mono (both channels averaged): steadier bars, left to right
+            // from bass to treble.
+            "channels = mono",
+            "mono_option = average",
             "[smoothing]",
-            "noise_reduction = 70",
+            "noise_reduction = " + ({ snappy: 35, smooth: 88 }[smoothing] ?? 68),
             ""
         ].join("\n"));
     }
@@ -109,8 +126,12 @@ Singleton {
         }
         onExited: code => {
             root.values = [];
-            if (code !== 0 && root.wanted)
+            if (root.restartPending) {
+                root.restartPending = false;
+                root.update();
+            } else if (code !== 0 && root.wanted) {
                 console.warn("altair: cava exited with code " + code);
+            }
         }
     }
 }

@@ -79,16 +79,72 @@ Item {
         }
     }
 
-    component Progress: Rectangle {
+    // Progress bar you can drag to seek (like Spotify): thicker with a knob on
+    // hover; while dragging it shows where it will jump to, and seeks on
+    // release. Only when the player supports seeking.
+    component Progress: Item {
+        id: prog
+        property int thickness: 4
+        readonly property bool canSeek: (root.player?.canSeek ?? false) && root.hasLength
+        readonly property bool hot: seek.containsMouse || seek.pressed
+        property real dragRatio: -1
+        readonly property real shown: dragRatio >= 0 ? dragRatio : root.progress
         visible: root.hasLength
-        implicitHeight: 4
-        radius: 2
-        color: Theme.pressed
+        implicitHeight: 14
+
         Rectangle {
-            width: parent.width * root.progress
-            height: parent.height
-            radius: 2
-            color: Theme.accent
+            id: track
+            anchors.verticalCenter: parent.verticalCenter
+            width: parent.width
+            height: prog.hot && prog.canSeek ? prog.thickness + 2 : prog.thickness
+            radius: height / 2
+            color: Theme.pressed
+            Behavior on height {
+                NumberAnimation { duration: Theme.anim.fast; easing.type: Theme.anim.easing }
+            }
+            Rectangle {
+                width: parent.width * prog.shown
+                height: parent.height
+                radius: height / 2
+                color: Theme.accent
+            }
+        }
+        Rectangle {
+            visible: prog.canSeek
+            width: 12
+            height: 12
+            radius: 6
+            x: track.width * prog.shown - width / 2
+            anchors.verticalCenter: parent.verticalCenter
+            color: Theme.fg
+            scale: prog.hot ? 1 : 0
+            Behavior on scale {
+                NumberAnimation { duration: Theme.anim.fast; easing.type: Theme.anim.easing }
+            }
+        }
+
+        MouseArea {
+            id: seek
+            anchors.fill: parent
+            anchors.topMargin: -4
+            anchors.bottomMargin: -4
+            enabled: prog.canSeek
+            hoverEnabled: true
+            preventStealing: true
+            cursorShape: Qt.PointingHandCursor
+            function ratio(x: real): real {
+                return Math.max(0, Math.min(1, x / width));
+            }
+            onPressed: mouse => prog.dragRatio = ratio(mouse.x)
+            onPositionChanged: mouse => { if (pressed) prog.dragRatio = ratio(mouse.x); }
+            onReleased: {
+                if (root.player && prog.dragRatio >= 0) {
+                    root.player.position = prog.dragRatio * root.player.length;
+                    root.player.positionChanged();
+                }
+                prog.dragRatio = -1;
+            }
+            onCanceled: prog.dragRatio = -1
         }
     }
 
@@ -349,8 +405,8 @@ Item {
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 anchors.margins: 10
-                anchors.bottomMargin: 8
-                implicitHeight: 3
+                anchors.bottomMargin: 2
+                thickness: 3
             }
         }
     }

@@ -35,10 +35,13 @@ frosted glass, smooth motion and close to zero CPU when idle.
 - **Alt+Tab** window switcher: most recently used first, still previews (or
   app icons), switches workspace when needed. A quick tap jumps straight to
   the previous window without showing anything.
-- **Desktop widgets** (`SUPER + D` to edit): clock (4 styles), round clock
-  (4 styles), music (album art, progress, controls; any MPRIS player) and
-  system (CPU, memory, optional GPU temperature) on the desktop (above the
-  wallpaper, below windows), frosted like the panels.
+- **Desktop widgets** (`SUPER + D` to edit), up to 3 of each, frosted like
+  the panels, on the desktop (above the wallpaper, below windows):
+  clock (4 styles), round clock (4 styles), music (Card, spinning Disc,
+  Cover, Minimal; drag the song bar to seek; any MPRIS player), equalizer
+  (Bars, Mirror, Wave, Peaks, Circle; needs `cava`) and system (Bars,
+  Rings, Compact: CPU, memory, optional GPU temperature). Animated widgets
+  pause while windows cover the desktop.
   Edit mode dims the screen and shows a dock to add widgets; drag to move
   (with the same smooth snapping, also to other widgets), drag the corner to
   resize, click a widget for its style, opacity and remove buttons. Several
@@ -109,7 +112,8 @@ Installed by `install.sh` (all from the official repositories):
 | `xdg-utils` | opening folders (fallback) |
 
 Optional: `networkmanager` (network status), `upower` (battery),
-`libnotify` ("Send test" notification button), `nvidia-utils` (GPU
+`libnotify` ("Send test" notification button), `cava` (music visualizer
+and Equalizer widget), `nvidia-utils` (GPU
 temperature in the System widget; comes with the NVIDIA driver). The Music
 widget works with any player that supports MPRIS.
 

@@ -210,6 +210,10 @@ Singleton {
                 // and its frame rate (20 | 30 | 60). Only runs while playing.
                 property string visualizer: "off"
                 property int visualizerFps: 30
+                // "auto" | "low" | "medium" | "high"
+                property string visualizerSensitivity: "auto"
+                // "snappy" | "balanced" | "smooth"
+                property string visualizerSmoothing: "balanced"
                 // Music "Disc" style: the record spins while playing.
                 property bool discSpin: true
             }

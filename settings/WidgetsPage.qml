@@ -42,7 +42,7 @@ Page {
         title: "Visualizer"
         description: !Cava.available && Cava.checked
             ? "Needs cava, which is not installed. Install it with: sudo pacman -S cava"
-            : "Bars that move with the music, under the Card and Disc styles. Runs only while something plays. Uses some CPU (about 3.5 % of one core at 30 fps here)."
+            : "Bars that move with the music, under the Card and Disc styles. Runs only while something plays. The Equalizer widget always shows them. While it moves it costs CPU: here about 6–7 % of one core at 30 fps, 13–15 % at 60 (plus ~2.5 % for cava); nothing while paused or covered by windows."
         Segmented {
             enabled: Cava.available || !Cava.checked
             opacity: enabled ? 1 : 0.5
@@ -54,13 +54,33 @@ Page {
 
     SettingRow {
         title: "Visualizer speed"
-        description: "Frames per second. Smoother costs more CPU."
-        enabled: Config.widgets.visualizer !== "off"
-        opacity: enabled ? 1 : 0.5
+        description: "Frames per second, for the visualizer and the Equalizer widget. 60 looks smoothest but costs about twice as much CPU as 30."
         Segmented {
             options: [{ label: "20", value: 20 }, { label: "30", value: 30 }, { label: "60", value: 60 }]
             current: [20, 60].indexOf(Config.widgets.visualizerFps) !== -1 ? Config.widgets.visualizerFps : 30
             onSelected: value => Config.widgets.visualizerFps = value
+        }
+    }
+
+    SettingRow {
+        title: "Sensitivity"
+        description: ["low", "medium", "high"].indexOf(Config.widgets.visualizerSensitivity) === -1
+            ? "Auto adapts to how loud the music is, so quiet and loud songs both fill the bars."
+            : "Fixed: louder music makes taller bars. Pick High if the bars stay low, Low if they hit the top all the time."
+        Segmented {
+            options: [{ label: "Auto", value: "auto" }, { label: "Low", value: "low" }, { label: "Medium", value: "medium" }, { label: "High", value: "high" }]
+            current: ["low", "medium", "high"].indexOf(Config.widgets.visualizerSensitivity) !== -1 ? Config.widgets.visualizerSensitivity : "auto"
+            onSelected: value => Config.widgets.visualizerSensitivity = value
+        }
+    }
+
+    SettingRow {
+        title: "Smoothing"
+        description: "Snappy follows every beat; Smooth flows more calmly."
+        Segmented {
+            options: [{ label: "Snappy", value: "snappy" }, { label: "Balanced", value: "balanced" }, { label: "Smooth", value: "smooth" }]
+            current: ["snappy", "smooth"].indexOf(Config.widgets.visualizerSmoothing) !== -1 ? Config.widgets.visualizerSmoothing : "balanced"
+            onSelected: value => Config.widgets.visualizerSmoothing = value
         }
     }
 
