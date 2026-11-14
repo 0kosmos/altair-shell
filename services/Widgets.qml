@@ -37,7 +37,8 @@ Singleton {
     property string attachChild: ""
 
     // Widget types. Add one: an entry here + a <Name>Widget.qml in widgets/
-    // + a case in widgets/WidgetFrame.qml.
+    // + a case in widgets/WidgetFrame.qml. `attach`: the type can attach to
+    // other widgets: "music" (only to a Music widget) or "any".
     readonly property var types: [
         { type: "clock", name: "Clock", icon: "schedule", w: 320, h: 150,
           styles: [{ id: "classic", name: "Classic" }, { id: "light", name: "Light" }, { id: "minimal", name: "Minimal" }, { id: "date", name: "Date" }] },
@@ -46,10 +47,13 @@ Singleton {
         { type: "music", name: "Music", icon: "music_note", w: 360, h: 120,
           styles: [{ id: "card", name: "Card", w: 380, h: 136 }, { id: "disc", name: "Disc", w: 420, h: 156 },
                    { id: "cover", name: "Cover", w: 236, h: 324 }, { id: "minimal", name: "Minimal", w: 320, h: 84 }] },
-        { type: "visualizer", name: "Visualizer", icon: "graphic_eq", w: 360, h: 130,
+        { type: "weather", name: "Weather", icon: "partly_cloudy_day", w: 300, h: 130, attach: "any",
+          styles: [{ id: "card", name: "Card" }, { id: "forecast", name: "Forecast", w: 380, h: 170 },
+                   { id: "hourly", name: "Hourly", w: 380, h: 130 }, { id: "minimal", name: "Minimal", w: 240, h: 64 }] },
+        { type: "visualizer", name: "Visualizer", icon: "graphic_eq", w: 360, h: 130, attach: "music",
           styles: [{ id: "bars", name: "Bars" }, { id: "mirror", name: "Mirror" }, { id: "wave", name: "Wave" },
                    { id: "peaks", name: "Peaks" }, { id: "circle", name: "Circle", w: 240, h: 240 }] },
-        { type: "eq", name: "Equalizer", icon: "tune", w: 380, h: 230 },
+        { type: "eq", name: "Equalizer", icon: "tune", w: 380, h: 230, attach: "music" },
         { type: "stats", name: "System", icon: "monitoring", w: 300, h: 132,
           styles: [{ id: "bars", name: "Bars" }, { id: "rings", name: "Rings", w: 300, h: 140 },
                    { id: "compact", name: "Compact", w: 360, h: 52 }] },

@@ -12,9 +12,10 @@ import qs.theme
 // other widgets, services/Snap.qml), drag the corner to resize, a small
 // toolbar with an opacity slider and a remove button.
 //
-// Magnetic groups: a Visualizer or Equalizer dropped next to a Music widget
-// attaches to it: on its top or bottom, and with the wide music styles (Card,
-// Disc) also on its left or right. Widgets attached at the
+// Magnetic groups: a Visualizer, Equalizer or Lyrics widget dropped next to a
+// Music widget attaches to it, a Weather widget to any widget: on its top or
+// bottom, and next to wide widgets also on its left or right. Widgets
+// attached at the
 // top/bottom take the Music widget's width, at the left/right its height; an
 // attached widget can take another one further out on the same side. The
 // group moves as one and looks like one surface (touching sides are square
@@ -34,7 +35,9 @@ Item {
     property bool live: true
 
     // ---- Magnetic groups ------------------------------------------------------------
-    readonly property bool canAttach: item?.type === "visualizer" || item?.type === "eq"
+    // "music": attaches only to a Music widget; "any": to any widget; "": not.
+    readonly property string attachTo: type?.attach ?? ""
+    readonly property bool canAttach: attachTo !== ""
     readonly property var parentFrame: item?.attachedTo ? siblings.find(f => f && f.itemId === item.attachedTo) ?? null : null
     // The side of its parent this widget hangs on.
     readonly property string side: ["top", "left", "right"].indexOf(item?.attachSide) !== -1 ? item.attachSide : "bottom"
@@ -121,16 +124,24 @@ Item {
         Widgets.remove(itemId);
     }
 
-    // Free slots: a Music widget has all four sides; an attached widget only
-    // its own side, further out.
+    // Slots `f` offers this widget. A standalone widget (Music for
+    // Visualizer/Equalizer/Lyrics, any widget for Weather) offers top and
+    // bottom, and left/right when it is wide (2:1 or more). An attached
+    // widget offers only its own side, further out. A slot is skipped if
+    // this widget would get too small or too big there.
     function slotsOf(f: var): var {
-        if (f.item?.type === "music" && !f.attached) {
-            // Sides only for the wide styles: next to a tall one (Cover) an
-            // attached widget would get as tall and become huge.
-            const wide = ["card", "disc"].indexOf(Widgets.styleOf(f.item)) !== -1;
-            return wide ? ["top", "bottom", "left", "right"] : ["top", "bottom"];
+        let sides;
+        if (f.attached) {
+            sides = [f.side];
+        } else {
+            if (f.canAttach || (attachTo === "music" && f.item?.type !== "music"))
+                return [];
+            sides = f.width >= f.height * 2 ? ["top", "bottom", "left", "right"] : ["top", "bottom"];
         }
-        return f.attached ? [f.side] : [];
+        return sides.filter(sd => {
+            const sc = scaleIn(f, sd);
+            return sc >= 0.45 && sc <= 2.5;
+        });
     }
 
     // Where `r` ({ x, y, w, h } relative to the monitor) would attach:
@@ -155,7 +166,8 @@ Item {
             const c = f.childOn(sd);
             return !c || c === frame;
         };
-        if (keep && mine.indexOf(keep.frame) === -1 && free(keep.frame, keep.side) && gap(keep.frame, keep.side) <= magnetRelease)
+        if (keep && mine.indexOf(keep.frame) === -1 && slotsOf(keep.frame).indexOf(keep.side) !== -1
+                && free(keep.frame, keep.side) && gap(keep.frame, keep.side) <= magnetRelease)
             return keep;
         let best = null;
         for (const f of siblings) {
@@ -284,6 +296,7 @@ Item {
             case "music": return "MusicWidget.qml";
             case "visualizer": return "VisualizerWidget.qml";
             case "eq": return "EqualizerWidget.qml";
+            case "weather": return "WeatherWidget.qml";
             case "stats": return "StatsWidget.qml";
             default: return "";
             }

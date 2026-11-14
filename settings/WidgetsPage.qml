@@ -101,6 +101,73 @@ Page {
         }
     }
 
+    Section { text: "Weather" }
+
+    SettingRow {
+        id: weatherRow
+        title: "Place"
+        description: (Weather.configured ? "Now: " + Weather.city + ". " : "")
+            + "Type a city and press Enter, then pick it. Weather comes from Open-Meteo (free, no account); only the place's coordinates are sent, and only while a Weather widget is on the desktop."
+
+        Rectangle {
+            implicitWidth: 240
+            implicitHeight: 32
+            radius: Theme.radius.s
+            color: Theme.pressed
+            border.width: 1
+            border.color: cityInput.activeFocus ? Theme.accent : Theme.border
+
+            TextInput {
+                id: cityInput
+                anchors.fill: parent
+                anchors.leftMargin: Theme.space.s
+                anchors.rightMargin: Theme.space.s
+                verticalAlignment: TextInput.AlignVCenter
+                color: Theme.fg
+                font.family: Theme.font.family
+                font.pixelSize: Theme.font.small + 1
+                clip: true
+                selectByMouse: true
+                onAccepted: Weather.search(text)
+
+                StyledText {
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: !cityInput.text && !cityInput.activeFocus
+                    text: Weather.searching ? "Searching…" : "e.g. Milano"
+                    color: Theme.fgDisabled
+                    font.pixelSize: Theme.font.small + 1
+                }
+            }
+        }
+    }
+
+    // Search results: click one to use it.
+    Flow {
+        Layout.fillWidth: true
+        visible: Weather.results.length > 0
+        spacing: Theme.space.xs
+        Repeater {
+            model: Weather.results
+            PillButton {
+                required property var modelData
+                text: modelData.name + (modelData.region ? " · " + modelData.region : "")
+                onClicked: {
+                    Weather.choose(modelData);
+                    cityInput.text = "";
+                }
+            }
+        }
+    }
+
+    SettingRow {
+        title: "Units"
+        Segmented {
+            options: [{ label: "°C", value: "c" }, { label: "°F", value: "f" }]
+            current: Config.widgets.weatherUnits === "f" ? "f" : "c"
+            onSelected: value => Config.widgets.weatherUnits = value
+        }
+    }
+
     Section { text: "System" }
 
     SettingRow {

@@ -217,6 +217,12 @@ Singleton {
                 property string visualizerSensitivity: "auto"
                 // "snappy" | "balanced" | "smooth"
                 property string visualizerSmoothing: "balanced"
+                // Weather widget (Open-Meteo): the place (chosen in Settings,
+                // only its coordinates are sent) and "c" | "f".
+                property string weatherCity: ""
+                property real weatherLat: 0
+                property real weatherLon: 0
+                property string weatherUnits: "c"
                 // Music "Disc" style: the record spins while playing.
                 property bool discSpin: true
             }
