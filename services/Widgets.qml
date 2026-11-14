@@ -17,6 +17,9 @@ import qs.core
 Singleton {
     id: root
 
+    // At most this many widgets of each type (all monitors together).
+    readonly property int maxPerType: 3
+
     // Edit mode (runtime only): widgets above the windows, with handles.
     property bool editing: false
     onEditingChanged: selected = ""
@@ -55,9 +58,13 @@ Singleton {
 
     // New widget of `type`, centred in `area` ({ x, y, w, h } relative to
     // the monitor) on monitor `monitor`.
+    function countOf(type: string): int {
+        return items.filter(i => i.type === type).length;
+    }
+
     function add(type: string, monitor: string, area: var): void {
         const t = typeType(type);
-        if (!t)
+        if (!t || countOf(type) >= maxPerType)
             return;
         const item = {
             id: Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36),

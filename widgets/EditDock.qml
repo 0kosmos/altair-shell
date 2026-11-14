@@ -17,7 +17,7 @@ Item {
     property bool shown: false
 
     width: row.implicitWidth + Theme.space.m * 2
-    height: 96
+    height: 108
     opacity: shown ? 1 : 0
     transform: Translate {
         y: dock.shown ? 0 : 40
@@ -46,11 +46,17 @@ Item {
             MouseArea {
                 id: card
                 required property var modelData
+                readonly property int count: Widgets.countOf(modelData.type)
+                readonly property bool full: count >= Widgets.maxPerType
                 implicitWidth: 96
-                implicitHeight: 72
+                implicitHeight: 86
                 hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: Widgets.add(modelData.type, dock.monitor, dock.area)
+                cursorShape: full ? Qt.ArrowCursor : Qt.PointingHandCursor
+                opacity: full ? 0.45 : 1
+                onClicked: if (!full) Widgets.add(modelData.type, dock.monitor, dock.area)
+                Behavior on opacity {
+                    NumberAnimation { duration: Theme.anim.fast }
+                }
                 scale: pressed ? Theme.anim.pressScale : 1
                 Behavior on scale {
                     NumberAnimation { duration: Theme.anim.fast; easing.type: Easing.OutBack; easing.overshoot: 2.5 }
@@ -77,6 +83,15 @@ Item {
                         text: card.modelData.name
                         font.pixelSize: Theme.font.small
                         color: Theme.fgMuted
+                    }
+                    // How many are placed, e.g. "2/3" (nothing when none).
+                    StyledText {
+                        Layout.alignment: Qt.AlignHCenter
+                        visible: card.count > 0
+                        text: card.count + "/" + Widgets.maxPerType
+                        font.pixelSize: 10
+                        color: card.full ? Theme.accent : Theme.fgDisabled
+                        tabular: true
                     }
                 }
             }
