@@ -177,7 +177,7 @@ Singleton {
                 // the rest of the screen by this much (0–0.6), optional grid
                 // in px (0 = off).
                 property bool snapping: true
-                property real dragDim: 0.3
+                property real dragDim: 0.45
                 property int grid: 0
             }
 

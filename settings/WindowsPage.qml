@@ -69,8 +69,8 @@ Page {
         enabled: Config.windows.snapping
         opacity: enabled ? 1 : 0.5
         Segmented {
-            options: [{ label: "Off", value: 0 }, { label: "8", value: 8 }, { label: "16", value: 16 }, { label: "32", value: 32 }, { label: "64", value: 64 }]
-            current: [0, 8, 16, 32, 64].indexOf(Config.windows.grid) !== -1 ? Config.windows.grid : 0
+            options: [{ label: "Off", value: 0 }, { label: "4", value: 4 }, { label: "8", value: 8 }, { label: "16", value: 16 }, { label: "32", value: 32 }, { label: "64", value: 64 }]
+            current: [0, 4, 8, 16, 32, 64].indexOf(Config.windows.grid) !== -1 ? Config.windows.grid : 0
             onSelected: value => Config.windows.grid = value
         }
     }
