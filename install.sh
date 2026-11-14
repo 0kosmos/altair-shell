@@ -343,7 +343,13 @@ unconfigure_hyprland() {
 
 do_uninstall() {
     step "Uninstalling Altair"
-    if command -v qs >/dev/null; then run qs kill -c altair >/dev/null 2>&1 || true; fi
+    # Hard stop of exactly our instances (see stop_cmd in hypr/init.lua for why
+    # not `qs kill`).
+    if command -v qs >/dev/null; then
+        local pids
+        pids=$(qs list -c altair 2>/dev/null | sed -n 's/^ *Process ID: *//p')
+        [[ -n "$pids" ]] && { run kill -9 $pids 2>/dev/null || true; }
+    fi
     unlink_ours "$QS_LINK"
     unlink_ours "$HYPR_LINK"
     unlink_ours "$DESKTOP_FILE"

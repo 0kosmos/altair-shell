@@ -75,17 +75,23 @@ function M.setup(opts)
         start = "QS_ICON_THEME=" .. shell_quote(icon_theme) .. " " .. start
     end
 
-    -- Kill any running instance, wait for it to exit (max ~2 s), then start a
-    -- fresh one. The wait matters: `qs kill` returns before the process is gone,
-    -- and starting too early would hit -n and leave NO shell running. (`qs list`
-    -- prints a message even when nothing runs, so look for an "Instance" line.)
-    local restart = "qs kill -c altair >/dev/null 2>&1; "
-        .. "for i in $(seq 20); do qs list -c altair 2>/dev/null | grep -q '^Instance' || break; sleep 0.1; done; "
-        .. start
+    -- Stop: SIGKILL exactly the processes `qs list -c altair` reports, and
+    -- wait (max ~2 s) until they are gone. Not `qs kill`: that asks the shell
+    -- to quit over IPC, which a hung shell cannot answer (the restart then hit
+    -- -n and did nothing), and a normal quit can crash inside Quickshell's
+    -- Wayland cleanup, after which its crash handler relaunches the shell and
+    -- races the new one. SIGKILL loses nothing: settings are saved as they
+    -- change, and the live-wallpaper process exits when the shell is gone.
+    local stop = "pids=$(qs list -c altair 2>/dev/null | sed -n 's/^ *Process ID: *//p'); "
+        .. "[ -n \"$pids\" ] && kill -9 $pids 2>/dev/null; "
+        .. "for i in $(seq 20); do alive=; for p in $pids; do kill -0 $p 2>/dev/null && alive=1; done; "
+        .. "[ -z \"$alive\" ] && break; sleep 0.1; done; "
+    local restart = stop .. start
 
-    -- Exposed so install.sh can (re)start the shell with the same settings:
+    -- Exposed so install.sh can stop/(re)start the shell with the same settings:
     --   hyprctl eval 'hl.exec_cmd(require("altair").restart_cmd)'
     M.start_cmd = start
+    M.stop_cmd = stop
     M.restart_cmd = restart
 
     if opts.autostart ~= false then
