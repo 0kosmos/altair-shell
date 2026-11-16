@@ -50,14 +50,20 @@ Singleton {
         onTriggered: root.fetch()
     }
 
+    // Only the answer for the current place counts: a slower answer for an
+    // earlier place/unit (or a moment's 0,0 while settings load) must not
+    // overwrite it. Seen: 26 °C "drizzle" from 0,0 in the Gulf of Guinea.
     function fetch(): void {
+        if (lat === 0 && lon === 0)
+            return;
+        const asked = key;
         const url = "https://api.open-meteo.com/v1/forecast?latitude=" + lat.toFixed(3) + "&longitude=" + lon.toFixed(3)
             + "&current=temperature_2m,apparent_temperature,weather_code,is_day,relative_humidity_2m,wind_speed_10m"
             + "&hourly=temperature_2m,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min"
             + "&forecast_days=6&timezone=auto" + (fahrenheit ? "&temperature_unit=fahrenheit&wind_speed_unit=mph" : "");
         const xhr = new XMLHttpRequest();
         xhr.onreadystatechange = () => {
-            if (xhr.readyState !== XMLHttpRequest.DONE)
+            if (xhr.readyState !== XMLHttpRequest.DONE || asked !== root.key)
                 return;
             try {
                 if (xhr.status !== 200)

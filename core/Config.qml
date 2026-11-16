@@ -49,10 +49,17 @@ Singleton {
     }
 
     // Delays re-reading after an external change (see onFileChanged below).
+    // Skipped if a change of ours is waiting to be saved, or was saved after
+    // the file changed (that save already holds the newest state).
+    property real changedAt: 0
     Timer {
         id: settle
         interval: 150
-        onTriggered: file.reload()
+        onTriggered: {
+            if (save.running || root.lastSave > root.changedAt)
+                return;
+            file.reload();
+        }
     }
 
     // Coalesces saves: one write per burst of changes.
@@ -74,11 +81,12 @@ Singleton {
         // Wait a moment before re-reading: some editors (and scripts) empty the
         // file first and then write it, and reading in between would see a
         // half-written file.
-        // Our own saves also fire this; re-reading then could undo changes
-        // made in between (see save below), so those are skipped.
+        // Our own saves fire this too; re-reading what we just wrote is
+        // harmless. (Re-reading while a change of ours waits to be saved would
+        // undo it: see settle.)
         onFileChanged: {
-            if (!save.running && Date.now() - root.lastSave > 1000)
-                settle.restart();
+            root.changedAt = Date.now();
+            settle.restart();
         }
         // Small file: write synchronously, so saves can't finish out of order.
         blockWrites: true
