@@ -153,9 +153,6 @@ Singleton {
                 // Also round Hyprland's window corners to match (your own
                 // rounding × corners); off = Hyprland's rounding unchanged.
                 property bool windowCorners: false
-                // Settings window: "left" | "right" sidebar, "rail" (icons),
-                // "top" | "bottom" tabs.
-                property string settingsLayout: "left"
                 property string accent: "#7aa2f7"      // #RRGGBB, "mono" (adapts to the theme) or "palette"
                 // "default", a built-in palette id (theme/palettes.js) or "custom"
                 property string palette: "default"

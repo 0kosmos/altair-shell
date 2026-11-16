@@ -168,7 +168,7 @@ Scope {
                     p = Qt.binding(() => shown ? 1 : 0);
                 }
                 // Closed and faded: the window goes.
-                onOpacityChanged: if (opacity === 0 && !shown) Qt.callLater(() => { if (!body.shown) settings.loaded = false; })
+                onOpacityChanged: if (opacity === 0 && !shown) settings.loaded = false
 
                 Connections {
                     target: ShellState
@@ -268,54 +268,123 @@ Scope {
                         event.accepted = true;
                     }
 
-                    // ---- Navigation + page --------------------------------------------
-                    // Layout (Settings > Appearance > Settings layout): sidebar
-                    // left or right, a slim icon rail, or tabs on top / at the
-                    // bottom. Positions are plain numbers so a switch glides.
-                    Item {
-                        id: frameArea
+                    RowLayout {
                         anchors.fill: parent
-                        readonly property string layout: Theme.settingsLayout
-                        readonly property bool horizontal: layout === "top" || layout === "bottom"
-                        readonly property real navW: horizontal ? width : (nav.item?.implicitWidth ?? 0)
-                        readonly property real navH: horizontal ? (nav.item?.implicitHeight ?? 0) : height
+                        spacing: 0
 
-                        Loader {
-                            id: nav
-                            z: 2
-                            sourceComponent: frameArea.horizontal ? tabsNav : sideNav
-                            x: frameArea.layout === "right" ? frameArea.width - frameArea.navW : 0
-                            y: frameArea.layout === "bottom" ? frameArea.height - frameArea.navH : 0
-                            width: frameArea.navW
-                            height: frameArea.navH
-                        }
-                        Component {
-                            id: sideNav
-                            NavSide {
-                                pages: win.pages
-                                current: win.page
-                                rail: frameArea.layout === "rail"
-                                onRight: frameArea.layout === "right"
-                                onPicked: id => win.page = id
-                            }
-                        }
-                        Component {
-                            id: tabsNav
-                            NavTabs {
-                                pages: win.pages
-                                current: win.page
-                                atBottom: frameArea.layout === "bottom"
-                                onPicked: id => win.page = id
-                            }
-                        }
-
-                        // Hairline between navigation and page.
+                        // ---- Sidebar ------------------------------------------------
                         Rectangle {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: 230
+                            color: Theme.surfaceRaised
+                            topLeftRadius: Theme.radius.m
+                            bottomLeftRadius: Theme.radius.m
+
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: Theme.space.m
+                                spacing: 2
+
+                                StyledText {
+                                    Layout.leftMargin: Theme.space.s
+                                    Layout.topMargin: Theme.space.s
+                                    Layout.bottomMargin: Theme.space.m
+                                    text: "Settings"
+                                    font.pixelSize: Theme.font.title
+                                    font.weight: Font.DemiBold
+                                }
+
+                                Repeater {
+                                    model: win.pages
+
+                                    ColumnLayout {
+                                        id: entry
+                                        required property var modelData
+                                        required property int index
+                                        readonly property bool firstOfGroup: index === 0 || win.pages[index - 1].group !== modelData.group
+
+                                        Layout.fillWidth: true
+                                        spacing: 2
+
+                                        // Group heading above the first page of each group.
+                                        StyledText {
+                                            visible: entry.firstOfGroup
+                                            Layout.leftMargin: Theme.space.s
+                                            Layout.topMargin: entry.index === 0 ? 0 : Theme.space.m
+                                            Layout.bottomMargin: 2
+                                            text: entry.modelData.group
+                                            color: Theme.fgDisabled
+                                            font.pixelSize: Theme.font.small
+                                            font.weight: Font.DemiBold
+                                            font.capitalization: Font.AllUppercase
+                                            font.letterSpacing: 0.6
+                                        }
+
+                                        MouseArea {
+                                            id: nav
+                                            readonly property var modelData: entry.modelData
+                                            readonly property bool selected: win.page === modelData.id
+
+                                            Layout.fillWidth: true
+                                            implicitHeight: 38
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: win.page = modelData.id
+                                            scale: pressed ? Theme.anim.pressScale : 1
+                                            Behavior on scale {
+                                                NumberAnimation { duration: Theme.anim.fast; easing.type: Easing.OutBack; easing.overshoot: 2.5 }
+                                            }
+
+                                            Rectangle {
+                                                anchors.fill: parent
+                                                radius: Theme.radius.s
+                                                color: nav.selected ? Qt.alpha(Theme.accent, 0.16)
+                                                    : nav.containsMouse ? Theme.hover : "transparent"
+                                                Behavior on color {
+                                                    ColorAnimation { duration: Theme.anim.fast }
+                                                }
+                                            }
+
+                                            RowLayout {
+                                                anchors.fill: parent
+                                                anchors.leftMargin: Theme.space.s
+                                                spacing: Theme.space.s
+
+                                                Icon {
+                                                    name: nav.modelData.icon
+                                                    fill: nav.selected ? 1 : 0
+                                                    color: nav.selected ? Theme.accent : Theme.fgMuted
+                                                }
+                                                StyledText {
+                                                    Layout.fillWidth: true
+                                                    text: nav.modelData.label
+                                                    font.weight: nav.selected ? Font.DemiBold : Font.Normal
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                Item { Layout.fillHeight: true }
+
+                                StyledText {
+                                    Layout.leftMargin: Theme.space.s
+                                    // Wraps: a long line would widen the whole sidebar layout.
+                                    Layout.fillWidth: true
+                                    Layout.rightMargin: Theme.space.s
+                                    wrapMode: Text.Wrap
+                                    elide: Text.ElideNone
+                                    text: "Altair " + ShellState.version + "\nArrows / Tab: scroll and switch pages\nDouble-click an empty spot to re-centre\nCtrl+0: default size"
+                                    color: Theme.fgDisabled
+                                    font.pixelSize: Theme.font.small
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            Layout.fillHeight: true
+                            implicitWidth: 1
                             color: Theme.border
-                            x: frameArea.horizontal ? 0 : frameArea.layout === "right" ? nav.x - 1 : nav.x + nav.width
-                            y: !frameArea.horizontal ? 0 : frameArea.layout === "bottom" ? nav.y - 1 : nav.y + nav.height
-                            width: frameArea.horizontal ? frameArea.width : 1
-                            height: frameArea.horizontal ? 1 : frameArea.height
                         }
 
                         // ---- Page (only the visible one exists) ---------------------
@@ -323,10 +392,8 @@ Scope {
                         // in while sliding up a little.
                         Loader {
                             id: pageLoader
-                            x: frameArea.layout === "left" || frameArea.layout === "rail" ? frameArea.navW + 1 : 0
-                            y: frameArea.layout === "top" ? frameArea.navH + 1 : 0
-                            width: frameArea.width - (frameArea.horizontal ? 0 : frameArea.navW + 1)
-                            height: frameArea.height - (frameArea.horizontal ? frameArea.navH + 1 : 0)
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
                             source: win.pageSource(win.shownPage)
 
                             transform: Translate { id: pageShift }
