@@ -49,7 +49,7 @@ Item {
                 anchors.centerIn: parent
                 width: cell.occupied ? 8 : 6
                 height: width
-                radius: width / 2
+                radius: Theme.pill(width)
                 color: cell.occupied ? Theme.fgMuted : Theme.fgDisabled
                 // The dot under the active pill is hidden (and not hover-scaled),
                 // otherwise its edges peek out around the pill.
@@ -77,7 +77,7 @@ Item {
         visible: root.activeId >= 1 && root.activeId <= root.count
         width: root.vertical ? 8 : 16
         height: root.vertical ? 16 : 8
-        radius: 4
+        radius: Theme.pill(8)
         color: Theme.accent
         readonly property real along: (root.activeId - 1) * root.slot + (root.slot - (root.vertical ? height : width)) / 2
         x: root.vertical ? (parent.width - width) / 2 : along

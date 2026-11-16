@@ -36,7 +36,7 @@ Flow {
 
             Rectangle {
                 anchors.fill: parent
-                radius: height / 2
+                radius: Theme.pill(height)
                 color: chip.on ? Theme.accent : chip.containsMouse ? Theme.hover : Theme.pressed
                 border.width: chip.on ? 0 : 1
                 border.color: Theme.border

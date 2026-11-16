@@ -67,7 +67,7 @@ Item {
         Behavior on opacity { NumberAnimation { duration: Theme.anim.fast } }
         Rectangle {
             anchors.fill: parent
-            radius: height / 2
+            radius: Theme.pill(height)
             color: tool.on ? Theme.accent : tool.danger ? Qt.alpha(Theme.critical, tool.containsMouse ? 0.3 : 0.18)
                 : tool.containsMouse ? Theme.hover : Theme.surfaceRaised
             Behavior on color { ColorAnimation { duration: Theme.anim.fast } }
@@ -184,7 +184,7 @@ Item {
             }
             Rectangle {
                 anchors.fill: parent
-                radius: height / 2
+                radius: Theme.pill(height)
                 color: done.containsMouse ? Qt.lighter(Theme.accent, 1.1) : Theme.accent
             }
             StyledText {

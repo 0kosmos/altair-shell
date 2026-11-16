@@ -87,7 +87,7 @@ Item {
         id: knob
         width: 18
         height: 18
-        radius: 9
+        radius: Theme.pill(18)
         anchors.verticalCenter: parent.verticalCenter
         x: root.knobX
         color: Theme.fg

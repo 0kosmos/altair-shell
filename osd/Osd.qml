@@ -129,7 +129,7 @@ Scope {
                 id: pill
                 animate: root.shown
                 anchors.fill: parent
-                radius: height / 2
+                radius: Theme.pill(height)
 
                 property bool visibleNow: false
                 Component.onCompleted: visibleNow = Qt.binding(() => root.shown)

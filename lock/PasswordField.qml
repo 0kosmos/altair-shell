@@ -54,7 +54,7 @@ Item {
 
         Rectangle {
             anchors.fill: parent
-            radius: height / 2
+            radius: Theme.pill(height)
             color: Qt.alpha(Theme.fg, root.activeFocus || root.count > 0 ? 0.10 : 0.07)
             border.width: 1
             border.color: root.failed ? Qt.alpha(Theme.critical, 0.7)
@@ -69,7 +69,7 @@ Item {
             id: glowRing
             anchors.fill: parent
             anchors.margins: -3
-            radius: height / 2
+            radius: Theme.pill(height)
             color: "transparent"
             border.width: 3
             border.color: Qt.alpha(Theme.accent, 0.55)

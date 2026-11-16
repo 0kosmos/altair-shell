@@ -39,7 +39,7 @@ Flow {
 
             Rectangle {
                 anchors.fill: parent
-                radius: height / 2
+                radius: Theme.pill(height)
                 color: chip.isAuto ? (chip.on ? Theme.accent : Theme.surfaceRaised) : chip.cols[0]
                 border.width: chip.on ? 2 : 1
                 border.color: chip.on ? Theme.accent : Theme.border
@@ -160,7 +160,7 @@ Flow {
         Behavior on scale { NumberAnimation { duration: Theme.anim.fast; easing.type: Easing.OutBack; easing.overshoot: 2.5 } }
         Rectangle {
             anchors.fill: parent
-            radius: height / 2
+            radius: Theme.pill(height)
             color: pill.on ? Theme.accent : pill.containsMouse ? Theme.hover : Theme.surfaceRaised
             Behavior on color { ColorAnimation { duration: Theme.anim.fast } }
         }

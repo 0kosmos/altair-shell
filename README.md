@@ -134,8 +134,9 @@ frosted glass, smooth motion and close to zero CPU when idle.
   can use their own font (*Settings → Appearance → Fonts*). Drop a Visualizer
   or Equalizer next to a Music widget and it attaches like a magnet (top or
   bottom; left or right too with the Card and Disc styles); weather,
-  clocks and system attach to any widget (e.g. weather under a round
-  clock). Previewed live while dragging: one card that moves together and
+  clocks, system and music attach to any widget (e.g. weather under a round
+  clock); a widget attached on top of or under a side-by-side pair spans the
+  whole row (e.g. music under clock + weather). Previewed live while dragging: one card that moves together and
   stays on screen as a whole (drag a part away to detach); opacity is
   shared by the whole group. **Right-click a widget** for its menu: style,
   visualizer (music), opacity, edit widgets, detach, widget settings,
@@ -168,8 +169,8 @@ frosted glass, smooth motion and close to zero CPU when idle.
   - dark / light, 16 five-colour palettes plus your own, accent colour with a
     colour picker;
   - corners: square to very round (presets or a slider) for every panel,
-    menu, card, the bar, dock, widgets and Settings, optionally Hyprland's
-    window corners too;
+    menu, card, button, tab, toggle and field, the bar, dock, widgets and
+    Settings, optionally Hyprland's window corners too;
   - blur and blur strength, *liquid glass*, animations, low-power mode;
   - window borders (accent / Hyprland / none), resize windows by dragging
     their edges, smooth resizing;

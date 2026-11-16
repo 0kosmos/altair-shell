@@ -47,7 +47,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: height / 2
+        radius: Theme.pill(height)
         color: Theme.pressed
         border.width: 1
         border.color: Theme.border
@@ -60,7 +60,7 @@ Item {
         y: 2
         width: root.segment
         height: parent.height - 4
-        radius: height / 2
+        radius: Theme.pill(height)
         color: Theme.dark ? Qt.lighter(Theme.base, 1.9) : "#ffffff"
         border.width: 1
         border.color: Theme.border

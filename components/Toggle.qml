@@ -24,7 +24,7 @@ MouseArea {
 
     Rectangle {
         anchors.fill: parent
-        radius: height / 2
+        radius: Theme.pill(height)
         color: root.checked ? Theme.accent : root.containsMouse ? Qt.alpha(Theme.fg, 0.16) : Theme.pressed
         border.width: 1
         border.color: root.checked ? "transparent" : Theme.border
@@ -40,7 +40,7 @@ MouseArea {
         // Stretches toward the side it is about to move to while pressed.
         width: root.pressed ? size + 5 : size
         height: size
-        radius: size / 2
+        radius: Theme.pill(size)
         anchors.verticalCenter: parent.verticalCenter
         x: root.checked ? root.width - width - 3 : 3
         color: root.checked ? Theme.onAccent : Theme.fg

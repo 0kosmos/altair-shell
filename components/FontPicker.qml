@@ -39,7 +39,7 @@ Flow {
             onClicked: root.picked(modelData.family)
             Rectangle {
                 anchors.fill: parent
-                radius: height / 2
+                radius: Theme.pill(height)
                 color: chip.on ? Theme.accent : chip.containsMouse ? Theme.hover : Theme.surfaceRaised
                 border.width: chip.on ? 0 : 1
                 border.color: Theme.border

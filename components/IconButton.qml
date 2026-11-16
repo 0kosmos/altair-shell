@@ -27,7 +27,7 @@ MouseArea {
 
     Rectangle {
         anchors.fill: parent
-        radius: width / 2
+        radius: Theme.pill(width)
         color: root.pressed ? Theme.pressed : root.containsMouse ? Theme.hover : "transparent"
         Behavior on color {
             ColorAnimation { duration: Theme.anim.fast }

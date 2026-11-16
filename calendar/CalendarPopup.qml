@@ -54,7 +54,7 @@ AltairPanel {
                 onClicked: chips.picked(modelData.value)
                 Rectangle {
                     anchors.fill: parent
-                    radius: height / 2
+                    radius: Theme.pill(height)
                     color: chip.on ? Theme.accent : chip.containsMouse ? Theme.hover : Theme.surfaceRaised
                     Behavior on color { ColorAnimation { duration: Theme.anim.fast } }
                 }

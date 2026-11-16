@@ -149,6 +149,13 @@ Singleton {
         readonly property int l: Math.round(18 * root.corners)
         readonly property int full: 999
     }
+    // Corner radius for pill-shaped controls (buttons, chips, tabs, toggles,
+    // search fields) of size `h`: a full pill at the default corners and
+    // above, less round below, square at 0. Real circles (avatars, swatches,
+    // clock faces) don't use this.
+    function pill(h: real): real {
+        return h / 2 * Math.min(1, corners);
+    }
 
     // ---- Typography -----------------------------------------------------------
     // Launcher search animations: "off" | "subtle" | "lively".

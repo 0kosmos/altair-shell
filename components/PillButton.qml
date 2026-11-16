@@ -23,7 +23,7 @@ MouseArea {
 
     Rectangle {
         anchors.fill: parent
-        radius: height / 2
+        radius: Theme.pill(height)
         color: root.pressed ? Theme.pressed : root.containsMouse ? Theme.hover : Theme.surfaceRaised
         border.width: 1
         border.color: Theme.border

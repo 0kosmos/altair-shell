@@ -28,13 +28,16 @@ All notable changes to Altair. Versions follow [semantic versioning](https://sem
 - **Panel motion**: Glide, Spring, Zoom, Drop, Fade, Pop, Flip, Unfold or
   Swing, for panels, menus and the Settings window.
 - **Corners**: one setting from square to very round (presets or a
-  slider) for every panel, menu, card, bar, dock, widget and Settings;
+  slider) for every panel, menu, card, button, tab, toggle, field, bar,
+  dock, widget and Settings;
   optionally Hyprland's window corners too (your rounding × the setting).
 
 ### Widgets
 - **Right-click menu** on widgets: style, visualizer, opacity, edit
   widgets, detach, settings, remove.
 - Joined widgets share one opacity: changing it changes the whole group.
+- Music attaches to any widget; a widget on top of or under a side-by-side
+  pair spans the whole row.
 
 ### Wallpapers
 - The picker has **All / Pictures / Live** tabs and a **search** (type

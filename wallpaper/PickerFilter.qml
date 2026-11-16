@@ -72,7 +72,7 @@ RowLayout {
     Rectangle {
         Layout.preferredWidth: 220
         Layout.preferredHeight: 32
-        radius: height / 2
+        radius: Theme.pill(height)
         color: Theme.pressed
         border.width: 1
         border.color: root.query !== "" ? Qt.alpha(Theme.accent, 0.6) : Theme.border
