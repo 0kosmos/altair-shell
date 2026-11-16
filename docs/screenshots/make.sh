@@ -5,7 +5,7 @@
 #   docs/screenshots/make.sh <dir with raw PNGs>
 #
 # Expects desktop.png, calendar.png, settings.png, wallpapers.png, launcher.png,
-# layout.png, glass-off.png and blur-off.png in that
+# layout.png, glass-off.png, blur-off.png, lock.png, quick.png and power.png in that
 # directory (take them with `grim` on an empty workspace, with a wallpaper
 # you may publish). Writes docs/screenshots/<name>.png.
 # Needs: vips (libvips), python3, qml (qt6-declarative); Inter font.
@@ -34,6 +34,9 @@ SHOTS=(
     "layout|Bar and dock on any edge, widgets that snap together|#5b3fd0|#1a8fc8"
     "glass-off|Liquid glass off, Amber palette|#c27a2a|#6b3f1a"
     "blur-off|Blur off: solid panels, Ocean palette|#2a6fb8|#1a3f6b"
+    "lock|A lock screen with typing animations, safe to use|#3a4fb8|#6b2fa8"
+    "quick|Quick settings: the switches you use most|#2f6fd0|#1aa3a8"
+    "power|Power menu with a countdown you can cancel|#b83a4f|#4a2fb8"
 )
 
 # Background: a dark base with two soft glows, rendered small and upscaled.

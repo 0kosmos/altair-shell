@@ -20,6 +20,12 @@ frosted glass, smooth motion and close to zero CPU when idle.
 
 ![App launcher](docs/screenshots/launcher.png)
 
+![Quick settings](docs/screenshots/quick.png)
+
+![Lock screen](docs/screenshots/lock.png)
+
+![Power menu](docs/screenshots/power.png)
+
 ![Bar at the bottom, dock on the right](docs/screenshots/layout.png)
 
 ![Liquid glass off, Amber palette](docs/screenshots/glass-off.png)
