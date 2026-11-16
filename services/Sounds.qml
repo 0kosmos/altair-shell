@@ -266,20 +266,37 @@ Singleton {
         }
     }
 
-    // A drag catching a guide line or a magnet slot.
+    // A drag catching a guide line or a magnet slot: only when it catches
+    // (none -> one; the pin is re-set while the pointer moves inside a slot),
+    // and at most one per 150 ms.
+    property bool hadPin: false
+    property real lastSnap: 0
+    function snapped(): void {
+        const now = Date.now();
+        if (now - lastSnap < 150)
+            return;
+        lastSnap = now;
+        play("snap", "snap", false);
+    }
     Connections {
         target: Snap
         function onLineXChanged(): void {
-            if (Snap.dragging && Snap.lineX)
-                root.play("snap", "snap", false);
+            if (Snap.dragging && Snap.lineX && !Snap.pin)
+                root.snapped();
         }
         function onLineYChanged(): void {
-            if (Snap.dragging && Snap.lineY)
-                root.play("snap", "snap", false);
+            if (Snap.dragging && Snap.lineY && !Snap.pin)
+                root.snapped();
         }
         function onPinChanged(): void {
-            if (Snap.dragging && Snap.pin)
-                root.play("snap", "snap", false);
+            const has = Snap.pin !== null;
+            if (has && !root.hadPin && Snap.dragging)
+                root.snapped();
+            root.hadPin = has;
+        }
+        function onDraggingChanged(): void {
+            if (!Snap.dragging)
+                root.hadPin = false;
         }
     }
 }

@@ -508,8 +508,12 @@ Item {
                 const sc = frame.scaleIn(t.frame, t.side);
                 const w = frame.base.w * sc, h = frame.base.h * sc;
                 const at = frame.slotPos(t.frame, t.side, w, h);
-                Snap.pin = { x: frame.mon.x + at.x, y: frame.mon.y + at.y, w, h };
-            } else {
+                const pin = { x: frame.mon.x + at.x, y: frame.mon.y + at.y, w, h };
+                // Only on change: this runs for every pointer event.
+                const old = Snap.pin;
+                if (!old || old.x !== pin.x || old.y !== pin.y || old.w !== pin.w || old.h !== pin.h)
+                    Snap.pin = pin;
+            } else if (Snap.pin) {
                 Snap.pin = null;
             }
             Snap.update(raw, free);
