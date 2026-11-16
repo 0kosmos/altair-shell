@@ -97,6 +97,7 @@ Scope {
                 { id: "widgets", label: "Widgets", icon: "widgets", group: "Desktop" },
                 { id: "effects", label: "Effects", icon: "auto_awesome", group: "Desktop" },
                 { id: "display", label: "Display", icon: "brightness_6", group: "System" },
+                { id: "clipboard", label: "Clipboard", icon: "content_paste", group: "System" },
                 { id: "lock", label: "Lock & power", icon: "lock", group: "System" },
                 { id: "notifications", label: "Notifications", icon: "notifications", group: "System" },
                 { id: "sounds", label: "Sounds", icon: "volume_up", group: "System" },
@@ -578,6 +579,7 @@ Scope {
                 case "effects": return "EffectsPage.qml";
                 case "display": return "DisplayPage.qml";
                 case "lock": return "LockPage.qml";
+                case "clipboard": return "ClipboardPage.qml";
                 case "notifications": return "NotificationsPage.qml";
                 case "sounds": return "SoundsPage.qml";
                 case "performance": return "PerformancePage.qml";

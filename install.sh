@@ -44,6 +44,8 @@ OPTIONAL=(
     cava                           # music visualizer (Music widget)
     libpulse                       # pactl: routes the music player into the equalizer
     gpu-screen-recorder            # screen recorder button (60 fps, GPU-encoded)
+    cliphist                       # clipboard history (SUPER + SHIFT + V, opt-in)
+    wl-clipboard                   # wl-paste / wl-copy for the clipboard history
 )
 MIN_HYPRLAND="0.55"                # first version with the Lua config
 

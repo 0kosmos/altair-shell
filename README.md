@@ -63,6 +63,12 @@ frosted glass, smooth motion and close to zero CPU when idle.
   (*Settings → Notifications*); clear of the bar and dock; exists only
   while shown. It reacts to changes, so a volume key at 100 % shows
   nothing (Altair's own brightness keys always show it).
+- **Clipboard history** (opt-in, `SUPER + SHIFT + V`; needs `cliphist`):
+  text and images you copied, newest first, with search and image
+  thumbnails. Enter copies the entry and pastes it into the window you were
+  in (Ctrl+Shift+V in terminals), Shift+Enter only copies, Delete removes
+  one. Copies a password manager marks as secret are never stored. Turn it
+  on and choose how many entries to keep in *Settings → Clipboard*.
 - **Power menu** (`SUPER + Escape`, or the desktop menu): lock, suspend,
   hibernate (where available), log out, restart and shut down as large
   buttons over the blurred desktop. Arrow keys, Enter or the underlined
@@ -223,7 +229,7 @@ Installed by `install.sh` (all from the official repositories):
 Optional: `networkmanager` (network status and menu), `bluez` (Bluetooth
 menu; enable it with `sudo systemctl enable --now bluetooth`), `ddcutil`
 (monitor brightness over DDC/CI; needs the `i2c-dev` module), `upower` (battery),
-`libnotify` ("Send test" notification button), `gpu-screen-recorder` (screen recorder), `libpulse` (`pactl`, routes
+`libnotify` ("Send test" notification button), `gpu-screen-recorder` (screen recorder), `cliphist` + `wl-clipboard` (clipboard history), `libpulse` (`pactl`, routes
 the music player into the equalizer), `cava` (music visualizer
 and Visualizer widget), `nvidia-utils` (GPU
 temperature in the System widget; comes with the NVIDIA driver). The Music
@@ -278,7 +284,7 @@ and add `require("altair").setup({ terminal = "your-terminal" })` to the end of
 | `icon_theme` | your GTK icon theme | icon theme for apps and tray |
 | `alttab` | `true` | the Alt+Tab switcher (`false` = leave ALT+Tab alone) |
 | `brightness_keys` | `false` | brightness keys through Altair (works for external monitors too); leave off if your config binds them to `brightnessctl` |
-| `launcher_key`, `notifications_key`, `wallpaper_key`, `settings_key`, `workspace_prev_key`, `workspace_next_key`, `last_workspace_key`, `widgets_key`, `lock_key`, `power_key` | see below | other keys (e.g. `"SUPER + CTRL + H"`), or `false` for none |
+| `launcher_key`, `notifications_key`, `wallpaper_key`, `settings_key`, `workspace_prev_key`, `workspace_next_key`, `last_workspace_key`, `widgets_key`, `lock_key`, `power_key`, `clipboard_key` | see below | other keys (e.g. `"SUPER + CTRL + H"`), or `false` for none |
 
 ## Keys
 
@@ -294,6 +300,7 @@ and add `require("altair").setup({ terminal = "your-terminal" })` to the end of
 | `SUPER + Tab` | back to the last-used workspace |
 | `SUPER + L` | lock the screen |
 | `SUPER + Escape` | power menu |
+| `SUPER + SHIFT + V` | clipboard history (when turned on) |
 | `SUPER + SHIFT + R` | restart Altair (also on the lock screen: it comes back locked) |
 | `SUPER + SHIFT + Return` | terminal (works even if Altair is down) |
 
@@ -311,7 +318,7 @@ Altair can also be controlled from scripts or your own keybinds:
 
 ```sh
 qs -c altair ipc show                                # everything available
-qs -c altair ipc call panels toggle launcher         # launcher | notifications | wallpaper | calendar | power | settings
+qs -c altair ipc call panels toggle launcher         # launcher | notifications | wallpaper | calendar | power | clipboard | settings
 qs -c altair ipc call widgets toggleEdit           # desktop widgets' edit mode
 qs -c altair ipc call recorder toggle              # start/stop screen recording
 qs -c altair ipc call dock toggle                  # show/hide the dock

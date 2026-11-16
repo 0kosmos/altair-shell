@@ -29,6 +29,8 @@
 --   widgets_key = desktop widgets' edit mode (default: MOD + D)
 --   lock_key  = lock the screen (default: MOD + L)
 --   power_key = power menu (default: MOD + Escape)
+--   clipboard_key = clipboard history (default: MOD + SHIFT + V; MOD + V
+--               is Hyprland's stock "float window" key)
 --   (any key option: false = no bind)
 --
 -- The escape hatches below are plain Hyprland binds, so they work even when the
@@ -116,6 +118,9 @@ function M.setup(opts)
     hl.config({ misc = { allow_session_lock_restore = true } })
     if opts.lock_key ~= false then
         hl.bind(opts.lock_key or (mod .. " + L"), hl.dsp.exec_cmd("qs -c altair ipc call lock lock"))
+    end
+    if opts.clipboard_key ~= false then
+        hl.bind(opts.clipboard_key or (mod .. " + SHIFT + V"), hl.dsp.exec_cmd("qs -c altair ipc call panels toggle clipboard"))
     end
     if opts.power_key ~= false then
         hl.bind(opts.power_key or (mod .. " + Escape"), hl.dsp.exec_cmd("qs -c altair ipc call panels toggle power"))

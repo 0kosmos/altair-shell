@@ -45,6 +45,7 @@ Singleton {
     readonly property alias display: adapter.display
     readonly property alias lock: adapter.lock
     readonly property alias osd: adapter.osd
+    readonly property alias clipboard: adapter.clipboard
 
     function reload(): void {
         file.reload();
@@ -189,6 +190,13 @@ Singleton {
                 property bool doNotDisturb: false
                 // Play a short sound for new notifications (via pw-play).
                 property bool sound: false
+            }
+
+            // Clipboard history (services/Clipboard.qml, needs cliphist). Opt-in.
+            property JsonObject clipboard: JsonObject {
+                property bool enabled: false
+                property int maxItems: 500             // 100 | 500 | 1000
+                property bool autoPaste: true          // paste into the window after choosing
             }
 
             // Volume / brightness pop-up (osd/Osd.qml).

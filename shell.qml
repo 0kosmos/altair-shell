@@ -5,6 +5,7 @@ import Quickshell
 import qs.alttab
 import qs.bar
 import qs.calendar
+import qs.clipboard
 import qs.components
 import qs.connections
 import qs.core
@@ -42,6 +43,7 @@ ShellRoot {
     LockScreen {}
     Osd {}
     PowerMenu {}
+    ClipboardPanel {}
 
     // Singletons and Quickshell services start lazily, on first access.
     // Touch the ones we want ready at startup: Config (load/create the file),
@@ -58,6 +60,7 @@ ShellRoot {
         void WallpaperTheme.mode; // themes that follow the wallpaper
         void Sounds.enabled;      // listen for panel/volume/edit-mode events
         void Display.brightness;  // find monitors, re-apply the colour shader
+        void Clipboard.enabled;   // start recording copies, if turned on
         void Locker.locked;       // idle lock, logind, re-lock after a crash while locked
     }
 

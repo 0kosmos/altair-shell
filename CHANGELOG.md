@@ -20,6 +20,11 @@ All notable changes to Altair. Versions follow [semantic versioning](https://sem
   available), log out, restart, shut down; keyboard letters; a cancellable
   countdown before log out / restart / shut down. The desktop menu opens it.
 
+### Clipboard
+- **Clipboard history** (opt-in, `SUPER + SHIFT + V`, needs `cliphist`):
+  search, image thumbnails, paste into the previous window, delete, clear;
+  password-manager secrets are never stored.
+
 ### Pop-ups
 - **Volume and brightness pop-up**: shows volume, mute, microphone mute
   and brightness changes for a moment, whatever made them (keys, apps,
