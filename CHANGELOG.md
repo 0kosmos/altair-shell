@@ -2,7 +2,7 @@
 
 All notable changes to Altair. Versions follow [semantic versioning](https://semver.org).
 
-## [0.2.0] — unreleased
+## [0.2.0] — 2026-11-16
 
 A big update: desktop widgets, a dock, Alt+Tab, sounds, network and display
 controls, and a lot of polish.
@@ -72,5 +72,5 @@ controls, and a lot of polish.
 First release: bar, app launcher, notifications, Settings, wallpapers with
 a picker and live wallpapers.
 
-[0.2.0]: https://github.com/0kosmos/altair-shell/compare/v0.1.0...HEAD
+[0.2.0]: https://github.com/0kosmos/altair-shell/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/0kosmos/altair-shell/releases/tag/v0.1.0
