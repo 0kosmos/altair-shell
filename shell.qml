@@ -16,6 +16,7 @@ import qs.lock
 import qs.notifications
 import qs.osd
 import qs.power
+import qs.quick
 import qs.recorder
 import qs.services
 import qs.settings
@@ -46,6 +47,7 @@ ShellRoot {
     PowerMenu {}
     ClipboardPanel {}
     RecorderPanel {}
+    QuickSettings {}
 
     // Singletons and Quickshell services start lazily, on first access.
     // Touch the ones we want ready at startup: Config (load/create the file),

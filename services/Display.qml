@@ -238,6 +238,17 @@ Singleton {
     readonly property bool shaderOn: Math.abs(saturation - 1) > 0.005 || warmth > 0.005
         || Math.abs(gamma - 1) > 0.005 || dim < 0.995
 
+    // Night light on/off (quick settings), back to the last strength used.
+    readonly property bool nightLight: warmth > 0.005
+    function toggleNightLight(): void {
+        if (nightLight) {
+            Config.display.nightLevel = warmth;
+            Config.display.warmth = 0;
+        } else {
+            Config.display.warmth = Math.max(0.1, Config.display.nightLevel || 0.45);
+        }
+    }
+
     function resetColour(): void {
         Config.display.saturation = 1;
         Config.display.warmth = 0;

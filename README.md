@@ -63,6 +63,11 @@ frosted glass, smooth motion and close to zero CPU when idle.
   (*Settings → Notifications*); clear of the bar and dock; exists only
   while shown. It reacts to changes, so a volume key at 100 % shows
   nothing (Altair's own brightness keys always show it).
+- **Quick settings** (`SUPER + A` or the tune button in the bar): tiles for
+  Wi-Fi, Bluetooth, Do not disturb, night light, microphone, **keep awake**
+  (no lock on idle until switched off), screen recording and low-power
+  mode, sliders for volume and brightness, and lock / power / Settings.
+  Tiles with an arrow open their full menu.
 - **Clipboard history** (opt-in, `SUPER + SHIFT + V`; needs `cliphist`):
   text and images you copied, newest first, with search and image
   thumbnails. Enter copies the entry and pastes it into the window you were
@@ -308,7 +313,7 @@ and add `require("altair").setup({ terminal = "your-terminal" })` to the end of
 | `icon_theme` | your GTK icon theme | icon theme for apps and tray |
 | `alttab` | `true` | the Alt+Tab switcher (`false` = leave ALT+Tab alone) |
 | `brightness_keys` | `false` | brightness keys through Altair (works for external monitors too); leave off if your config binds them to `brightnessctl` |
-| `launcher_key`, `notifications_key`, `wallpaper_key`, `settings_key`, `workspace_prev_key`, `workspace_next_key`, `last_workspace_key`, `widgets_key`, `lock_key`, `power_key`, `clipboard_key` | see below | other keys (e.g. `"SUPER + CTRL + H"`), or `false` for none |
+| `launcher_key`, `notifications_key`, `wallpaper_key`, `settings_key`, `workspace_prev_key`, `workspace_next_key`, `last_workspace_key`, `widgets_key`, `lock_key`, `power_key`, `clipboard_key`, `quick_key` | see below | other keys (e.g. `"SUPER + CTRL + H"`), or `false` for none |
 
 ## Keys
 
@@ -324,6 +329,7 @@ and add `require("altair").setup({ terminal = "your-terminal" })` to the end of
 | `SUPER + Tab` | back to the last-used workspace |
 | `SUPER + L` | lock the screen |
 | `SUPER + Escape` | power menu |
+| `SUPER + A` | quick settings |
 | `SUPER + SHIFT + V` | clipboard history (when turned on) |
 | `SUPER + SHIFT + R` | restart Altair (also on the lock screen: it comes back locked) |
 | `SUPER + SHIFT + Return` | terminal (works even if Altair is down) |
@@ -342,7 +348,7 @@ Altair can also be controlled from scripts or your own keybinds:
 
 ```sh
 qs -c altair ipc show                                # everything available
-qs -c altair ipc call panels toggle launcher         # launcher | notifications | wallpaper | calendar | power | clipboard | settings
+qs -c altair ipc call panels toggle launcher         # launcher | notifications | wallpaper | calendar | power | clipboard | quick | settings
 qs -c altair ipc call widgets toggleEdit           # desktop widgets' edit mode
 qs -c altair ipc call recorder toggle              # start/stop screen recording
 qs -c altair ipc call dock toggle                  # show/hide the dock

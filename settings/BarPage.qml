@@ -157,4 +157,13 @@ Page {
             onToggled: value => Config.bar.bluetooth = value
         }
     }
+
+    SettingRow {
+        title: "Quick settings button"
+        description: "Wi-Fi, Bluetooth, do not disturb, night light, volume and more in one panel (also SUPER + A)."
+        Toggle {
+            checked: Config.bar.quickSettings
+            onToggled: value => Config.bar.quickSettings = value
+        }
+    }
 }

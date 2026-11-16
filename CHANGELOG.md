@@ -15,6 +15,11 @@ All notable changes to Altair. Versions follow [semantic versioning](https://sem
   console unlocks, and a broken password check shows an error instead of
   freezing. See README, "If the lock screen breaks".
 
+### Quick settings
+- **Quick settings** (`SUPER + A`, bar button): Wi-Fi, Bluetooth, Do not
+  disturb, night light, microphone, keep awake, recording, low power,
+  volume and brightness, lock / power / Settings.
+
 ### Power menu
 - **Power menu** (`SUPER + Escape`): lock, suspend, hibernate (if
   available), log out, restart, shut down; keyboard letters; a cancellable

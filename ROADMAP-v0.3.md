@@ -104,7 +104,7 @@ polish pass on the Settings UI.
 - [x] 2. Volume / brightness OSD
 - [x] 3. Power menu
 - [x] 4. Clipboard history
-- [ ] 5. Quick settings
+- [x] 5. Quick settings
 - [x] 6. Recorder menu
 - [x] 7. Corner radius
 - [x] 8. Livelier panel backgrounds
@@ -129,3 +129,4 @@ polish pass on the Settings UI.
 - Widget menu: widgets/WidgetMenu.qml (Overlay PanelWindow like DesktopMenu, opened by WidgetLayer on Widgets.menuRequested(id, screen, at)); WidgetFrame has a RightButton-only MouseArea (z 50) so left clicks still reach controls; detach/remove go back to the frame via Widgets.detachRequested/removeRequested (frames know their neighbours). Widgets.groupOf(id) = all items on the attachedTo chain from the top; Widgets.updateMany for one save/undo step; group opacity in the menu and the edit toolbar. Test tool: vmouse.py gained rpress/rrelease (right button).
 - Widget rows: WidgetFrame.leftOf/rightOf (left/right joins in both directions), leftWidth/rightWidth (sizes only), rowOf/rowChild; top/bottom scaleIn/slotPos/gap use the row; free() allows one spanning child per row side; joinedTop/Bottom also when a neighbour's spanning child covers this frame. attachTarget refuses a slot whose facing side of the dragged widget already has a child. Music type attach "any".
 - Corners for controls: Theme.pill(h) = h/2 × min(1, corners) for buttons, chips, tabs, toggles (+knob), slider knob, fields, toolbars, OSD, lock field, workspace dots; real circles (art, swatches, clock faces, avatars) keep width/2.
+- F5 quick settings: quick/QuickSettings.qml (AltairPanel "quick", docked like brightness; inline Tile / SliderRow), bar/QuickButton.qml (bar.quickSettings), MOD+A (quick_key). New: Locker.keepAwake (session only; disables the idle-lock monitor), Display.toggleNightLight + display.nightLevel. Existing menus are untouched; tile arrows open them.

@@ -207,6 +207,7 @@ Variants {
             BatteryStatus {}
             RecordButton {}
             NotificationButton {}
+            QuickButton {}
             SettingsButton {}
         }
         }

@@ -229,9 +229,13 @@ Singleton {
     readonly property int idleMinutes: Config.ready ? Math.max(0, Config.lock.idleMinutes) : 0
     readonly property int screenOffSeconds: Config.ready ? Math.max(0, Config.lock.screenOffSeconds) : 0
 
+    // Quick settings > Keep awake: no lock on idle until switched off (or
+    // the shell restarts). Locking by hand still works.
+    property bool keepAwake: false
+
     // Idle inhibitors (a playing video, a game) keep the screen unlocked.
     IdleMonitor {
-        enabled: root.idleMinutes > 0 && !root.locked
+        enabled: root.idleMinutes > 0 && !root.locked && !root.keepAwake
         timeout: root.idleMinutes * 60
         respectInhibitors: true
         onIsIdleChanged: if (isIdle) root.lock()

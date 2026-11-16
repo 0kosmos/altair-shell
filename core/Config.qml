@@ -372,6 +372,7 @@ Singleton {
                 property string clockPosition: "center"
                 property bool bluetooth: true          // Bluetooth button (only shown with an adapter)
                 property bool dragToMove: false        // drag the bar by an empty spot to another edge
+                property bool quickSettings: true      // quick settings button in the bar
                 property bool clockPopup: true         // click the clock: calendar
                 property bool weekNumbers: false       // ISO week numbers in the calendar
                 property bool analogClock: true        // clock in the calendar popup
@@ -395,6 +396,7 @@ Singleton {
                 property real gamma: 1                 // 0.6–1.6
                 property real dim: 1                   // 0.2–1 (software brightness)
                 property bool barButton: true          // brightness button in the bar
+                property real nightLevel: 0.45         // night light strength when switched on (quick settings)
             }
 
             // UI sounds (services/Sounds.qml). The notification sound's on/off
