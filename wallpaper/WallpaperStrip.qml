@@ -21,8 +21,8 @@ import qs.theme
 AltairPanel {
     id: strip
 
-    readonly property int cardWidth: 240
-    readonly property int cardHeight: 135
+    readonly property int cardWidth: 272
+    readonly property int cardHeight: 153
     readonly property int cardSpacing: 14
     // Room above/below the cards for the enlarged middle card and its ring.
     readonly property int cardPad: 12

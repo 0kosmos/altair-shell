@@ -23,8 +23,8 @@ AltairPanel {
 
     name: "wallpaper"
     available: Config.wallpaper.picker === "grid"
-    panelWidth: 860
-    panelHeight: 560
+    panelWidth: 960
+    panelHeight: 620
     topOffset: 0.14
 
     content: Component {

@@ -77,7 +77,10 @@ Singleton {
 
     // ---- The filter process ---------------------------------------------------------
     readonly property bool flat: gains.every(g => g === 0)
-    readonly property bool wanted: enabled && !flat
+    // The filter runs whenever the equalizer is on, also on Flat: removing
+    // the sink under a playing app (Spotify) makes it pause, and switching
+    // presets used to pass through Flat.
+    readonly property bool wanted: enabled
     readonly property string confPath: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/altair-eq.conf"
     readonly property string sinkName: "altair_eq_sink"
     // True once the filter's sink exists in PipeWire.
@@ -92,9 +95,25 @@ Singleton {
         if (wanted && !proc.running) {
             conf.setText(config());
             proc.running = true;
-        } else if (!wanted && proc.running) {
-            proc.running = false;   // PipeWire moves the player back by itself
+        } else if (!wanted && proc.running && !unroute.running) {
+            // Move the player back to the normal output first, then stop the
+            // filter (a sink vanishing under it makes some players pause).
+            unroute.running = true;
         }
+    }
+
+    Process {
+        id: unroute
+        command: ["sh", "-c", "s=$(pactl list short sinks | awk '$2==\"" + root.sinkName + "\"{print $1}'); "
+            + "[ -n \"$s\" ] && pactl list short sink-inputs | awk -v s=\"$s\" '$3==s{print $1}' | "
+            + "while read -r i; do pactl move-sink-input \"$i\" @DEFAULT_SINK@; done; true"]
+        onExited: stopTimer.restart()
+    }
+    // Give PipeWire a moment to switch the stream before the sink goes.
+    Timer {
+        id: stopTimer
+        interval: 250
+        onTriggered: if (!root.wanted) proc.running = false
     }
 
     // Kill an equalizer left over from an earlier shell (e.g. after SIGKILL).

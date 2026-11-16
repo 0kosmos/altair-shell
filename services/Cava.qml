@@ -6,6 +6,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 import qs.core
+import qs.theme
 
 // Audio spectrum for the music visualizer, from cava (optional dependency).
 //
@@ -58,7 +59,34 @@ Singleton {
             proc.running = true;
         } else if (!wanted && proc.running) {
             proc.running = false;
+            settle();
+        }
+    }
+
+    // Stopped (paused, covered...): the bars sink to rest over ~0.5 s
+    // instead of dropping at once. Runs at the visualizer's fps, then stops.
+    function settle(): void {
+        if (values.length > 0 && Theme.animations)
+            decay.start();
+        else
             values = [];
+    }
+    Timer {
+        id: decay
+        interval: Math.round(1000 / root.fps)
+        repeat: true
+        onTriggered: {
+            if (proc.running) {
+                stop();
+                return;
+            }
+            const next = root.values.map(v => Math.max(0, v * 0.8 - 0.012));
+            if (next.every(v => v <= 0.005)) {
+                root.values = [];
+                stop();
+            } else {
+                root.values = next;
+            }
         }
     }
 
@@ -121,11 +149,13 @@ Singleton {
                 const out = [];
                 for (let i = 0; i < root.bars && i < v.length; i++)
                     out.push((parseInt(v[i]) || 0) / 100);
+                decay.stop();
                 root.values = out;
             }
         }
         onExited: code => {
-            root.values = [];
+            if (!root.restartPending)
+                root.settle();
             if (root.restartPending) {
                 root.restartPending = false;
                 root.update();

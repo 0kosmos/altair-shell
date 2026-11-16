@@ -67,23 +67,34 @@ Item {
         highlightRangeMode: ListView.StrictlyEnforceRange
         preferredHighlightBegin: height / 2 - 14
         preferredHighlightEnd: height / 2 + 14
-        highlightMoveDuration: Theme.anim.slow
+        // Glide by duration (not by speed), eased, so every line change
+        // takes the same calm time.
+        highlightMoveVelocity: -1
+        highlightMoveDuration: Theme.animations ? 520 : 0
         spacing: 6
 
+        // All lines share one size (no re-layout while changing); the
+        // current one is scaled up and brightened smoothly instead.
         delegate: StyledText {
             required property var modelData
             required property int index
             readonly property bool current: index === Lyrics.index
+            readonly property int dist: Math.abs(index - Lyrics.index)
             width: ListView.view.width
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.Wrap
             elide: Text.ElideNone
             text: modelData.text || "♪"
-            font.pixelSize: current ? 17 : 14
-            font.weight: current ? Font.DemiBold : Font.Normal
-            color: current ? (Lyrics.estimated ? Theme.fgMuted : Theme.fg) : Theme.fgDisabled
-            Behavior on font.pixelSize {
-                NumberAnimation { duration: Theme.anim.normal; easing.type: Theme.anim.easing }
+            font.pixelSize: 16
+            font.weight: Font.DemiBold
+            color: Lyrics.estimated && current ? Theme.fgMuted : Theme.fg
+            scale: current ? 1.06 : 0.9
+            opacity: current ? 1 : dist === 1 ? 0.45 : 0.28
+            Behavior on scale {
+                NumberAnimation { duration: Theme.anim.slow; easing.type: Easing.OutQuint }
+            }
+            Behavior on opacity {
+                NumberAnimation { duration: Theme.anim.slow; easing.type: Easing.OutCubic }
             }
         }
     }
@@ -107,50 +118,44 @@ Item {
         anchors.margins: 16
         visible: root.style === "focus" && root.hasText
 
-        StyledText {
+        LyricLine {
             id: now
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: -10
-            horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.Wrap
-            elide: Text.ElideNone
+            height: 56
             maximumLineCount: 2
             text: root.textAt(Math.max(0, Lyrics.index))
-            font.pixelSize: 22
-            font.weight: Font.DemiBold
-            // Crossfade on every new line.
-            onTextChanged: fade.restart()
-            SequentialAnimation {
-                id: fade
-                NumberAnimation { target: now; property: "opacity"; from: 0.2; to: 1; duration: Theme.anim.normal; easing.type: Theme.anim.easing }
-            }
+            pixelSize: 22
+            weight: Font.DemiBold
+            color: Lyrics.estimated ? Theme.fgMuted : Theme.fg
         }
         StyledText {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: now.bottom
-            anchors.topMargin: 8
+            anchors.topMargin: 2
             horizontalAlignment: Text.AlignHCenter
+            elide: Text.ElideRight
             text: root.textAt(Math.max(0, Lyrics.index) + 1)
             color: Theme.fgDisabled
             font.pixelSize: 14
+            // The next line fades in after the current one has moved.
+            onTextChanged: if (Theme.animations) nextFade.restart()
+            NumberAnimation on opacity { id: nextFade; from: 0; to: 1; duration: Theme.anim.slow * 1.4; easing.type: Easing.InOutCubic }
         }
     }
 
     // ---- Minimal ---------------------------------------------------------------------
-    StyledText {
-        id: one
+    LyricLine {
         anchors.fill: parent
         anchors.leftMargin: 16
         anchors.rightMargin: 16
         visible: root.style === "minimal" && root.hasText
-        horizontalAlignment: Text.AlignHCenter
         text: root.textAt(Math.max(0, Lyrics.index))
-        font.pixelSize: 15
-        font.weight: Font.Medium
-        onTextChanged: oneFade.restart()
-        NumberAnimation { id: oneFade; target: one; property: "opacity"; from: 0.2; to: 1; duration: Theme.anim.normal; easing.type: Theme.anim.easing }
+        pixelSize: 15
+        weight: Font.Medium
+        travel: 8
     }
 }

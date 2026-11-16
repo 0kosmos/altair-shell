@@ -160,11 +160,14 @@ Singleton {
         running: root.wanted && Media.playing && root.hasLines
         onTriggered: root.player?.positionChanged()
     }
-    // Find the current line 4× a second (only `index` changing redraws).
+    // Find the current line, then sleep until the next one is due (synced
+    // lyrics: lines change on time, not up to 250 ms late; few wake-ups).
+    // Re-checked on every position update too. Only `index` changing redraws.
+    readonly property bool ticking: root.wanted && Media.playing && root.hasLines
+    onTickingChanged: if (ticking) tick(); else lineTimer.stop()
+    onBasePosChanged: if (ticking) tick()
     Timer {
-        interval: 250
-        repeat: true
-        running: root.wanted && Media.playing && root.hasLines
+        id: lineTimer
         onTriggered: root.tick()
     }
     function tick(): void {
@@ -172,6 +175,9 @@ Singleton {
             const i = length > 0 ? Math.min(lines.length - 1, Math.floor(position() / length * lines.length)) : -1;
             if (i !== index)
                 index = i;
+            lineTimer.interval = 1000;
+            if (ticking)
+                lineTimer.restart();
             return;
         }
         if (status !== "synced") {
@@ -185,5 +191,11 @@ Singleton {
             i = j;
         if (i !== index)
             index = i;
+        // Wake up when the next line is due (at most 2 s, in case of a seek
+        // the player didn't report).
+        const next = lines[i + 1];
+        lineTimer.interval = next ? Math.max(20, Math.min(2000, Math.round((next.t - p) * 1000) + 5)) : 2000;
+        if (ticking)
+            lineTimer.restart();
     }
 }
