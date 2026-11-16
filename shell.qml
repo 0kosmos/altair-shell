@@ -44,6 +44,7 @@ ShellRoot {
         void WindowRules.rules;   // re-send per-app transparency rules
         void Placement.get;       // load saved positions now (Settings opens at its spot)
         void Equalizer.enabled;   // restore the music equalizer (and clean up a leftover)
+        void WallpaperTheme.mode; // themes that follow the wallpaper
     }
 
     Connections {

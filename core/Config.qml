@@ -120,6 +120,8 @@ Singleton {
                 property string palette: "default"
                 // Background, surface, muted, text, accent.
                 property list<string> customPalette: ["#14151a", "#1f2128", "#3a3d47", "#e8e9ee", "#7aa2f7"]
+                // Palette "auto": generated from the wallpaper (services/WallpaperTheme.qml).
+                property list<string> autoColors: ["#0b1622", "#132436", "#29486b", "#d6e4f2", "#5aa7e8"]
                 property string barPosition: "top"     // "top" | "bottom" | "left" | "right"
                 // Hyprland window borders: "accent" (accent colour for the
                 // focused window, soft grey for others), "hyprland" (colours from
@@ -167,6 +169,11 @@ Singleton {
                 // Picker: "strip" (scrollable row, docked to an edge) or "grid".
                 property string picker: "strip"
                 property string pickerPosition: "bottom"   // "bottom" | "center" | "top"
+                // Themes with wallpapers (services/WallpaperTheme.qml):
+                // "keep" | "saved" | "auto", and the saved ones:
+                // { "<path>": { palette, accent, colors? }, "*": for all }.
+                property string themeMode: "keep"
+                property var themes: ({})
                 // Live (video) wallpapers.
                 property JsonObject live: JsonObject {
                     property bool enabled: true            // false = show a still frame

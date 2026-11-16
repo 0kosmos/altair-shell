@@ -25,6 +25,10 @@ Singleton {
     // colours: background, surface, muted, text, accent.
     readonly property var paletteColors: {
         const id = Config.appearance.palette;
+        if (id === "auto") {
+            const c = Config.appearance.autoColors;
+            return c && c.length === 5 && Array.from(c).every(v => /^#[0-9a-fA-F]{6}$/.test(v)) ? Array.from(c) : null;
+        }
         if (id === "custom") {
             const c = Config.appearance.customPalette;
             return c && c.length === 5 && c.every(v => /^#[0-9a-fA-F]{6}$/.test(v)) ? c : null;

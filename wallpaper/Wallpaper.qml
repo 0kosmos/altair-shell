@@ -51,6 +51,12 @@ Scope {
                     duration: 600
                 }
 
+                // Reads wallpaper colours for auto themes (one screen is enough).
+                Loader {
+                    active: perScreen.modelData === Quickshell.screens[0]
+                    sourceComponent: PaletteExtractor {}
+                }
+
                 // Right-click on the empty desktop: the desktop menu.
                 MouseArea {
                     anchors.fill: parent

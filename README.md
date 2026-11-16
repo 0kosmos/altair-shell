@@ -83,6 +83,11 @@ frosted glass, smooth motion and close to zero CPU when idle.
   (with the same smooth snapping, also to other widgets), drag the corner to
   resize, click a widget for its style, opacity and remove buttons. Several
   copies allowed; the layout is saved in `config.json`.
+- **Themes with wallpapers**: the picker has a theme row: every palette,
+  plus **Auto** (a palette generated from the wallpaper's colours, no extra
+  tools). Save a theme for this wallpaper or for all; *On change* decides
+  what switching wallpapers does: keep the theme, use the saved one, or
+  Auto (saved first, else generated). IPC: `wallpaper autoTheme`.
 - **Wallpapers** (`SUPER + W`), drawn by Altair itself (no wallpaper daemon):
   - pictures (JPG, PNG, WebP, AVIF, JXL) and **live wallpapers** (MP4, WebM, MKV);
   - a carousel picker at the bottom, centre or top (hover or arrow keys to

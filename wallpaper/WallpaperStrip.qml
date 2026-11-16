@@ -35,7 +35,8 @@ AltairPanel {
     centerVertically: true
     // About five cards wide.
     panelWidth: cardWidth * 5 + cardSpacing * 4 + 48
-    panelHeight: 46 + cardHeight + cardPad * 2 + 14
+    // Header, cards, and the theme row under them.
+    panelHeight: 46 + cardHeight + cardPad * 2 + 14 + 46
 
     content: Component {
         FocusScope {
@@ -127,6 +128,16 @@ AltairPanel {
             }
 
             // ---- Carousel ------------------------------------------------------------
+            // Colour themes for the wallpaper (WallpaperTheme).
+            ThemeRow {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                anchors.leftMargin: Theme.space.l
+                anchors.rightMargin: Theme.space.l
+                anchors.bottomMargin: Theme.space.m
+            }
+
             ListView {
                 id: list
 

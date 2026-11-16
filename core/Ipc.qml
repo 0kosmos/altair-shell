@@ -65,6 +65,10 @@ Scope {
         function set(path: string): void {
             Wallpapers.set(path);
         }
+        // A colour theme generated from the current wallpaper.
+        function autoTheme(): void {
+            WallpaperTheme.generate(Wallpapers.current);
+        }
         function current(): string {
             return Wallpapers.current;
         }

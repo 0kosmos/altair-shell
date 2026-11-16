@@ -24,7 +24,7 @@ AltairPanel {
     name: "wallpaper"
     available: Config.wallpaper.picker === "grid"
     panelWidth: 960
-    panelHeight: 620
+    panelHeight: 620 + 84   // + the theme row (two lines here)
     topOffset: 0.14
 
     content: Component {
@@ -108,6 +108,15 @@ AltairPanel {
                 }
             }
 
+            // Colour themes for the wallpaper (WallpaperTheme).
+            ThemeRow {
+                id: themes
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                anchors.margins: Theme.space.l
+            }
+
             // ---- Grid ------------------------------------------------------------
             GridView {
                 id: grid
@@ -116,7 +125,7 @@ AltairPanel {
                 anchors.topMargin: Theme.space.m
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.bottom: parent.bottom
+                anchors.bottom: themes.top
                 anchors.margins: Theme.space.m
 
                 focus: true
