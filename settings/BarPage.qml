@@ -71,6 +71,23 @@ Page {
     Section { text: "Clock" }
 
     SettingRow {
+        title: "Position"
+        description: Theme.barVertical
+            ? "Top first: above the workspaces. Top: below them. Bottom: above the status buttons. Bottom last: at the very end."
+            : "Left first: before the workspaces. Left: after them. Right: before the status buttons. Right last: after them."
+    }
+    Chips {
+        Layout.bottomMargin: Theme.space.s
+        options: Theme.barVertical
+            ? [{ label: "Top first", value: "leftFirst" }, { label: "Top", value: "left" }, { label: "Middle", value: "center" },
+               { label: "Bottom", value: "right" }, { label: "Bottom last", value: "rightLast" }]
+            : [{ label: "Left first", value: "leftFirst" }, { label: "Left", value: "left" }, { label: "Middle", value: "center" },
+               { label: "Right", value: "right" }, { label: "Right last", value: "rightLast" }]
+        current: Config.bar.clockPosition
+        onSelected: value => Config.bar.clockPosition = value
+    }
+
+    SettingRow {
         title: "Show date"
         description: "The date next to the time. The format follows your system's locale."
         Toggle {

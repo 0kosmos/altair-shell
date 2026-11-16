@@ -34,6 +34,9 @@ Scope {
     property bool alignRight: false
     // "top"/"bottom": stretch along the edge, or keep panelWidth (centred).
     property bool fullWidth: true
+    // Small panels docked to an edge (fullWidth false): where along that
+    // edge, "start" (left/top), "center" or "end" (right/bottom).
+    property string along: "center"
     // How far edge panels slide in from their edge, in px.
     property int slideDistance: 24
     // dock "": centre vertically instead of using topOffset.
@@ -95,11 +98,15 @@ Scope {
             // "left"/"right": at that side (beside a side bar), at the top, or
             // centred vertically when centerVertically.
             readonly property bool side: root.dock === "right" || root.dock === "left"
-            anchors.top: root.dock === "" || root.dock === "top" || (side && (root.centerVertically || Theme.barAtTop))
-            anchors.bottom: root.dock === "bottom" || (side && !root.centerVertically && !Theme.barAtTop)
-            anchors.right: root.dock === "right" || ((root.dock === "top" || root.dock === "bottom") && root.fullWidth)
-            anchors.left: root.dock === "left" || ((root.dock === "top" || root.dock === "bottom") && root.fullWidth)
-            margins.top: side && root.centerVertically ? Math.max(Theme.barGap, Math.round(((screen?.height ?? 1080) - root.panelHeight) / 2))
+            readonly property bool edge: root.dock === "top" || root.dock === "bottom"
+            readonly property bool sideStart: side && root.centerVertically && root.along === "start"
+            readonly property bool sideEnd: side && root.centerVertically && root.along === "end"
+            anchors.top: root.dock === "" || root.dock === "top" || (side && !sideEnd && (root.centerVertically || Theme.barAtTop))
+            anchors.bottom: root.dock === "bottom" || sideEnd || (side && !root.centerVertically && !Theme.barAtTop)
+            anchors.right: root.dock === "right" || (edge && (root.fullWidth || root.along === "end"))
+            anchors.left: root.dock === "left" || (edge && (root.fullWidth || root.along === "start"))
+            margins.top: sideStart ? Theme.barGap
+                : side && root.centerVertically ? Math.max(Theme.barGap, Math.round(((screen?.height ?? 1080) - root.panelHeight) / 2))
                 : root.docked ? Theme.barGap
                 : root.centerVertically ? Math.round(((screen?.height ?? 1080) - root.panelHeight) / 2)
                 : Math.round((screen?.height ?? 1080) * root.topOffset)

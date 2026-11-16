@@ -141,22 +141,50 @@ Variants {
             }
         }
 
+        // Along the bar (x, or y on a side bar), the three groups are laid
+        // out by hand so the clock can sit in any of five places and the
+        // others make room for it (Config.bar.clockPosition).
+        readonly property string clockPos: ["left", "leftFirst", "right", "rightLast"].indexOf(Config.bar.clockPosition) !== -1
+            ? Config.bar.clockPosition : "center"
+        readonly property real length: win.vertical ? height : width
+        readonly property real clockLen: win.vertical ? clockItem.height : clockItem.width
+        readonly property real wsLen: win.vertical ? workspaces.height : workspaces.width
+        readonly property real statusLen: win.vertical ? status.height : status.width
+        readonly property real startPad: Theme.space.s
+        readonly property real endPad: Theme.space.xs
+        readonly property real groupGap: Theme.space.s
+        readonly property real wsAt: clockPos === "leftFirst" ? startPad + clockLen + groupGap : startPad
+        readonly property real statusAt: length - endPad - statusLen - (clockPos === "rightLast" ? clockLen + groupGap : 0)
+        readonly property real clockAt: {
+            switch (clockPos) {
+            case "leftFirst": return startPad;
+            case "left": return wsAt + wsLen + groupGap;
+            case "right": return statusAt - groupGap - clockLen;
+            case "rightLast": return length - endPad - clockLen;
+            default: return Math.round((length - clockLen) / 2);
+            }
+        }
+
         Workspaces {
-            x: win.vertical ? 0 : Theme.space.s
-            y: win.vertical ? Theme.space.s : (parent.height - height) / 2
+            id: workspaces
+            x: win.vertical ? 0 : barBody.wsAt
+            y: win.vertical ? barBody.wsAt : (parent.height - height) / 2
             vertical: win.vertical
             monitor: Hyprland.monitorFor(win.screen)
             minCount: Math.max(1, Math.min(10, Config.bar.workspaces))
         }
 
         Clock {
-            anchors.centerIn: parent
+            id: clockItem
+            x: win.vertical ? Math.round((parent.width - width) / 2) : barBody.clockAt
+            y: win.vertical ? barBody.clockAt : Math.round((parent.height - height) / 2)
         }
 
         // Status items: at the right end, or the bottom of a side bar.
         GridLayout {
-            x: win.vertical ? (parent.width - width) / 2 : parent.width - width - Theme.space.xs
-            y: win.vertical ? parent.height - height - Theme.space.xs : (parent.height - height) / 2
+            id: status
+            x: win.vertical ? (parent.width - width) / 2 : barBody.statusAt
+            y: win.vertical ? barBody.statusAt : (parent.height - height) / 2
             flow: win.vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
             rows: win.vertical ? -1 : 1
             columns: win.vertical ? 1 : -1

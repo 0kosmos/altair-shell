@@ -26,6 +26,9 @@ AltairPanel {
     dock: Theme.barVertical ? Theme.barPosition : Theme.barAtTop ? "top" : "bottom"
     centerVertically: Theme.barVertical
     fullWidth: false
+    // Opens on the clock's side of the bar.
+    along: ["left", "leftFirst"].indexOf(Config.bar.clockPosition) !== -1 ? "start"
+        : ["right", "rightLast"].indexOf(Config.bar.clockPosition) !== -1 ? "end" : "center"
     slideDistance: 12
     readonly property string weatherStyle: !Weather.configured ? "off"
         : ["strip", "compact"].indexOf(Config.bar.popupWeather) !== -1 ? Config.bar.popupWeather : "off"
@@ -445,6 +448,16 @@ AltairPanel {
                                 Config.bar.clockStyle = value;
                             }
                         }
+                    }
+                    StyledText { text: "Position in the bar"; color: Theme.fgMuted; font.pixelSize: Theme.font.small; font.weight: Font.DemiBold }
+                    Chips {
+                        options: Theme.barVertical
+                            ? [{ label: "Top first", value: "leftFirst" }, { label: "Top", value: "left" }, { label: "Middle", value: "center" },
+                               { label: "Bottom", value: "right" }, { label: "Bottom last", value: "rightLast" }]
+                            : [{ label: "Left first", value: "leftFirst" }, { label: "Left", value: "left" }, { label: "Middle", value: "center" },
+                               { label: "Right", value: "right" }, { label: "Right last", value: "rightLast" }]
+                        current: Config.bar.clockPosition
+                        onPicked: value => Config.bar.clockPosition = value
                     }
                     StyledText { text: "Calendar"; color: Theme.fgMuted; font.pixelSize: Theme.font.small; font.weight: Font.DemiBold }
                     Chips {

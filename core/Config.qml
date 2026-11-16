@@ -318,6 +318,10 @@ Singleton {
             property JsonObject bar: JsonObject {
                 property int workspaces: 5             // shown at least (1–10)
                 property bool showDate: true           // date next to the time
+                // Where the clock sits: "center" | "left" (after the workspaces) |
+                // "leftFirst" (before them) | "right" (before the status buttons) |
+                // "rightLast" (after them). On a side bar left = top, right = bottom.
+                property string clockPosition: "center"
                 property bool clockPopup: true         // click the clock: calendar
                 property bool weekNumbers: false       // ISO week numbers in the calendar
                 property bool analogClock: true        // clock in the calendar popup
