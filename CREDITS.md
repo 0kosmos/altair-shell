@@ -34,12 +34,12 @@ The live wallpapers in the screenshots are not part of Altair and are not
 in this repository; they belong to their owners and were downloaded from
 [MoeWalls](https://moewalls.com):
 
-- "City at Night" (desktop) and "Lucyna Space Station" (wallpaper picker):
+- "City at Night" (desktop, calendar) and "Lucyna Space Station" (wallpaper picker):
   art from *Cyberpunk 2077* / *Cyberpunk: Edgerunners*, © CD PROJEKT RED.
 - "Forest Pines" (Settings).
 - The other thumbnails in the wallpaper picker are from the developer's own
   wallpaper folder.
-- The launcher screenshot uses Altair's own "Aurora" wallpaper.
+- The launcher and layout screenshots use Altair's own "Aurora" wallpaper.
 
 If you add an asset to the repository (an image, a sound, a font), it must
 have a free licence and be listed here.

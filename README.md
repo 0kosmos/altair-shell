@@ -12,11 +12,15 @@ frosted glass, smooth motion and close to zero CPU when idle.
 
 ## Screenshots
 
+![Clock popup with calendar and weather](docs/screenshots/calendar.png)
+
 ![Settings with palettes and accent colours](docs/screenshots/settings.png)
 
 ![Wallpaper carousel](docs/screenshots/wallpapers.png)
 
 ![App launcher](docs/screenshots/launcher.png)
+
+![Bar at the bottom, dock on the right](docs/screenshots/layout.png)
 
 <sub>Regenerate with `docs/screenshots/make.sh` from raw 1920x1080 screenshots.</sub>
 

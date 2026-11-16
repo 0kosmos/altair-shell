@@ -4,7 +4,8 @@
 #
 #   docs/screenshots/make.sh <dir with raw PNGs>
 #
-# Expects desktop.png, settings.png, wallpapers.png and launcher.png in that
+# Expects desktop.png, calendar.png, settings.png, wallpapers.png, launcher.png
+# and layout.png in that
 # directory (take them with `grim` on an empty workspace, with a wallpaper
 # you may publish). Writes docs/screenshots/<name>.png.
 # Needs: vips (libvips), python3, qml (qt6-declarative); Inter font.
@@ -26,9 +27,11 @@ done
 # name | caption | background glow colours (two)
 SHOTS=(
     "desktop|A clean, fast desktop shell for Hyprland|#4a5fd0|#7b5cff"
+    "calendar|Clock, calendar and weather, one click on the time|#2f5fd0|#7a3fb8"
     "settings|Settings: palettes, accent colours, blur and liquid glass|#3f6fd8|#5a4fcf"
     "wallpapers|Pictures and live wallpapers, with colour themes to match|#d0662f|#8c2f4a"
     "launcher|An app launcher that learns what you use|#3b6fd6|#1aa3c8"
+    "layout|Bar and dock on any edge, widgets that snap together|#5b3fd0|#1a8fc8"
 )
 
 # Background: a dark base with two soft glows, rendered small and upscaled.
