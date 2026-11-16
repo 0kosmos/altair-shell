@@ -97,7 +97,7 @@ Scope {
                 { id: "widgets", label: "Widgets", icon: "widgets", group: "Desktop" },
                 { id: "effects", label: "Effects", icon: "auto_awesome", group: "Desktop" },
                 { id: "display", label: "Display", icon: "brightness_6", group: "System" },
-                { id: "lock", label: "Lock screen", icon: "lock", group: "System" },
+                { id: "lock", label: "Lock & power", icon: "lock", group: "System" },
                 { id: "notifications", label: "Notifications", icon: "notifications", group: "System" },
                 { id: "sounds", label: "Sounds", icon: "volume_up", group: "System" },
                 { id: "performance", label: "Performance", icon: "speed", group: "System" },

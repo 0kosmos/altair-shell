@@ -413,6 +413,8 @@ Singleton {
                 property string typing: "pop"
                 property bool media: true              // music controls on the lock screen
                 property bool blurWallpaper: true
+                // Power menu: seconds before log out / restart / shut down; 0 = at once.
+                property int powerCountdown: 5
             }
 
             property JsonObject performance: JsonObject {

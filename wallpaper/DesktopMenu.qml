@@ -69,22 +69,6 @@ PanelWindow {
         onCleared: root.close()
     }
 
-    property bool powerOpen: false
-    property string armed: ""
-    Timer {
-        id: disarm
-        interval: 4000
-        onTriggered: root.armed = ""
-    }
-    function confirm(id: string, f): void {
-        if (armed === id) {
-            root.then(f);
-        } else {
-            armed = id;
-            disarm.restart();
-        }
-    }
-
     BackgroundEffect.blurRegion: Theme.blur ? blurShape : null
     Region {
         id: blurShape
@@ -172,39 +156,14 @@ PanelWindow {
         }
         Sep {}
         MenuRow {
-            iconName: "power_settings_new"
-            label: "Power"
-            hasChildren: true
-            onClicked: root.powerOpen = !root.powerOpen
+            iconName: "lock"
+            label: "Lock"
+            onClicked: root.then(() => Locker.lock())
         }
-
-        // Power options unfold in place.
-        ColumnLayout {
-            Layout.fillWidth: true
-            Layout.leftMargin: Theme.space.m
-            spacing: 0
-            visible: root.powerOpen
-
-            MenuRow {
-                iconName: "lock"
-                label: "Lock"
-                onClicked: root.then(() => Locker.lock())
-            }
-            MenuRow {
-                iconName: "logout"
-                label: root.armed === "logout" ? "Click again to log out" : "Log out"
-                onClicked: root.confirm("logout", () => Hyprland.dispatch("hl.dsp.exit()"))
-            }
-            MenuRow {
-                iconName: "restart_alt"
-                label: root.armed === "reboot" ? "Click again to restart" : "Restart"
-                onClicked: root.confirm("reboot", () => Hypr.exec(["systemctl", "reboot"], ""))
-            }
-            MenuRow {
-                iconName: "power_settings_new"
-                label: root.armed === "poweroff" ? "Click again to shut down" : "Shut down"
-                onClicked: root.confirm("poweroff", () => Hypr.exec(["systemctl", "poweroff"], ""))
-            }
+        MenuRow {
+            iconName: "power_settings_new"
+            label: "Power…"
+            onClicked: root.then(() => ShellState.open("power"))
         }
     }
 

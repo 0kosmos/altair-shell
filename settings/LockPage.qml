@@ -12,7 +12,7 @@ import qs.theme
 // ever breaks.
 Page {
     id: page
-    title: "Lock screen"
+    title: "Lock & power"
 
     SettingRow {
         title: "Lock now"
@@ -51,6 +51,18 @@ Page {
         Toggle {
             checked: Config.lock.beforeSleep
             onToggled: value => Config.lock.beforeSleep = value
+        }
+    }
+
+    Section { text: "Power menu" }
+
+    SettingRow {
+        title: "Countdown"
+        description: "Log out, restart and shut down wait this long (SUPER + Escape opens the menu; Esc cancels)."
+        Segmented {
+            options: [{ label: "Off", value: 0 }, { label: "3 s", value: 3 }, { label: "5 s", value: 5 }]
+            current: Config.lock.powerCountdown
+            onSelected: value => Config.lock.powerCountdown = value
         }
     }
 

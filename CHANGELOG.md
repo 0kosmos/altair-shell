@@ -15,6 +15,11 @@ All notable changes to Altair. Versions follow [semantic versioning](https://sem
   console unlocks, and a broken password check shows an error instead of
   freezing. See README, "If the lock screen breaks".
 
+### Power menu
+- **Power menu** (`SUPER + Escape`): lock, suspend, hibernate (if
+  available), log out, restart, shut down; keyboard letters; a cancellable
+  countdown before log out / restart / shut down. The desktop menu opens it.
+
 ### Pop-ups
 - **Volume and brightness pop-up**: shows volume, mute, microphone mute
   and brightness changes for a moment, whatever made them (keys, apps,

@@ -63,10 +63,17 @@ frosted glass, smooth motion and close to zero CPU when idle.
   (*Settings → Notifications*); clear of the bar and dock; exists only
   while shown. It reacts to changes, so a volume key at 100 % shows
   nothing (Altair's own brightness keys always show it).
+- **Power menu** (`SUPER + Escape`, or the desktop menu): lock, suspend,
+  hibernate (where available), log out, restart and shut down as large
+  buttons over the blurred desktop. Arrow keys, Enter or the underlined
+  letter (L, S, H, O, R, D). Log out, restart and shut down wait 5 s with a
+  countdown ring that Esc, a click or Cancel stops (3 s or off in
+  *Settings → Lock & power*). `ALTAIR_POWER_DRY_RUN=1` only logs, for
+  testing.
 - **Lock screen** (`SUPER + L`): your blurred wallpaper, the time, the
   song that's playing, and a password field with six typing animations
   (Pop, Wave, Glow, Shapes, Bars, Minimal; live preview in *Settings →
-  Lock screen*). Locks after a set idle time (videos and games that keep
+  Lock & power*). Locks after a set idle time (videos and games that keep
   the screen awake prevent it), before sleep, and on
   `loginctl lock-session`; turns the screen off while locked. Uses your
   normal login password through PAM (the system's `/etc/pam.d/login`
@@ -271,7 +278,7 @@ and add `require("altair").setup({ terminal = "your-terminal" })` to the end of
 | `icon_theme` | your GTK icon theme | icon theme for apps and tray |
 | `alttab` | `true` | the Alt+Tab switcher (`false` = leave ALT+Tab alone) |
 | `brightness_keys` | `false` | brightness keys through Altair (works for external monitors too); leave off if your config binds them to `brightnessctl` |
-| `launcher_key`, `notifications_key`, `wallpaper_key`, `settings_key`, `workspace_prev_key`, `workspace_next_key`, `last_workspace_key`, `widgets_key`, `lock_key` | see below | other keys (e.g. `"SUPER + CTRL + H"`), or `false` for none |
+| `launcher_key`, `notifications_key`, `wallpaper_key`, `settings_key`, `workspace_prev_key`, `workspace_next_key`, `last_workspace_key`, `widgets_key`, `lock_key`, `power_key` | see below | other keys (e.g. `"SUPER + CTRL + H"`), or `false` for none |
 
 ## Keys
 
@@ -286,6 +293,7 @@ and add `require("altair").setup({ terminal = "your-terminal" })` to the end of
 | `SUPER + CTRL + Left` / `Right` | previous / next workspace |
 | `SUPER + Tab` | back to the last-used workspace |
 | `SUPER + L` | lock the screen |
+| `SUPER + Escape` | power menu |
 | `SUPER + SHIFT + R` | restart Altair (also on the lock screen: it comes back locked) |
 | `SUPER + SHIFT + Return` | terminal (works even if Altair is down) |
 
@@ -303,7 +311,7 @@ Altair can also be controlled from scripts or your own keybinds:
 
 ```sh
 qs -c altair ipc show                                # everything available
-qs -c altair ipc call panels toggle launcher         # launcher | notifications | wallpaper | calendar | settings
+qs -c altair ipc call panels toggle launcher         # launcher | notifications | wallpaper | calendar | power | settings
 qs -c altair ipc call widgets toggleEdit           # desktop widgets' edit mode
 qs -c altair ipc call recorder toggle              # start/stop screen recording
 qs -c altair ipc call dock toggle                  # show/hide the dock
