@@ -66,6 +66,30 @@ opened from the launcher with a prefix or its own key.
 One panel with volume, mic, Wi-Fi, Bluetooth, brightness, night light,
 do-not-disturb and the recorder, reusing the existing menus.
 
+## Feature 6: Recorder menu
+
+Left click on the bar's record button starts/stops as now; right click opens
+a small menu: audio (none / system / system + mic), frame rate, quality,
+which screen or a region, cursor on/off, the folder, recent clips.
+
+## Feature 7: Corner radius
+
+One "Corners" setting (square → very round) that scales every radius in the
+shell (panels, buttons, bar, dock, widgets, Settings) and Hyprland's window
+rounding to match (runtime, originals restored).
+
+## Feature 8: Livelier panel backgrounds
+
+More panel background styles, some gently animated (only while a panel is
+open, never at idle), with options: intensity, speed, colour source. Smoother
+open/close motion for panels (style choice).
+
+## Feature 9: Settings layouts
+
+Layout styles for the Settings window: sidebar left (now), sidebar right,
+categories as tabs on top, at the bottom, or a compact icon rail; plus a
+polish pass on the Settings UI.
+
 ## Still untested from v0.2
 
 - Bluetooth (no adapter on the dev PC)
@@ -81,6 +105,10 @@ do-not-disturb and the recorder, reusing the existing menus.
 - [x] 3. Power menu
 - [ ] 4. Clipboard history
 - [ ] 5. Quick settings
+- [ ] 6. Recorder menu
+- [ ] 7. Corner radius
+- [ ] 8. Livelier panel backgrounds
+- [ ] 9. Settings layouts
 - [ ] Release v0.3.0
 
 ## Notes
