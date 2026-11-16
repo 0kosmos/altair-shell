@@ -149,6 +149,19 @@ Singleton {
         basePos = player?.position ?? 0;
         baseTime = Date.now();
     }
+    // When line `i` is sung, in seconds: { start, end }. The end is the next
+    // line's start (a little before it), but not much longer than the line
+    // needs (instrumental gaps), estimated from its length.
+    function span(i: int): var {
+        const l = lines[i];
+        if (!l)
+            return { start: 0, end: 1 };
+        const next = lines[i + 1];
+        const need = Math.max(1.6, (l.text?.length ?? 10) * 0.16);
+        const end = next ? Math.min(next.t - 0.12, l.t + need) : l.t + need;
+        return { start: l.t, end: Math.max(l.t + 0.3, end) };
+    }
+
     function position(): real {
         return basePos + (Media.playing ? (Date.now() - baseTime) / 1000 : 0);
     }

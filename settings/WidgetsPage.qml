@@ -8,7 +8,11 @@ import qs.theme
 
 // Desktop widgets: entry point to edit mode.
 Page {
+    id: page
     title: "Widgets"
+    // The city field (cleared after picking a result below; the result list
+    // is a separate delegate context that can't see its id).
+    property Item cityField: null
 
     Component.onCompleted: Cava.recheck()
 
@@ -147,6 +151,7 @@ Page {
                 clip: true
                 selectByMouse: true
                 onAccepted: Weather.search(text)
+                Component.onCompleted: page.cityField = this
 
                 StyledText {
                     anchors.verticalCenter: parent.verticalCenter
@@ -171,7 +176,8 @@ Page {
                 text: modelData.name + (modelData.region ? " · " + modelData.region : "")
                 onClicked: {
                     Weather.choose(modelData);
-                    cityInput.text = "";
+                    if (page.cityField)
+                        page.cityField.text = "";
                 }
             }
         }

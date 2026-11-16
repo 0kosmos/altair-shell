@@ -59,7 +59,7 @@ frosted glass, smooth motion and close to zero CPU when idle.
   "Playing on Spotify"; any MPRIS player), visualizer (Bars, Mirror, Wave,
   Peaks, Circle; needs `cava`), **weather** (Card, Forecast, Hourly,
   Minimal; Open-Meteo, no account; optional rain / snow / storm / sun /
-  fog effects), **lyrics** (Scroll, Focus, Minimal; time-synced from LRCLIB when
+  fog effects), **lyrics** (Scroll, Focus, Karaoke (the line fills from grey to white as it is sung), Minimal; time-synced from LRCLIB when
   available), **equalizer** (16 presets + 6 bands you can
   drag, for the music player only, live; built on PipeWire's own filter, no
   extra daemon) and system (Bars,

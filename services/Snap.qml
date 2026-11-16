@@ -100,12 +100,58 @@ Singleton {
     // How far the dragged thing's group sticks out past its rect
     // ({ l, t, r, b } in px): the whole group is kept on screen.
     property var extent: ({ l: 0, t: 0, r: 0, b: 0 })
+    property var avoiding: null
+
+    // Things desktop widgets keep clear of on a monitor, as rects relative
+    // to it, each grown by `gap`: the bar's strip and the dock.
+    readonly property int widgetGap: 12
+    function obstacles(monitor: string, w: real, h: real): var {
+        const g = widgetGap;
+        const t = Theme.barGap + Theme.barThickness + g;
+        const l = [];
+        switch (Theme.barPosition) {
+        case "top": l.push({ x: -1e4, y: -1e4, w: 3e4, h: 1e4 + t }); break;
+        case "bottom": l.push({ x: -1e4, y: h - t, w: 3e4, h: 1e4 }); break;
+        case "left": l.push({ x: -1e4, y: -1e4, w: 1e4 + t, h: 3e4 }); break;
+        case "right": l.push({ x: w - t, y: -1e4, w: 1e4, h: 3e4 }); break;
+        }
+        const d = DockApps.rects[monitor];
+        if (d)
+            l.push({ x: d.x - g, y: d.y - g, w: d.w + 2 * g, h: d.h + 2 * g });
+        return l;
+    }
+
+    // Moves needed to get rect `g` ({ x, y, w, h }) out of every obstacle,
+    // by the shortest way that keeps it inside `b` (the bounds): { x, y }.
+    // Two passes, so leaving one obstacle can't leave it in another.
+    function avoid(g: var, obstacles: var, b: var): var {
+        let x = g.x, y = g.y;
+        for (let pass = 0; pass < 2; pass++) {
+            for (const o of obstacles) {
+                if (x >= o.x + o.w || x + g.w <= o.x || y >= o.y + o.h || y + g.h <= o.y)
+                    continue;
+                const opts = [
+                    { x: o.x - g.w, y }, { x: o.x + o.w, y },
+                    { x, y: o.y - g.h }, { x, y: o.y + o.h }
+                ].filter(p => p.x >= b.x - 0.5 && p.y >= b.y - 0.5 && p.x + g.w <= b.x + b.w + 0.5 && p.y + g.h <= b.y + b.h + 0.5);
+                if (opts.length === 0)
+                    continue;
+                opts.sort((p, q) => Math.hypot(p.x - x, p.y - y) - Math.hypot(q.x - x, q.y - y));
+                x = opts[0].x;
+                y = opts[0].y;
+            }
+        }
+        return { x: x - g.x, y: y - g.y };
+    }
 
     // opts (optional): { targets: [{ x, y, w, h }] to align with, dim: false,
     // extent: { l, t, r, b } }
     function begin(mon: var, radius: real, start: var, opts: var): void {
         targets = opts?.targets ?? [];
         extent = opts?.extent ?? { l: 0, t: 0, r: 0, b: 0 };
+        // Widgets: the whole monitor, keeping clear of the bar and dock
+        // (obstacles, global coordinates); windows: the usable area.
+        avoiding = opts?.avoid ? obstacles(mon.name, mon.w, mon.h).map(o => ({ x: o.x + mon.x, y: o.y + mon.y, w: o.w, h: o.h })) : null;
         dim = opts?.dim ?? true;
         screenName = mon.name;
         monitor = { x: mon.x, y: mon.y, w: mon.w, h: mon.h };
@@ -210,11 +256,13 @@ Singleton {
 
     function clamp(r: var): var {
         const e = extent;
-        return {
-            x: Math.max(usable.x + e.l, Math.min(usable.x + usable.w - r.w - e.r, r.x)),
-            y: Math.max(usable.y + e.t, Math.min(usable.y + usable.h - r.h - e.b, r.y)),
-            w: r.w, h: r.h
-        };
+        const b = avoiding ? monitor : usable;
+        const x = Math.max(b.x + e.l, Math.min(b.x + b.w - r.w - e.r, r.x));
+        const y = Math.max(b.y + e.t, Math.min(b.y + b.h - r.h - e.b, r.y));
+        if (!avoiding)
+            return { x, y, w: r.w, h: r.h };
+        const d = avoid({ x: x - e.l, y: y - e.t, w: r.w + e.l + e.r, h: r.h + e.t + e.b }, avoiding, b);
+        return { x: x + d.x, y: y + d.y, w: r.w, h: r.h };
     }
 
     // Keep `r` fully inside a monitor's usable area (e.g. a saved position

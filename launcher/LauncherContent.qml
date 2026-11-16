@@ -215,7 +215,7 @@ FocusScope {
             return;
         menu.entry = entry;
         menu.x = Math.max(Theme.space.s, Math.min(width - menu.width - Theme.space.s, pos.x));
-        menu.y = Math.max(Theme.space.s, pos.y);
+        menu.anchorY = pos.y;
         menu.open = true;
     }
 

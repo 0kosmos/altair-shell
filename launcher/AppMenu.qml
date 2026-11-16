@@ -22,10 +22,17 @@ Item {
 
     width: 248
     height: col.implicitHeight + Theme.space.xs * 2
+    // Where it was opened (y in the launcher). It opens downward when it
+    // fits in the launcher's full height, else upward from that point
+    // (e.g. on the last row), never past the top.
+    property real anchorY: 0
+    readonly property real room: parent ? parent.height : 0
+    readonly property bool upward: anchorY + height + Theme.space.s > room
+    y: upward ? Math.max(Theme.space.s, anchorY - height) : Math.max(Theme.space.s, anchorY)
+    transformOrigin: upward ? Item.BottomLeft : Item.TopLeft
     visible: opacity > 0
     opacity: open ? 1 : 0
     scale: open ? 1 : 0.96
-    transformOrigin: Item.TopLeft
     Behavior on opacity { NumberAnimation { duration: Theme.anim.fast; easing.type: Easing.OutCubic } }
     Behavior on scale { NumberAnimation { duration: Theme.anim.normal; easing.type: Easing.OutQuint } }
 

@@ -99,11 +99,6 @@ Item {
         for (const c of [L, R]) if (c) { e.t = Math.max(e.t, c.ext.t); e.b = Math.max(e.b, c.ext.b); }
         return e;
     }
-    // The free part of the screen (minus bar, dock), relative to the monitor.
-    readonly property var area: {
-        const u = mon?.usable ?? { x: mon.x, y: mon.y, w: mon.w, h: mon.h };
-        return { x: u.x - mon.x, y: u.y - mon.y, w: u.w, h: u.h };
-    }
 
     // A dragged widget is pulled into a slot within this distance, and only
     // lets go beyond `magnetRelease`.
@@ -264,12 +259,22 @@ Item {
     // Resting widgets (with their group) stay inside the free area: when the
     // bar or dock moves over them they glide out of its way (the saved spot
     // is kept, so they come back when it moves away again).
+    // Kept on the monitor and clear of the bar and dock (12 px gap), pushed
+    // out the shortest way, so a widget may sit beside the dock.
+    readonly property point restPos: {
+        const e = ext, w = width, h = height;
+        let x = Math.max(e.l, Math.min(mon.w - w - e.r, item?.x ?? 0));
+        let y = Math.max(e.t, Math.min(mon.h - h - e.b, item?.y ?? 0));
+        const d = Snap.avoid({ x: x - e.l, y: y - e.t, w: w + e.l + e.r, h: h + e.t + e.b },
+                             Snap.obstacles(mon.name, mon.w, mon.h), { x: 0, y: 0, w: mon.w, h: mon.h });
+        return Qt.point(x + d.x, y + d.y);
+    }
     x: owning && Snap.rect ? Snap.rect.x - mon.x
         : attached ? slotPos(parentFrame, side, width, height).x
-        : Math.max(area.x + ext.l, Math.min(area.x + area.w - width - ext.r, item?.x ?? 0))
+        : restPos.x
     y: owning && Snap.rect ? Snap.rect.y - mon.y
         : attached ? slotPos(parentFrame, side, width, height).y
-        : Math.max(area.y + ext.t, Math.min(area.y + area.h - height - ext.b, item?.y ?? 0))
+        : restPos.y
     readonly property bool glide: !owning && !attached && !Snap.moving && settledIn
     Behavior on x {
         enabled: frame.glide
@@ -432,7 +437,7 @@ Item {
                 const others = frame.siblings.filter(f => f && mine.indexOf(f) === -1 && f.visible)
                     .map(f => ({ x: frame.mon.x + f.x, y: frame.mon.y + f.y, w: f.width, h: f.height }));
                 Snap.begin(frame.mon, frame.radius, { x: start.x, y: start.y, w: frame.width, h: frame.height },
-                           { targets: others, dim: false, extent: frame.ext });
+                           { targets: others, dim: false, extent: frame.ext, avoid: true });
                 frame.owning = true;
             }
             const free = (mouse.modifiers & Qt.ShiftModifier) !== 0;

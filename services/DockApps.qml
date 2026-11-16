@@ -160,6 +160,22 @@ Singleton {
         }
     }
 
+    // The dock's rectangle per monitor ({ x, y, w, h } relative to the
+    // monitor, at rest), or missing while it is off or auto-hiding. Desktop
+    // widgets keep clear of it (ShellState.obstacles).
+    property var rects: ({})
+    function setRect(monitor: string, r: var): void {
+        const cur = rects[monitor] ?? null;
+        if (JSON.stringify(cur) === JSON.stringify(r))
+            return;
+        const next = Object.assign({}, rects);
+        if (r)
+            next[monitor] = r;
+        else
+            delete next[monitor];
+        rects = next;
+    }
+
     // Show an auto-hidden dock for a moment (IPC "dock peek", keybinds).
     property bool peeking: false
     function peek(): void {

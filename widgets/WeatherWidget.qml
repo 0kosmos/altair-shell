@@ -50,31 +50,16 @@ Item {
         }
     }
 
-    // Rain, snow, storms move: drawn in a small overlay window of their own
-    // over the widget (drops run over the glass). Animating inside the widget
-    // layer would redraw every widget on it (and Hyprland would re-blur it)
-    // ~24 times a second: ~6 % of a core here, vs. about 1 % this way.
-    // Only while visible, not covered, not in edit mode or being dragged.
-    LazyLoader {
-        active: root.effects && fx.moving && root.live && !root.moving && !Widgets.editing
-            && Theme.animations && root.frameRect.width > 0 && root.screenName !== ""
-        PanelWindow {
-            screen: Quickshell.screens.find(s => s.name === root.screenName) ?? null
-            WlrLayershell.namespace: "altair-widget-fx"
-            WlrLayershell.layer: WlrLayer.Bottom
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-            exclusionMode: ExclusionMode.Ignore
-            anchors.top: true
-            anchors.left: true
-            margins.left: Math.round(root.frameRect.x)
-            margins.top: Math.round(root.frameRect.y)
-            implicitWidth: Math.round(root.frameRect.width)
-            implicitHeight: Math.round(root.frameRect.height)
-            color: "transparent"
-            mask: Region {}
-
+    // Rain, snow, storms move: drawn in a small window of their own over the
+    // widget (drops run over the glass), see FrameOverlay. Only while
+    // visible and not covered.
+    FrameOverlay {
+        wanted: root.effects && fx.moving && root.live && Theme.animations
+        frameRect: root.frameRect
+        screenName: root.screenName
+        moving: root.moving
+        content: Component {
             WeatherEffect {
-                anchors.fill: parent
                 code: Weather.code
                 day: Weather.isDay
                 radius: root.frameRadius

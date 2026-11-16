@@ -8,11 +8,23 @@ import qs.theme
 // in services/Widgets.qml):
 //   scroll   several lines; the current one highlighted, gliding to the middle
 //   focus    the current line large, the next one faint below
+//   karaoke  the current line in grey, filling with white as it is sung,
+//            the next one faint below (synced lyrics; plain ones: no fill)
 //   minimal  just the current line (fits under a Music widget)
 // Attaches to a Music widget like the Visualizer and Equalizer.
+//
+// The karaoke fill moves all the time, so while it is visible it is drawn in
+// a small window of its own over the widget (FrameOverlay, ~30 fps); in edit
+// mode, while dragged or covered, the widget shows a still copy itself.
 Item {
     id: root
     property string style: "scroll"
+    property bool live: true
+    // Set by WidgetFrame (see FrameOverlay).
+    property rect frameRect
+    property real frameRadius: Theme.radius.l
+    property string screenName: ""
+    property bool moving: false
 
     Component.onCompleted: Lyrics.users++
     Component.onDestruction: Lyrics.users--
@@ -24,6 +36,9 @@ Item {
         const l = Lyrics.lines[i];
         return l ? (l.text || "♪") : "";
     }
+    // Before the first line is sung (index -1): show it, dimmed, as upcoming.
+    readonly property int shownIndex: Math.max(0, Lyrics.index)
+    readonly property bool upcoming: Lyrics.index < 0
 
     // ---- States without lyrics -------------------------------------------------------
     StyledText {
@@ -62,7 +77,7 @@ Item {
         clip: true
         interactive: false
         model: root.style === "scroll" && root.hasText ? Lyrics.lines : []
-        currentIndex: Lyrics.index
+        currentIndex: root.shownIndex
         // Keep the current line in the middle, gliding there.
         highlightRangeMode: ListView.StrictlyEnforceRange
         preferredHighlightBegin: height / 2 - 14
@@ -123,13 +138,13 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            anchors.verticalCenterOffset: -10
-            height: 56
+            anchors.verticalCenterOffset: -12
+            height: 60
             maximumLineCount: 2
-            text: root.textAt(Math.max(0, Lyrics.index))
+            text: root.textAt(root.shownIndex)
             pixelSize: 22
             weight: Font.DemiBold
-            color: Lyrics.estimated ? Theme.fgMuted : Theme.fg
+            color: Lyrics.estimated || root.upcoming ? Theme.fgMuted : Theme.fg
         }
         StyledText {
             anchors.left: parent.left
@@ -138,7 +153,7 @@ Item {
             anchors.topMargin: 2
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
-            text: root.textAt(Math.max(0, Lyrics.index) + 1)
+            text: root.textAt(root.shownIndex + 1)
             color: Theme.fgDisabled
             font.pixelSize: 14
             // The next line fades in after the current one has moved.
@@ -153,9 +168,54 @@ Item {
         anchors.leftMargin: 16
         anchors.rightMargin: 16
         visible: root.style === "minimal" && root.hasText
-        text: root.textAt(Math.max(0, Lyrics.index))
+        text: root.textAt(root.shownIndex)
+        color: root.upcoming ? Theme.fgMuted : Theme.fg
         pixelSize: 15
         weight: Font.Medium
         travel: 8
+    }
+
+    // ---- Karaoke ---------------------------------------------------------------------
+    // Still copy inside the widget (edit mode, dragging, covered, paused).
+    KaraokeView {
+        anchors.fill: parent
+        visible: root.style === "karaoke" && root.hasText && !overlay.showing
+        progress: stillProgress
+        // Frozen at the current moment when the overlay hands over.
+        property real stillProgress: 1
+    }
+
+    // Moving copy in its own window over the widget.
+    FrameOverlay {
+        id: overlay
+        wanted: root.style === "karaoke" && root.hasText && root.synced && root.live
+            && Media.playing && Theme.animations
+        frameRect: root.frameRect
+        screenName: root.screenName
+        moving: root.moving
+        content: Component {
+            Item {
+                // Drawn at the widget's base size, scaled like the widget.
+                KaraokeView {
+                    id: moving
+                    width: root.width
+                    height: root.height
+                    scale: parent.width / Math.max(1, root.width)
+                    transformOrigin: Item.TopLeft
+                    progress: 0
+                    // ~30 fps; only the clip widths change.
+                    Timer {
+                        interval: 33
+                        repeat: true
+                        running: true
+                        triggeredOnStart: true
+                        onTriggered: {
+                            const sp = Lyrics.span(Lyrics.index);
+                            moving.progress = Math.max(0, Math.min(1, (Lyrics.position() + 0.15 - sp.start) / (sp.end - sp.start)));
+                        }
+                    }
+                }
+            }
+        }
     }
 }

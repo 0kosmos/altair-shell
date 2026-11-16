@@ -135,6 +135,8 @@ Singleton {
     readonly property string barPosition: Config.appearance.barPosition === "bottom" ? "bottom" : "top"
     readonly property bool barAtTop: barPosition === "top"
     readonly property int barHeight: 36
+    // The bar's size across its edge (height when horizontal, width when vertical).
+    readonly property int barThickness: barHeight
     // Gap between the floating bar and the screen edges.
     readonly property int barGap: 8
 

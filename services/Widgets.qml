@@ -56,6 +56,7 @@ Singleton {
         { type: "eq", name: "Equalizer", icon: "tune", w: 380, h: 230, attach: "music" },
         { type: "lyrics", name: "Lyrics", icon: "lyrics", w: 360, h: 200, attach: "music",
           styles: [{ id: "scroll", name: "Scroll" }, { id: "focus", name: "Focus", w: 380, h: 120 },
+                   { id: "karaoke", name: "Karaoke", w: 400, h: 132 },
                    { id: "minimal", name: "Minimal", w: 380, h: 56 }] },
         { type: "stats", name: "System", icon: "monitoring", w: 300, h: 132, attach: "any",
           styles: [{ id: "bars", name: "Bars" }, { id: "rings", name: "Rings", w: 300, h: 140 },

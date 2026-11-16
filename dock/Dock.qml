@@ -123,15 +123,48 @@ Scope {
 
                     mask: Region { item: body.shown ? body : trigger }
 
-                    // Always the same Region object: switching it on and off
-                    // made Hyprland blur the whole surface for a frame when
-                    // the dock came back. Off-screen parts are clipped anyway.
+                    // Blur exactly the part of the dock that is on screen, from
+                    // explicit coordinates: a Region tied to the (hidden) dock
+                    // item blurred a dock-tall strip across the whole screen.
+                    // Zero size when fully hidden = no blur.
                     BackgroundEffect.blurRegion: Theme.blur ? blurShape : null
                     Region {
                         id: blurShape
-                        item: body
+                        readonly property real x0: Math.max(0, body.x)
+                        readonly property real y0: Math.max(0, body.y)
+                        readonly property real x1: Math.min(win.width, body.x + body.width)
+                        readonly property real y1: Math.min(win.height, body.y + body.height)
+                        x: Math.round(x0)
+                        y: Math.round(y0)
+                        width: body.reveal > 0.01 ? Math.max(0, Math.round(x1 - x0)) : 0
+                        height: body.reveal > 0.01 ? Math.max(0, Math.round(y1 - y0)) : 0
                         radius: Theme.radius.l
                     }
+
+                    // Where the dock rests on its monitor (for desktop widgets,
+                    // which keep clear of it). Computed from the target size,
+                    // not the animated one. Auto-hiding: not an obstacle.
+                    readonly property var restRect: {
+                        if (!root.present || root.autoHide)
+                            return null;
+                        const sw = per.modelData.width, sh = per.modelData.height;
+                        const bt = Theme.barGap + Theme.barThickness;
+                        const bar = Theme.barPosition;
+                        const len = body.targetLength, th = root.thickness, g = root.gap;
+                        if (root.position === "bottom") {
+                            const x0 = bar === "left" ? bt : 0, x1 = sw - (bar === "right" ? bt : 0);
+                            const y = sh - (bar === "bottom" ? bt : 0) - g - th;
+                            return { x: Math.round((x0 + x1 - len) / 2), y, w: len, h: th };
+                        }
+                        const y0 = bar === "top" ? bt : 0, y1 = sh - (bar === "bottom" ? bt : 0);
+                        const y = Math.round((y0 + y1 - len) / 2);
+                        const x = root.position === "left" ? (bar === "left" ? bt : 0) + g
+                            : sw - (bar === "right" ? bt : 0) - g - th;
+                        return { x, y, w: th, h: len };
+                    }
+                    onRestRectChanged: DockApps.setRect(per.modelData.name, restRect)
+                    Component.onCompleted: DockApps.setRect(per.modelData.name, restRect)
+                    Component.onDestruction: DockApps.setRect(per.modelData.name, null)
 
                     // ---- Auto-hide ---------------------------------------------
                     // Pointer over the dock (or the trigger strip): the input
@@ -182,7 +215,8 @@ Scope {
                             }
                         }
                         readonly property real offset: (1 - reveal) * (root.gap + root.thickness + 8)
-                        visible: reveal > 0
+                        // (Stays "visible" when hidden: it is simply off the edge.)
+                        opacity: reveal > 0.01 ? 1 : 0
 
                         // Along-axis length, animated as apps come and go.
                         readonly property int targetLength: {
