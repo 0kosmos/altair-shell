@@ -17,6 +17,8 @@ Singleton {
     readonly property bool configured: Config.ready && Config.widgets.weatherCity !== ""
         && !(Config.widgets.weatherLat === 0 && Config.widgets.weatherLon === 0)
     readonly property string city: Config.ready ? Config.widgets.weatherCity : ""
+    // What widgets and the calendar show: "" while the place is hidden.
+    readonly property string place: Config.ready && Config.widgets.weatherShowPlace ? city : ""
     readonly property real lat: Config.ready ? Config.widgets.weatherLat : 0
     readonly property real lon: Config.ready ? Config.widgets.weatherLon : 0
     readonly property bool fahrenheit: Config.ready && Config.widgets.weatherUnits === "f"

@@ -138,7 +138,8 @@ Item {
                 StyledText {
                     Layout.fillWidth: true
                     Layout.topMargin: 4
-                    text: Weather.city + (root.today ? "   ↑ " + Weather.deg(root.today.max) + "  ↓ " + Weather.deg(root.today.min) : "")
+                    text: [Weather.place, root.today ? "↑ " + Weather.deg(root.today.max) + "  ↓ " + Weather.deg(root.today.min) : ""]
+                        .filter(t => t !== "").join("   ")
                     font.pixelSize: Theme.font.small
                 }
             }
@@ -167,7 +168,7 @@ Item {
                 }
                 StyledText {
                     Layout.fillWidth: true
-                    text: Weather.text(Weather.code) + "\n" + Weather.city
+                    text: Weather.text(Weather.code) + (Weather.place ? "\n" + Weather.place : "")
                     color: Theme.fgMuted
                     font.pixelSize: Theme.font.small
                     lineHeight: 1.1
@@ -220,7 +221,7 @@ Item {
             anchors.margins: 14
             spacing: 6
             StyledText {
-                text: Weather.city + "  ·  " + Weather.deg(Weather.temp) + " " + Weather.text(Weather.code)
+                text: [Weather.place, Weather.deg(Weather.temp) + " " + Weather.text(Weather.code)].filter(t => t !== "").join("  ·  ")
                 color: Theme.fgMuted
                 font.pixelSize: Theme.font.small
             }

@@ -264,6 +264,7 @@ Singleton {
                 property real weatherLat: 0
                 property real weatherLon: 0
                 property string weatherUnits: "c"
+                property bool weatherShowPlace: true   // the place's name on the desktop (off for screenshots/streams)
                 // Rain, snow, sun glow... drawn behind the Weather widget
                 // (moving ones only while it is uncovered).
                 property bool weatherEffects: true

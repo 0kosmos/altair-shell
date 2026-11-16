@@ -339,7 +339,7 @@ AltairPanel {
                             tabular: true
                         }
                         StyledText {
-                            text: Weather.loaded ? Weather.text(Weather.code) + " · " + Weather.city : Weather.city
+                            text: Weather.loaded ? Weather.text(Weather.code) + (Weather.place ? " · " + Weather.place : "") : Weather.place
                             color: Theme.fgMuted
                             font.pixelSize: Theme.font.small
                             elide: Text.ElideRight

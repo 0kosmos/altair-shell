@@ -190,6 +190,15 @@ Page {
     }
 
     SettingRow {
+        title: "Show the place name"
+        description: "On the Weather widget and in the calendar. Turn it off for screenshots or streaming; the weather stays."
+        Toggle {
+            checked: Config.widgets.weatherShowPlace
+            onToggled: value => Config.widgets.weatherShowPlace = value
+        }
+    }
+
+    SettingRow {
         title: "Units"
         Segmented {
             options: [{ label: "°C", value: "c" }, { label: "°F", value: "f" }]
