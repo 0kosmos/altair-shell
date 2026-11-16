@@ -158,7 +158,10 @@ Item {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onEntered: thumb.hovered()
-        onClicked: thumb.clicked()
+        onClicked: {
+            Sounds.click();
+            thumb.clicked();
+        }
         onDoubleClicked: thumb.doubleClicked()
     }
 }

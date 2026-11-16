@@ -144,6 +144,8 @@ AltairPanel {
                 onCurrentIndexChanged: if (currentIndex >= 0) root.previewSoon(files.get(currentIndex, "filePath"))
                 // Typing searches (see PickerFilter); the rest is for the grid.
                 Keys.onPressed: event => {
+                    if ([Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down].indexOf(event.key) !== -1)
+                        Qt.callLater(() => Sounds.slide(files.count > 1 ? grid.currentIndex / (files.count - 1) : 0.5));
                     if (filter.handleKey(event)) {
                         event.accepted = true;
                     } else if (event.key === Qt.Key_Space) {

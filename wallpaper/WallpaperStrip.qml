@@ -232,6 +232,8 @@ AltairPanel {
                     // incrementCurrentIndex takes the short way round the loop.
                     for (let k = 0; k < Math.abs(delta); k++)
                         delta > 0 ? incrementCurrentIndex() : decrementCurrentIndex();
+                    // The slider tick, its pitch following the place in the list.
+                    Sounds.slide(count > 1 ? currentIndex / (count - 1) : 0.5);
                 }
 
                 Keys.onPressed: event => {
