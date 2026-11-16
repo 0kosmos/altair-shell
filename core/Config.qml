@@ -286,7 +286,14 @@ Singleton {
                 property bool showDate: true           // date next to the time
                 property bool clockPopup: true         // click the clock: calendar
                 property bool weekNumbers: false       // ISO week numbers in the calendar
-                property bool analogClock: true        // round clock in the calendar popup
+                property bool analogClock: true        // clock in the calendar popup
+                // Its look: "classic" | "minimal" | "numbers" | "dots" | "digital"
+                property string clockStyle: "classic"
+                // Month grid: "classic" | "clean" | "bold"
+                property string calendarStyle: "classic"
+                // Weather under the calendar: "strip" (now + 5 days) |
+                // "compact" (now only) | "off". Needs a place (Settings > Widgets).
+                property string popupWeather: "strip"
                 property bool clockSeconds: true       // its seconds hand (ticks once a second while open)
             }
 

@@ -40,7 +40,9 @@ frosted glass, smooth motion and close to zero CPU when idle.
   60 fps, encoded on the graphics card (barely any CPU), with system sound
   (optionally the microphone too); click again to save to
   `~/Videos/Recordings`. Needs `gpu-screen-recorder`.
-- **Calendar**: click the clock for a month calendar next to a round
+- **Calendar**: click the clock for a month calendar next to a clock
+  (Classic, Minimal, Numbers, Dots, Digital) and the weather (a strip with
+  the next days, or one line); the tune button switches styles. Round
   analogue clock (today highlighted, your locale's first weekday, optional
   ISO week numbers and seconds hand). Arrows, mouse wheel or
   Left/Right change the month; click the month name or press Home for today.

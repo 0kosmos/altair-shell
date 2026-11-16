@@ -17,6 +17,9 @@ ColumnLayout {
     property date today: new Date()
     property bool weekNumbers: false
     property int cellSize: 36
+    // "classic": today filled; "clean": other months' days hidden, today a
+    // ring; "bold": rounded squares, today filled, weekends in the accent.
+    property string style: "classic"
     readonly property var locale: Qt.locale()
 
     spacing: Theme.space.xs
@@ -98,6 +101,7 @@ ColumnLayout {
                     readonly property date day: root.days[week.index * 7 + index]
                     readonly property bool inMonth: day.getMonth() === root.month
                     readonly property bool isToday: root.sameDay(day, root.today)
+                    readonly property bool weekend: day.getDay() === 0 || day.getDay() === 6
 
                     implicitWidth: root.cellSize
                     implicitHeight: root.cellSize
@@ -106,16 +110,23 @@ ColumnLayout {
                         anchors.centerIn: parent
                         width: root.cellSize - 4
                         height: width
-                        radius: width / 2
+                        radius: root.style === "bold" ? Theme.radius.s : width / 2
                         // No colour animation: while the month slides it would
                         // leave a fading "today" circle on the wrong day.
-                        color: cell.isToday ? Theme.accent : "transparent"
+                        color: cell.isToday && root.style !== "clean" ? Theme.accent
+                            : root.style === "bold" && cell.inMonth ? Theme.surfaceRaised : "transparent"
+                        border.width: cell.isToday && root.style === "clean" ? 2 : 0
+                        border.color: Theme.accent
                     }
 
                     StyledText {
                         anchors.centerIn: parent
+                        visible: cell.inMonth || root.style !== "clean"
                         text: cell.day.getDate()
-                        color: cell.isToday ? Theme.onAccent : cell.inMonth ? Theme.fg : Theme.fgDisabled
+                        color: cell.isToday && root.style !== "clean" ? Theme.onAccent
+                            : cell.isToday ? Theme.accent
+                            : !cell.inMonth ? Theme.fgDisabled
+                            : root.style === "bold" && cell.weekend ? Theme.accent : Theme.fg
                         font.pixelSize: Theme.font.body - 1
                         font.weight: cell.isToday ? Font.DemiBold : Font.Normal
                         tabular: true
