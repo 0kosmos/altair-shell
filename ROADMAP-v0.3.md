@@ -109,7 +109,7 @@ polish pass on the Settings UI.
 - [x] 7. Corner radius
 - [x] 8. Livelier panel backgrounds
 - [ ] 9. Settings layouts (built, then removed at the user's request)
-- [ ] Release v0.3.0
+- [x] Release v0.3.0
 
 ## Notes
 
@@ -130,3 +130,4 @@ polish pass on the Settings UI.
 - Widget rows: WidgetFrame.leftOf/rightOf (left/right joins in both directions), leftWidth/rightWidth (sizes only), rowOf/rowChild; top/bottom scaleIn/slotPos/gap use the row; free() allows one spanning child per row side; joinedTop/Bottom also when a neighbour's spanning child covers this frame. attachTarget refuses a slot whose facing side of the dragged widget already has a child. Music type attach "any".
 - Corners for controls: Theme.pill(h) = h/2 × min(1, corners) for buttons, chips, tabs, toggles (+knob), slider knob, fields, toolbars, OSD, lock field, workspace dots; real circles (art, swatches, clock faces, avatars) keep width/2.
 - F5 quick settings: quick/QuickSettings.qml (AltairPanel "quick", docked like brightness; inline Tile / SliderRow), bar/QuickButton.qml (bar.quickSettings), MOD+A (quick_key). New: Locker.keepAwake (session only; disables the idle-lock monitor), Display.toggleNightLight + display.nightLevel. Existing menus are untouched; tile arrows open them.
+- Released as v0.3.0 on 2026-11-16 (tagged locally; push with the release script).

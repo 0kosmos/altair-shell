@@ -8,7 +8,7 @@ import Quickshell
 Singleton {
     id: root
 
-    readonly property string version: "0.2.0"
+    readonly property string version: "0.3.0"
 
     // Panels that can be toggled over IPC. Only one is open at a time;
     // opening another closes the current one.

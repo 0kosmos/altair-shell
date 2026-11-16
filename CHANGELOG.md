@@ -2,10 +2,14 @@
 
 All notable changes to Altair. Versions follow [semantic versioning](https://semver.org).
 
-## [Unreleased]
+## [0.3.0] — 2026-11-16
+
+A lock screen, quick settings, a power menu, clipboard history and a lot
+more ways to make it yours: moving panel backgrounds, panel motion,
+corners, new sounds and animations.
 
 ### Lock screen
-- **Lock screen** (`SUPER + L`, *Settings → Lock screen*): blurred
+- **Lock screen** (`SUPER + L`, *Settings → Lock & power*): blurred
   wallpaper, clock, music controls and a password field with six typing
   animations (Pop, Wave, Glow, Shapes, Bars, Minimal) and a live preview.
 - Locks when idle (respects apps that keep the screen awake), before sleep
@@ -71,6 +75,20 @@ All notable changes to Altair. Versions follow [semantic versioning](https://sem
 - **Volume and brightness pop-up**: shows volume, mute, microphone mute
   and brightness changes for a moment, whatever made them (keys, apps,
   the bar). Bottom or top; *Settings → Notifications*.
+
+### Fixes
+- Recordings open in the video player and "Show in folder" in the file
+  manager (it opened a terminal on setups where a terminal is the
+  default app for folders).
+- No frosted box around Settings while it opens or closes; Settings
+  follows the chosen panel motion.
+- Click sounds in Settings and the wallpaper picker; slider ticks while
+  moving through wallpapers.
+- Buttons, tabs, toggles and fields follow the Corners setting.
+
+### Dependencies
+- New optional: `cliphist` and `wl-clipboard` (clipboard history),
+  `slurp` (record a region).
 
 ## [0.2.0] — 2026-11-16
 
@@ -142,5 +160,6 @@ controls, and a lot of polish.
 First release: bar, app launcher, notifications, Settings, wallpapers with
 a picker and live wallpapers.
 
+[0.3.0]: https://github.com/0kosmos/altair-shell/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/0kosmos/altair-shell/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/0kosmos/altair-shell/releases/tag/v0.1.0
