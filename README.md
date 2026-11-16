@@ -6,8 +6,9 @@ A clean, fast desktop shell for [Hyprland](https://hypr.land), built with
 [Quickshell](https://quickshell.org). Mostly monochrome with one accent colour,
 frosted glass, smooth motion and close to zero CPU when idle.
 
-> **Status:** v0.1. Small on purpose: fewer features, done well.
-> Dashboard and lock screen are planned for v0.2.
+> **Status:** v0.2: widgets, dock, Alt+Tab, sounds, network and display
+> controls (see the [changelog](CHANGELOG.md)). Dashboard and lock screen
+> are planned for a later version.
 
 ## Screenshots
 

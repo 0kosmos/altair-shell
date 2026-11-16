@@ -1,0 +1,74 @@
+# Changelog
+
+All notable changes to Altair. Versions follow [semantic versioning](https://semver.org).
+
+## [0.2.0] — unreleased
+
+A big update: desktop widgets, a dock, Alt+Tab, sounds, network and display
+controls, and a lot of polish.
+
+### Desktop
+- **Widgets** with an edit mode (`SUPER + D`): clock, round clock, music,
+  visualizer, equalizer, lyrics, weather and system. Many styles each, any
+  size, opacity, a font for widgets, undo, select and clear all.
+- **Magnetic groups**: widgets snap together on any side and move as one;
+  groups stay on screen and glide clear of the bar and dock.
+- **Music**: player volume, "Playing on", seekable song bar, a built-in
+  visualizer (ring, glow, bars, wave, mirror) and **karaoke lyrics**
+  (LRCLIB). The visualizer hears only the music player, not other sounds.
+- **Music equalizer** with presets (PipeWire filter, only the player's audio).
+- **Weather** (Open-Meteo, no API key) with rain, snow and sun effects.
+- **Dock** (optional): pinned and running apps, recent apps, menus, drag to
+  reorder, auto-hide, any edge.
+- **Desktop right-click menu**.
+- **Precise moving**: snapping, guide lines and dimming when moving windows
+  and widgets.
+
+### Bar
+- Left and right positions; drag the bar to another edge.
+- **Clock popup** with a month calendar, a round clock and the weather.
+- Clock position: middle, left or right, before or after the other items.
+- **Network menu**: connection details, Wi-Fi networks, connect with a password.
+- **Bluetooth menu**: devices, battery, pairing.
+- **Brightness button** and *Settings → Display*: monitor brightness and
+  contrast over DDC/CI or the laptop backlight; saturation, night light,
+  gamma and dimming as a screen shader (only while used).
+- Screen recorder button (60 fps, GPU-encoded).
+
+### Windows and workspaces
+- **Alt+Tab** switcher with live previews.
+- Smooth workspace switching with a synced bar indicator; previous/next and
+  last-workspace keys.
+- **Window transparency** with per-app rules.
+
+### Look and feel
+- **UI sounds**: six families (Glass, Soft, Minimal, Bubble, Wood, Pulse) or
+  your own files, per event.
+- Ten **panel backgrounds** (Glow, Aurora, Grain, Mesh, Sheen, Edge light,
+  Dusk, Lines, Dots).
+- **Colour themes from the wallpaper**, saved per wallpaper or automatic.
+- Five wallpapers of Altair's own (Aurora, Dusk, Lagoon, Ember, Glacier).
+- Launcher: animated results while typing, shrinks to its results,
+  right-click menu for apps.
+- Settings: re-centring and size reset glide, opens where you left it.
+
+### Fixes
+- Several settings changed at once (e.g. a sound style for everything) no
+  longer revert some of them.
+- The equalizer no longer pauses music; leftover filter processes are
+  cleaned up.
+- Restart and uninstall stop the shell reliably (SIGKILL; Quickshell 0.3.2
+  can crash on a normal quit).
+
+### Dependencies
+- New optional: `bluez` (Bluetooth), `ddcutil` (monitor brightness),
+  `cava` (visualizer), `libpulse` (equalizer routing),
+  `gpu-screen-recorder` (recorder).
+
+## [0.1.0] — 2026-11-13
+
+First release: bar, app launcher, notifications, Settings, wallpapers with
+a picker and live wallpapers.
+
+[0.2.0]: https://github.com/0kosmos/altair-shell/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/0kosmos/altair-shell/releases/tag/v0.1.0
