@@ -117,6 +117,8 @@ frosted glass, smooth motion and close to zero CPU when idle.
   - cached thumbnails, crossfades, Fill / Fit;
   - live wallpapers pause while windows are open (or fullscreen, or never),
     with adjustable speed.
+  - five wallpapers of its own come with it (Aurora, Dusk, Lagoon, Ember,
+    Glacier), put into `~/Pictures/Wallpapers` by install.sh.
 - **Settings app** (`SUPER + ,` or the gear in the bar):
   - dark / light, 16 five-colour palettes plus your own, accent colour with a
     colour picker;

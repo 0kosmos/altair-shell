@@ -215,6 +215,24 @@ install_files() {
 }
 
 # Terminal for the SUPER+SHIFT+Return escape hatch.
+# Altair's own wallpapers (assets/wallpapers, see scripts/gen-wallpapers.py):
+# small sources, made 1920x1080 here with a fine grain so the gradients
+# don't band. Into the picker's default folder; existing files are kept.
+WALL_DIR="$HOME/Pictures/Wallpapers"
+install_wallpapers() {
+    step "Wallpapers"
+    command -v ffmpeg >/dev/null || { warn "ffmpeg missing: skipped Altair's wallpapers"; return 0; }
+    run mkdir -p -- "$WALL_DIR"
+    local src dst made=0
+    for src in "$REPO_DIR"/assets/wallpapers/altair-*.png; do
+        dst="$WALL_DIR/$(basename "$src")"
+        [[ -e "$dst" ]] && continue
+        run ffmpeg -loglevel error -n -i "$src" -vf "scale=1920:1080:flags=lanczos,noise=alls=7:allf=u" -frames:v 1 "$dst"
+        made=$((made + 1))
+    done
+    if (( made )); then ok "$made wallpapers added to $WALL_DIR (SUPER + W)"; else ok "Altair's wallpapers are already in $WALL_DIR"; fi
+}
+
 pick_terminal() {
     if [[ -n "${TERMINAL:-}" ]] && command -v "${TERMINAL%% *}" >/dev/null; then echo "$TERMINAL"; return; fi
     local t
@@ -289,6 +307,7 @@ do_install() {
     preflight
     install_packages
     install_files
+    install_wallpapers
     configure_hyprland
     start_shell
     step "Done"
@@ -373,6 +392,7 @@ do_uninstall() {
     ${CONFIG_HOME}/altair      settings
     ${STATE_HOME}/altair       launcher history, remembered Hyprland values
     ${CACHE_HOME}/altair       wallpaper thumbnails
+    ${WALL_DIR}/altair-*.png   Altair's wallpapers
 EOF
     (( DRY )) && say $'\n  '"${Y}Dry run: nothing was changed.${N}"
     return 0
