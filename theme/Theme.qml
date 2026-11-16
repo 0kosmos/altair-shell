@@ -101,10 +101,15 @@ Singleton {
         readonly property int xl: 24
     }
 
+    // Corner roundness (Settings > Appearance > Corners): 0 = square,
+    // 1 = Altair's default, 2 = very round. Scales every container corner
+    // (panels, menus, cards, bar, dock, widgets, Settings); circles and
+    // pills stay round.
+    readonly property real corners: Config.ready ? Math.max(0, Math.min(2, Config.appearance.corners)) : 1
     readonly property QtObject radius: QtObject {
-        readonly property int s: 8
-        readonly property int m: 12
-        readonly property int l: 18
+        readonly property int s: Math.round(8 * root.corners)
+        readonly property int m: Math.round(12 * root.corners)
+        readonly property int l: Math.round(18 * root.corners)
         readonly property int full: 999
     }
 

@@ -144,6 +144,15 @@ Singleton {
     readonly property string session: Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") ?? ""
 
     onBlurStrengthChanged: applyBlur()
+    // Window corners follow Settings > Appearance > Corners when switched on.
+    readonly property int windowRounding: !original || original.rounding === undefined ? -1
+        : Config.ready && Config.appearance.windowCorners ? Math.round(original.rounding * Theme.corners) : original.rounding
+    onWindowRoundingChanged: applyRounding()
+    function applyRounding(): void {
+        if (!original || original.rounding === undefined || !Config.ready || reading)
+            return;
+        hyprEval(`hl.config({ decoration = { rounding = ${windowRounding} } })`);
+    }
     onBorderModeChanged: applyBorders()
     onAccentBordersChanged: if (borderMode === "accent") applyBorders()
 
@@ -242,6 +251,7 @@ Singleton {
         applySmooth();
         applyOpacity();
         applyWorkspaces();
+        applyRounding();
     }
 
     function readOriginal(): void {
@@ -265,11 +275,11 @@ Singleton {
 
     Process {
         id: reader
-        command: ["sh", "-c", "for o in general:border_size general:col.active_border general:col.inactive_border decoration:blur:size decoration:blur:passes general:resize_on_border misc:animate_manual_resizes misc:animate_mouse_windowdragging decoration:active_opacity decoration:inactive_opacity; do hyprctl getoption \"$o\" | head -n1; done; hyprctl animations -j | tr -d '\\n'"]
+        command: ["sh", "-c", "for o in general:border_size general:col.active_border general:col.inactive_border decoration:blur:size decoration:blur:passes general:resize_on_border misc:animate_manual_resizes misc:animate_mouse_windowdragging decoration:active_opacity decoration:inactive_opacity decoration:rounding; do hyprctl getoption \"$o\" | head -n1; done; hyprctl animations -j | tr -d '\\n'"]
         stdout: StdioCollector {
             onStreamFinished: {
                 const l = this.text.trim().split("\n");
-                if (l.length < 11) {
+                if (l.length < 12) {
                     console.warn("altair: could not read Hyprland options: " + this.text);
                     root.reading = false;
                     return;
@@ -286,17 +296,33 @@ Singleton {
                     animDrag: /true|:\s*1/.test(l[7]),
                     activeOpacity: parseFloat(l[8].replace(/^.*?:\s*/, "")) || 1,
                     inactiveOpacity: parseFloat(l[9].replace(/^.*?:\s*/, "")) || 1,
+                    rounding: int(l[10]),
                     // readerGuard: if a read still sees Altair's own curves
                     // (e.g. two shell instances overlapping during a hot reload,
                     // one applying while the other reads), keep what we had.
-                    moveAnim: root.moveAnimFrom(l.slice(10).join("")) ?? root.original?.moveAnim
+                    moveAnim: root.moveAnimFrom(l.slice(11).join("")) ?? root.original?.moveAnim
                         ?? { enabled: true, speed: 5, curve: 'bezier = "default"' },
-                    wsAnim: root.wsAnimFrom(l.slice(10).join("")) ?? root.original?.wsAnim ?? null
+                    wsAnim: root.wsAnimFrom(l.slice(11).join("")) ?? root.original?.wsAnim ?? null
                 };
                 root.reading = false;
                 cleanReadFallback.stop();
                 store.session = root.session;
                 store.values = root.original;
+                root.applyAll();
+            }
+        }
+    }
+
+    Process {
+        id: roundingReader
+        command: ["hyprctl", "getoption", "decoration:rounding"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const v = parseInt(this.text.split("\n")[0].replace(/^.*?:\s*/, ""));
+                const o = Object.assign({}, root.original);
+                o.rounding = isNaN(v) ? 0 : v;
+                root.original = o;
+                store.values = o;
                 root.applyAll();
             }
         }
@@ -314,7 +340,12 @@ Singleton {
             if (store.session === root.session && store.values && store.values.moveAnim !== undefined
                     && store.values.activeOpacity !== undefined && store.values.wsAnim !== undefined) {
                 root.original = store.values;
-                root.applyAll();
+                // Records from before window corners: Altair never changed
+                // rounding then, so Hyprland's current value is the user's.
+                if (store.values.rounding === undefined)
+                    roundingReader.running = true;
+                else
+                    root.applyAll();
             } else {
                 // No (complete) record for this Hyprland session.
                 root.cleanRead();

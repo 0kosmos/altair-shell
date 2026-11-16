@@ -37,11 +37,13 @@ Scope {
         function open(): void {
             const mon = Snap.monitorInfo(Hyprland.focusedMonitor);
             const saved = Placement.get("settings", mon.name);
-            let args = "";
+            let args = "nil, nil";
             if (saved) {
                 const r = Snap.clampTo({ x: mon.x + saved.x, y: mon.y + saved.y, w: 1120, h: 700 }, mon);
                 args = r.x + ", " + r.y;
             }
+            // The window's corner rounding follows Settings > Appearance > Corners.
+            args += ", " + Theme.radius.l;
             // pcall: an older hypr/init.lua without place_settings just centres.
             command = ["hyprctl", "eval", `local ok, a = pcall(require, "altair") if ok and a.place_settings then a.place_settings(${args}) end`];
             running = true;
@@ -486,8 +488,8 @@ Scope {
                         reqY = o.at[1];
                         size = { w: o.size?.[0] ?? win.width, h: o.size?.[1] ?? win.height };
                         mon = Snap.monitorInfo(Hyprland.monitors.values.find(m => m.id === o.monitor) ?? Hyprland.focusedMonitor);
-                        // 18 = the window rounding (hypr/init.lua).
-                        Snap.begin(mon, 18, { x: reqX, y: reqY, w: size.w, h: size.h });
+                        // = the window rounding (hypr/init.lua, place_settings).
+                        Snap.begin(mon, Theme.radius.l, { x: reqX, y: reqY, w: size.w, h: size.h });
                         active = true;
                     }
                     const free = (mouse.modifiers & Qt.ShiftModifier) !== 0;

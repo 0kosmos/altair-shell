@@ -163,6 +163,9 @@ frosted glass, smooth motion and close to zero CPU when idle.
 - **Settings app** (`SUPER + ,` or the gear in the bar):
   - dark / light, 16 five-colour palettes plus your own, accent colour with a
     colour picker;
+  - corners: square to very round (presets or a slider) for every panel,
+    menu, card, the bar, dock, widgets and Settings, optionally Hyprland's
+    window corners too;
   - blur and blur strength, *liquid glass*, animations, low-power mode;
   - window borders (accent / Hyprland / none), resize windows by dragging
     their edges, smooth resizing;

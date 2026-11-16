@@ -200,11 +200,13 @@ function M.setup(opts)
     -- Where Settings opens: at x, y (global layout px) or, without them,
     -- centred. Altair calls this right before opening Settings, so the window
     -- appears at its saved spot instead of jumping there from the centre:
-    --   hyprctl eval 'require("altair").place_settings(100, 150)'
-    function M.place_settings(x, y)
+    --   hyprctl eval 'require("altair").place_settings(100, 150, 18)'
+    -- rounding: the corner radius Altair draws (Settings > Appearance > Corners).
+    function M.place_settings(x, y, rounding)
         local r = {}
         for k, v in pairs(settings_rule) do r[k] = v end
         if x and y then r.move = { x, y } else r.center = true end
+        if rounding then r.rounding = rounding end
         hl.window_rule(r)   -- same name: replaces the rule
     end
     M.place_settings()

@@ -20,6 +20,11 @@ All notable changes to Altair. Versions follow [semantic versioning](https://sem
   available), log out, restart, shut down; keyboard letters; a cancellable
   countdown before log out / restart / shut down. The desktop menu opens it.
 
+### Look
+- **Corners**: one setting from square to very round (presets or a
+  slider) for every panel, menu, card, bar, dock, widget and Settings;
+  optionally Hyprland's window corners too (your rounding × the setting).
+
 ### Recorder
 - **Recorder menu**: right-click the record button (left click still
   records): screen or a dragged region, sound, frame rate, quality, codec

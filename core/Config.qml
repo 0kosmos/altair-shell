@@ -148,6 +148,11 @@ Singleton {
 
             property JsonObject appearance: JsonObject {
                 property string theme: "dark"          // "dark" | "light"
+                // Corner roundness, 0 (square) – 2 (very round); 1 = default.
+                property real corners: 1
+                // Also round Hyprland's window corners to match (your own
+                // rounding × corners); off = Hyprland's rounding unchanged.
+                property bool windowCorners: false
                 property string accent: "#7aa2f7"      // #RRGGBB, "mono" (adapts to the theme) or "palette"
                 // "default", a built-in palette id (theme/palettes.js) or "custom"
                 property string palette: "default"

@@ -173,7 +173,7 @@ FocusScope {
 
             Rectangle {
                 anchors.fill: parent
-                radius: 18
+                radius: Theme.radius.l
                 color: Qt.alpha("#000000", 0.28)
                 border.width: 1
                 border.color: Qt.alpha("#ffffff", 0.10)
@@ -186,7 +186,7 @@ FocusScope {
                 Rectangle {
                     implicitWidth: 42
                     implicitHeight: 42
-                    radius: 10
+                    radius: Math.round(10 * Theme.corners)
                     color: Qt.alpha("#ffffff", 0.1)
                     clip: true
                     Image {

@@ -387,6 +387,77 @@ Page {
         }
     }
 
+    Section { text: "Corners" }
+
+    // Preview: a small panel with a button and a chip, at the chosen radius.
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: Theme.space.l
+        Rectangle {
+            implicitWidth: 150
+            implicitHeight: 92
+            radius: Theme.radius.l
+            color: Theme.surfaceRaised
+            border.width: 1
+            border.color: Theme.border
+            Behavior on radius { NumberAnimation { duration: Theme.anim.fast } }
+            Rectangle {
+                x: 12; y: 12
+                width: 126; height: 28
+                radius: Theme.radius.m
+                color: Qt.alpha(Theme.accent, 0.25)
+                Behavior on radius { NumberAnimation { duration: Theme.anim.fast } }
+            }
+            Rectangle {
+                x: 12; y: 52
+                width: 60; height: 28
+                radius: Theme.radius.s
+                color: Theme.hover
+                border.width: 1
+                border.color: Theme.border
+                Behavior on radius { NumberAnimation { duration: Theme.anim.fast } }
+            }
+        }
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: Theme.space.s
+            Segmented {
+                options: [{ label: "Square", value: 0 }, { label: "Small", value: 0.5 }, { label: "Default", value: 1 },
+                          { label: "Large", value: 1.4 }, { label: "Round", value: 1.9 }]
+                current: [0, 0.5, 1, 1.4, 1.9].find(v => Math.abs(v - Config.appearance.corners) < 0.01) ?? -1
+                onSelected: value => Config.appearance.corners = value
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Theme.space.m
+                Slider {
+                    Layout.fillWidth: true
+                    from: 0
+                    to: 200
+                    stepSize: 5
+                    showTicks: false
+                    value: Math.round(Config.appearance.corners * 100)
+                    onMoved: v => Config.appearance.corners = v / 100
+                }
+                StyledText {
+                    Layout.preferredWidth: 44
+                    horizontalAlignment: Text.AlignRight
+                    text: Math.round(Config.appearance.corners * 100) + "%"
+                    color: Theme.fgMuted
+                    tabular: true
+                }
+            }
+        }
+    }
+    SettingRow {
+        title: "Window corners too"
+        description: "Rounds Hyprland's window corners to match (your own rounding × this setting). Off keeps Hyprland's rounding as it is."
+        Toggle {
+            checked: Config.appearance.windowCorners
+            onToggled: value => Config.appearance.windowCorners = value
+        }
+    }
+
     Section { text: "Fonts" }
 
     StyledText {
