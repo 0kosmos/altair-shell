@@ -19,7 +19,7 @@ Singleton {
     // Panel decoration: 0 none, 1 glow, 2 aurora, 3 grain (off in low-power).
     // Panel decorations (shaders/panelfx.frag modes, in this order).
     readonly property list<string> panelStyles: ["none", "glow", "aurora", "grain", "mesh", "sheen", "edge", "dusk", "lines", "dots",
-        "flow", "nebula", "waves", "prism", "stars", "pulse"]
+        "flow", "nebula", "waves", "prism", "stars", "pulse", "lava", "ripple", "snow", "plasma"]
     readonly property int panelFx: lowPower ? 0 : Math.max(0, panelStyles.indexOf(Config.effects.panelStyle))
     // Modes 10+ move (only while a panel or menu is open, see GlassBackground).
     readonly property bool panelFxAnimated: panelFx >= 10 && animations && Config.effects.panelAnimate
@@ -33,8 +33,30 @@ Singleton {
     function vec(c: color): vector4d {
         return Qt.vector4d(c.r, c.g, c.b, 1);
     }
-    // How panels open/close: "glide" | "spring" | "zoom" | "drop" | "fade".
-    readonly property string panelMotion: ["spring", "zoom", "drop", "fade"].indexOf(Config.effects.panelMotion) !== -1 ? Config.effects.panelMotion : "glide"
+    // How panels and Settings open/close (Settings > Effects > Panel motion).
+    readonly property list<string> panelMotions: ["glide", "spring", "zoom", "drop", "fade", "pop", "flip", "unfold", "swing"]
+    readonly property string panelMotion: panelMotions.indexOf(Config.effects.panelMotion) !== -1 ? Config.effects.panelMotion : "glide"
+    // What a motion does, as the change from closed (p = 0) to open (p = 1):
+    //   scale: starting scale; slide: distance × the panel's slideDistance;
+    //   flip: tilt (degrees, around the horizontal axis); swing: turn
+    //   (degrees, in the plane); unfold: starting height/width fraction;
+    //   easing / overshoot / extra: how the opening runs (extra ms on top of
+    //   Theme.anim.slow). Closing is always a quick ease-in.
+    readonly property var motionSpec: {
+        const base = { scale: 1, slide: 0, flip: 0, swing: 0, unfold: 1, easing: Easing.OutQuint, overshoot: 1, extra: 0 };
+        const m = {
+            glide:  { scale: 0.95, slide: 1 },
+            spring: { scale: 0.88, slide: 1.5, easing: Easing.OutBack, overshoot: 1.7, extra: 80 },
+            zoom:   { scale: 0.8 },
+            drop:   { slide: 3, easing: Easing.OutBack, overshoot: 1.1, extra: 80 },
+            fade:   { extra: -120 },
+            pop:    { scale: 0.55, easing: Easing.OutBack, overshoot: 2.2, extra: 40 },
+            flip:   { scale: 0.96, flip: 65, extra: 60 },
+            unfold: { unfold: 0.2, extra: 40 },
+            swing:  { scale: 0.94, swing: -7, easing: Easing.OutBack, overshoot: 1.5, extra: 80 }
+        }[panelMotion] ?? {};
+        return Object.assign(base, m);
+    }
 
     // ---- Colours ------------------------------------------------------------
     // Palette: "default" (the built-in dark/light colours), the id of a

@@ -119,39 +119,61 @@ Scope {
             // Mostly solid: a settings page needs readable text more than glass.
             // Hyprland draws the window border, so no hairline border of our own.
             // Radius = the window rounding set by the rule in hypr/init.lua.
-            // Everything fades in and grows from 98 % on open (Hyprland's own
+            // It opens and closes with the panel motion chosen in Settings >
+            // Effects (Theme.motionSpec), inside the window (Hyprland's own
             // animation is off for this window, see the rule in hypr/init.lua).
             Item {
                 id: body
                 anchors.fill: parent
-                opacity: 0
-                scale: 0.98
-                Component.onCompleted: openAnim.start()
-
-                ParallelAnimation {
-                    id: openAnim
-                    NumberAnimation { target: body; property: "opacity"; to: 1; duration: Theme.anim.normal; easing.type: Theme.anim.easing }
-                    NumberAnimation { target: body; property: "scale"; to: 1; duration: Theme.anim.normal; easing.type: Theme.anim.easingSlide }
+                readonly property var spec: Theme.motionSpec
+                property bool shown: false
+                // 0 = closed, 1 = open (an overshooting easing passes 1 briefly).
+                property real p: 0
+                opacity: shown ? 1 : 0
+                Behavior on opacity {
+                    NumberAnimation { duration: body.shown ? Theme.anim.normal : Theme.anim.normal; easing.type: body.shown ? Theme.anim.easing : Theme.anim.easingIn }
                 }
-
-                // Closing: the opening animation in reverse, then the window goes.
-                ParallelAnimation {
-                    id: closeAnim
-                    NumberAnimation { target: body; property: "opacity"; to: 0; duration: Theme.anim.normal; easing.type: Theme.anim.easingIn }
-                    NumberAnimation { target: body; property: "scale"; to: 0.98; duration: Theme.anim.normal; easing.type: Theme.anim.easingIn }
-                    onFinished: settings.loaded = false
+                Behavior on p {
+                    NumberAnimation {
+                        duration: body.shown ? Math.max(120, Theme.anim.slow + body.spec.extra) : Theme.anim.normal
+                        easing.type: body.shown ? body.spec.easing : Easing.InCubic
+                        easing.overshoot: body.spec.overshoot
+                    }
                 }
+                // A big window moves less than a small panel: scale and slide
+                // are toned down, it must stay inside its own window.
+                scale: 1 - (1 - spec.scale) * 0.6 * (1 - p)
+                readonly property real dist: spec.slide * 16 * (1 - p)
+                transform: [
+                    Translate { y: -body.dist },
+                    Rotation {
+                        origin.x: body.width / 2
+                        origin.y: 0
+                        axis { x: 1; y: 0; z: 0 }
+                        angle: body.spec.flip * 0.5 * (1 - body.p)
+                    },
+                    Rotation {
+                        origin.x: body.width / 2
+                        origin.y: body.height / 2
+                        angle: body.spec.swing * 0.4 * (1 - body.p)
+                    },
+                    Scale {
+                        origin.x: body.width / 2
+                        origin.y: 0
+                        yScale: 1 - (1 - body.spec.unfold) * 0.6 * (1 - body.p)
+                    }
+                ]
+                Component.onCompleted: {
+                    shown = true;
+                    p = Qt.binding(() => shown ? 1 : 0);
+                }
+                // Closed and faded: the window goes.
+                onOpacityChanged: if (opacity === 0 && !shown) settings.loaded = false
 
                 Connections {
                     target: ShellState
                     function onSettingsOpenChanged() {
-                        if (ShellState.settingsOpen) {
-                            closeAnim.stop();
-                            openAnim.start();
-                        } else {
-                            openAnim.stop();
-                            closeAnim.start();
-                        }
+                        body.shown = ShellState.settingsOpen;
                     }
                 }
 
@@ -176,6 +198,8 @@ Scope {
                 GlassBackground {
                     anchors.fill: parent
                     radius: Theme.radius.m
+                    // Moving backgrounds move here too while Settings is open.
+                    animate: body.shown
                     bordered: false
                     solidity: 0.85
                     rim: 0.35

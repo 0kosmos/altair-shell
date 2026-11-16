@@ -127,7 +127,9 @@ Page {
     Chips {
         Layout.bottomMargin: Theme.space.s
         options: [{ label: "Flow", value: "flow" }, { label: "Nebula", value: "nebula" }, { label: "Waves", value: "waves" },
-                  { label: "Prism", value: "prism" }, { label: "Stars", value: "stars" }, { label: "Pulse", value: "pulse" }]
+                  { label: "Prism", value: "prism" }, { label: "Stars", value: "stars" }, { label: "Pulse", value: "pulse" },
+                  { label: "Lava", value: "lava" }, { label: "Ripple", value: "ripple" }, { label: "Snow", value: "snow" },
+                  { label: "Plasma", value: "plasma" }]
         current: Config.effects.panelStyle
         onSelected: value => Config.effects.panelStyle = value
     }
@@ -182,16 +184,17 @@ Page {
     }
     SettingRow {
         title: "Panel motion"
-        description: "How panels and menus open and close."
-        Segmented {
-            options: [{ label: "Glide", value: "glide" }, { label: "Spring", value: "spring" }, { label: "Zoom", value: "zoom" },
-                      { label: "Drop", value: "drop" }, { label: "Fade", value: "fade" }]
-            current: Theme.panelMotion
-            onSelected: value => {
-                Config.effects.panelMotion = value;
-                // Show it: open and close the calendar once.
-                demoMotion.restart();
-            }
+        description: "How panels, menus and Settings open and close. Choosing one shows it on the calendar."
+    }
+    Chips {
+        Layout.bottomMargin: Theme.space.s
+        options: [{ label: "Glide", value: "glide" }, { label: "Spring", value: "spring" }, { label: "Zoom", value: "zoom" },
+                  { label: "Drop", value: "drop" }, { label: "Fade", value: "fade" }, { label: "Pop", value: "pop" },
+                  { label: "Flip", value: "flip" }, { label: "Unfold", value: "unfold" }, { label: "Swing", value: "swing" }]
+        current: Theme.panelMotion
+        onSelected: value => {
+            Config.effects.panelMotion = value;
+            demoMotion.restart();
         }
     }
     Timer {

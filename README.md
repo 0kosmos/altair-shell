@@ -204,13 +204,15 @@ pinstripes) or **Dots** (a faint dot grid).
 
 Moving: **Flow** (drifting colour clouds), **Nebula** (soft mist),
 **Waves**, **Prism** (an iridescent sweep), **Stars** (twinkling) and
-**Pulse** (breathing edge light). They move only while a panel or menu is
-open (30 fps, about 10 % of one core on an old CPU); the bar, dock and
-Settings show them still, so they cost nothing while idle.
+**Pulse** (breathing edge light), **Lava** (merging blobs), **Ripple**
+(rings from a corner), **Snow** and **Plasma**. They move only while a panel,
+menu or Settings is open (30 fps, about 8–11 % of one core on an old CPU);
+the bar and dock show them still, so they cost nothing while idle.
 
 Options: intensity, colours (shades of the accent or your palette's
-colours), animation on/off and speed, and **panel motion** — how panels open
-and close: Glide, Spring, Zoom, Drop or Fade. All off in low-power mode.
+colours), animation on/off and speed, and **panel motion** — how panels,
+menus and Settings open and close: Glide, Spring, Zoom, Drop, Fade, Pop,
+Flip, Unfold or Swing. All off in low-power mode.
 
 ### About "liquid glass"
 

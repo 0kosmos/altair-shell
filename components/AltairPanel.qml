@@ -152,46 +152,65 @@ Scope {
                 // (small edge panels, e.g. the calendar, do both, growing out
                 // of the bar).
                 readonly property bool edge: root.dock === "top" || root.dock === "bottom"
-                // Motion style (Settings > Effects > Panel motion).
-                readonly property string motion: Theme.panelMotion
-                readonly property real scaleFrom: motion === "spring" ? 0.88 : motion === "zoom" ? 0.8
-                    : motion === "glide" ? 0.95 : 1
-                readonly property real slide: motion === "spring" ? root.slideDistance * 1.5
-                    : motion === "drop" ? root.slideDistance * 3
-                    : motion === "zoom" || motion === "fade" ? 0 : root.slideDistance
-                readonly property int openEasing: motion === "spring" || motion === "drop" ? Easing.OutBack : Easing.OutQuint
-                readonly property real overshoot: motion === "spring" ? 1.7 : 1.1
-                readonly property int openDuration: motion === "fade" ? Theme.anim.normal
-                    : motion === "spring" || motion === "drop" ? Theme.anim.slow + 80 : Theme.anim.slow
-                scale: shown || (edge && root.fullWidth && motion !== "zoom") ? 1 : scaleFrom
-                transformOrigin: root.dock === "top" ? Item.Top : root.dock === "bottom" ? Item.Bottom
-                    : root.dock === "left" ? Item.Left : root.dock === "right" ? Item.Right : Item.Center
-                transform: Translate {
-                    x: body.shown ? 0 : root.dock === "left" ? -body.slide : root.dock === "right" ? body.slide : 0
-                    Behavior on x {
-                        NumberAnimation { duration: body.shown ? body.openDuration : Theme.anim.fast; easing.type: body.shown ? body.openEasing : Easing.InCubic; easing.overshoot: body.overshoot }
-                    }
-                    // Centred panels (launcher) drop in from a little above.
-                    y: body.shown ? 0 : root.dock === "bottom" ? body.slide : root.dock === "top" ? -body.slide
-                        : root.dock === "" && body.motion === "drop" ? -body.slide : 0
-                    Behavior on y {
-                        NumberAnimation { duration: body.shown ? body.openDuration : Theme.anim.fast; easing.type: body.shown ? body.openEasing : Easing.InCubic; easing.overshoot: body.overshoot }
+                // Motion style (Settings > Effects > Panel motion, Theme.motionSpec).
+                // p runs 0 (closed) -> 1 (open); with an overshooting easing it
+                // goes a little past 1, which is the bounce.
+                readonly property var spec: Theme.motionSpec
+                property real p: 0
+                Behavior on p {
+                    NumberAnimation {
+                        duration: body.shown ? Math.max(120, Theme.anim.slow + body.spec.extra) : Theme.anim.fast
+                        easing.type: body.shown ? body.spec.easing : Easing.InCubic
+                        easing.overshoot: body.spec.overshoot
                     }
                 }
-                Component.onCompleted: shown = Qt.binding(() => root.open)
+                // Full-width edge panels only slide (a scaled full-width panel
+                // would show gaps at the screen edges), except the zoom styles.
+                readonly property bool noScale: edge && root.fullWidth && Theme.panelMotion !== "zoom" && Theme.panelMotion !== "pop"
+                scale: noScale ? 1 : spec.scale + (1 - spec.scale) * p
+                transformOrigin: root.dock === "top" ? Item.Top : root.dock === "bottom" ? Item.Bottom
+                    : root.dock === "left" ? Item.Left : root.dock === "right" ? Item.Right : Item.Center
+                // The point transforms turn around: the edge the panel comes from.
+                readonly property point pivot: root.dock === "top" ? Qt.point(width / 2, 0)
+                    : root.dock === "bottom" ? Qt.point(width / 2, height)
+                    : root.dock === "left" ? Qt.point(0, height / 2)
+                    : root.dock === "right" ? Qt.point(width, height / 2)
+                    : Qt.point(width / 2, height / 2)
+                readonly property real dist: spec.slide * root.slideDistance * (1 - p)
+                readonly property bool side: root.dock === "left" || root.dock === "right"
+                transform: [
+                    Translate {
+                        x: root.dock === "left" ? -body.dist : root.dock === "right" ? body.dist : 0
+                        // Centred panels (launcher) come down from a little above.
+                        y: root.dock === "bottom" ? body.dist : root.dock === "top" || root.dock === "" ? -body.dist : 0
+                    },
+                    Rotation {
+                        origin.x: body.pivot.x
+                        origin.y: body.pivot.y
+                        axis { x: body.side ? 0 : 1; y: body.side ? 1 : 0; z: 0 }
+                        angle: body.spec.flip * (1 - body.p) * (root.dock === "bottom" || root.dock === "right" ? -1 : 1)
+                    },
+                    Rotation {
+                        origin.x: body.pivot.x
+                        origin.y: body.pivot.y
+                        angle: body.spec.swing * (1 - body.p)
+                    },
+                    Scale {
+                        origin.x: body.pivot.x
+                        origin.y: body.pivot.y
+                        xScale: body.side ? body.spec.unfold + (1 - body.spec.unfold) * body.p : 1
+                        yScale: body.side ? 1 : body.spec.unfold + (1 - body.spec.unfold) * body.p
+                    }
+                ]
+                Component.onCompleted: {
+                    shown = Qt.binding(() => root.open);
+                    p = Qt.binding(() => shown ? 1 : 0);
+                }
 
                 Behavior on opacity {
                     NumberAnimation {
                         duration: body.shown ? Theme.anim.normal : Theme.anim.fast
                         easing.type: body.shown ? Theme.anim.easing : Theme.anim.easingIn
-                    }
-                }
-                // Opening: a long, soft ease-out (fast start, gentle landing).
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: body.shown ? body.openDuration : Theme.anim.fast
-                        easing.type: body.shown ? body.openEasing : Theme.anim.easingIn
-                        easing.overshoot: body.overshoot
                     }
                 }
                 // Unload once fully faded out.

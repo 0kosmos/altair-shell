@@ -21,10 +21,12 @@ All notable changes to Altair. Versions follow [semantic versioning](https://sem
   countdown before log out / restart / shut down. The desktop menu opens it.
 
 ### Look
-- **Moving panel backgrounds**: Flow, Nebula, Waves, Prism, Stars and
-  Pulse, animated only while a panel or menu is open; intensity, colours
+- **Moving panel backgrounds**: Flow, Nebula, Waves, Prism, Stars, Pulse,
+  Lava, Ripple, Snow and Plasma, animated only while a panel, menu or
+  Settings is open; intensity, colours
   (accent or palette), speed, on/off; live preview in Settings.
-- **Panel motion**: Glide, Spring, Zoom, Drop or Fade.
+- **Panel motion**: Glide, Spring, Zoom, Drop, Fade, Pop, Flip, Unfold or
+  Swing, for panels, menus and the Settings window.
 - **Corners**: one setting from square to very round (presets or a
   slider) for every panel, menu, card, bar, dock, widget and Settings;
   optionally Hyprland's window corners too (your rounding × the setting).

@@ -20,6 +20,10 @@
 //   mode 13 prism   an iridescent band sweeping across
 //   mode 14 stars   faint stars that twinkle
 //   mode 15 pulse   accent light breathing along the edges
+//   mode 16 lava    soft blobs that merge and part (metaballs)
+//   mode 17 ripple  slow rings spreading from a corner
+//   mode 18 snow    small flakes falling and swaying
+//   mode 19 plasma  shifting bands of colour
 // Static modes ignore `time`. Colours: c2/c3 are a second and third colour
 // (from the palette); with alpha 0 they are derived from the accent.
 // Clipped to the panel's rounded corners.
@@ -187,23 +191,71 @@ void main() {
         col = clamp(hueShift(accent.rgb, d * 6.0 + time * 0.2), 0.0, 1.0);
         a = band * 0.28 * strength;
     } else if (mode < 14.5) {
-        // Stars: one possible star per 22 px cell, twinkling at its own pace.
-        vec2 cell = floor(px / 22.0);
+        // Stars: one possible star per 22 px cell, twinkling at its own pace,
+        // the whole sky drifting slowly.
+        vec2 sp = px + vec2(time * 4.0, time * 1.5);
+        vec2 cell = floor(sp / 22.0);
         float h = hash(cell);
         vec2 c = (cell + 0.25 + 0.5 * vec2(hash(cell + 3.1), hash(cell + 7.7))) * 22.0;
-        float d = length(px - c);
+        float d = length(sp - c);
         float on = step(0.62, h);
         float tw = 0.5 + 0.5 * sin(time * (1.0 + 2.0 * h) + h * 40.0);
         float star = clamp(1.8 - d, 0.0, 1.0) + exp(-d * d * 0.08) * 0.5;
         col = mix(vec3(1.0), accent.rgb, 0.4);
         a = on * star * tw * 0.7 * strength;
-    } else {
+    } else if (mode < 15.5) {
         // Pulse: edge light that breathes, brighter at the top.
         float e = min(min(px.x, size.x - px.x), min(px.y, size.y - px.y));
         float edge = exp(-e / 22.0) * (0.6 + 0.4 * exp(-px.y / (size.y * 0.6)));
         float breath = 0.55 + 0.45 * sin(time * 1.2);
         col = mix(accent.rgb, second(), 0.5 + 0.5 * sin(time * 0.4));
         a = edge * breath * 0.60 * strength;
+    } else if (mode < 16.5) {
+        // Lava: five blobs on slow orbits; their summed field, thresholded
+        // softly, looks like blobs merging and splitting.
+        float f = 0.0;
+        vec3 c = vec3(0.0);
+        for (int i = 0; i < 5; i++) {
+            float fi = float(i);
+            vec2 o = size * vec2(0.5 + 0.38 * sin(time * (0.21 + 0.05 * fi) + fi * 1.7),
+                                 0.5 + 0.38 * cos(time * (0.17 + 0.04 * fi) + fi * 2.3));
+            float r = m * (0.13 + 0.03 * fi);
+            float v = r * r / (dot(px - o, px - o) + 1.0);
+            f += v;
+            c += v * (i == 0 || i == 3 ? accent.rgb : i == 1 || i == 4 ? second() : third());
+        }
+        col = c / max(f, 1e-4);
+        a = smoothstep(0.55, 1.1, f) * 0.30 * strength + smoothstep(0.15, 0.6, f) * 0.06 * strength;
+    } else if (mode < 17.5) {
+        // Ripple: rings from the top-left corner, spreading and fading.
+        float d = length(px) / 34.0 - time * 0.9;
+        float ring = pow(0.5 + 0.5 * sin(d * 6.2831), 6.0);
+        float fade = exp(-length(px) / (m * 0.8));
+        col = mix(accent.rgb, second(), 0.5 + 0.5 * sin(d * 0.7));
+        a = ring * fade * 0.30 * strength;
+    } else if (mode < 18.5) {
+        // Snow: three layers of flakes (far = small and slow).
+        float sn = 0.0;
+        for (int i = 0; i < 3; i++) {
+            float fi = float(i);
+            float cs = 26.0 + 12.0 * fi;
+            vec2 q = px + vec2(sin(time * 0.6 + px.y / 60.0 + fi) * 6.0, -time * (10.0 + 9.0 * fi));
+            vec2 cell = floor(q / cs);
+            float h = hash(cell + fi * 13.0);
+            vec2 c = (cell + 0.2 + 0.6 * vec2(hash(cell + 2.3 + fi), hash(cell + 5.9 + fi))) * cs;
+            float d = length(q - c);
+            sn += step(0.45, h) * clamp((1.0 + fi * 0.6) - d, 0.0, 1.0) * (0.5 + 0.25 * fi);
+        }
+        col = mix(vec3(1.0), accent.rgb, 0.25);
+        a = clamp(sn, 0.0, 1.0) * 0.55 * strength;
+    } else {
+        // Plasma: classic sum of sines, mapped between the three colours.
+        vec2 uv = px / m * 3.0;
+        float v = sin(uv.x + time * 0.5) + sin(uv.y * 1.3 - time * 0.4)
+                + sin((uv.x + uv.y) * 0.8 + time * 0.3) + sin(length(uv - 1.5) * 1.6 - time * 0.6);
+        float t = 0.5 + 0.125 * v;
+        col = t < 0.5 ? mix(accent.rgb, second(), t * 2.0) : mix(second(), third(), t * 2.0 - 1.0);
+        a = (0.12 + 0.10 * sin(v * 1.5)) * strength;
     }
 
     float k = roundedMask(px) * qt_Opacity;
