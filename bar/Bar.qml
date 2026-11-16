@@ -6,9 +6,19 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 import qs.components
 import qs.core
+import qs.services
 import qs.theme
 
-// The top (or bottom) bar: one floating panel per screen.
+// The bar: one floating panel per screen, on any edge.
+//
+// Moving it: press on an empty spot and drag toward another edge. While
+// dragging, this same window grows over the whole screen (transparent,
+// still reserving only the bar's strip, so windows don't move): the pointer
+// never leaves it, so the drag can't be lost to the desktop below (Hyprland
+// moves the pointer to whatever surface it is over). The screen dims a
+// little, a ghost bar glides to the nearest edge, the dock's outline shows
+// where it will be and widgets glide out of the way (they read the preview
+// edge, ShellState.barDragTarget). Release to put the bar there.
 Variants {
     model: Quickshell.screens
 
@@ -24,21 +34,28 @@ Variants {
         // Along its edge, with a gap to the screen edges.
         readonly property string pos: Theme.barPosition
         readonly property bool vertical: Theme.barVertical
+        readonly property bool dragging: barDrag.dragging
+        readonly property int t: Theme.barThickness
+        readonly property int g: Theme.barGap
         anchors {
             top: pos !== "bottom"
             bottom: pos !== "top"
             left: pos !== "right"
             right: pos !== "left"
         }
+        // Dragging: no margins (the window reaches every screen edge) and the
+        // reserved strip grows by the margin instead, so it stays the same.
         margins {
-            top: pos === "bottom" ? 0 : Theme.barGap
-            bottom: pos === "top" ? 0 : Theme.barGap
-            left: pos === "right" ? 0 : Theme.barGap
-            right: pos === "left" ? 0 : Theme.barGap
+            top: dragging || pos === "bottom" ? 0 : g
+            bottom: dragging || pos === "top" ? 0 : g
+            left: dragging || pos === "right" ? 0 : g
+            right: dragging || pos === "left" ? 0 : g
         }
+        exclusionMode: ExclusionMode.Normal
+        exclusiveZone: t + (dragging ? g : 0)
 
-        implicitHeight: vertical ? 0 : Theme.barThickness
-        implicitWidth: vertical ? Theme.barThickness : 0
+        implicitHeight: vertical ? 0 : dragging ? win.screen.height : t
+        implicitWidth: vertical ? (dragging ? win.screen.width : t) : 0
         color: "transparent"
 
         // Blur is drawn by the compositor (ext-background-effect) behind exactly
@@ -50,6 +67,17 @@ Variants {
             radius: Theme.radius.m
         }
 
+        // The bar itself: the whole window normally; while dragging, its
+        // strip at the edge (where it was), inside the full-screen window.
+        Item {
+            id: barBody
+            x: !win.dragging ? 0 : win.pos === "right" ? win.width - win.g - win.t : win.g
+            y: !win.dragging ? 0 : win.pos === "bottom" ? win.height - win.g - win.t : win.g
+            width: !win.dragging ? win.width : win.vertical ? win.t : win.width - win.g * 2
+            height: !win.dragging ? win.height : win.vertical ? win.height - win.g * 2 : win.t
+            opacity: win.dragging ? 0.45 : 1
+            Behavior on opacity { NumberAnimation { duration: Theme.anim.fast } }
+
         GlassBackground {
             id: background
             anchors.fill: parent
@@ -57,7 +85,7 @@ Variants {
         }
 
         // Drag the bar by an empty spot to another screen edge: the nearest
-        // edge to the pointer is shown (BarMoveHint) and taken on release.
+        // edge to the pointer is previewed (DragPreview) and taken on release.
         // Under everything else, so the clock, buttons and tray keep their
         // clicks.
         MouseArea {
@@ -69,12 +97,13 @@ Variants {
             property point pressAt
             property bool dragging: false
 
-            // This window's top-left on its screen (from where the bar sits).
+            // The bar strip's top-left on its screen (it stays put while the
+            // window grows for the drag, so this holds throughout).
             function origin(): point {
-                const sw = win.screen.width, sh = win.screen.height, g = Theme.barGap;
+                const sw = win.screen.width, sh = win.screen.height, g = win.g, t = win.t;
                 switch (win.pos) {
-                case "bottom": return Qt.point(g, sh - g - win.height);
-                case "right": return Qt.point(sw - g - win.width, g);
+                case "bottom": return Qt.point(g, sh - g - t);
+                case "right": return Qt.point(sw - g - t, g);
                 default: return Qt.point(g, g);
                 }
             }
@@ -141,6 +170,15 @@ Variants {
             RecordButton {}
             NotificationButton {}
             SettingsButton {}
+        }
+        }
+
+        // ---- Drag preview -------------------------------------------------------------
+        DragPreview {
+            anchors.fill: parent
+            visible: win.dragging
+            target: ShellState.barDragTarget || win.pos
+            screenName: win.screen.name
         }
     }
 }

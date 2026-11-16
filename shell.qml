@@ -20,7 +20,6 @@ ShellRoot {
     Ipc {}
     Wallpaper {}
     Bar {}
-    BarMoveHint {}
     Dock {}
     Launcher {}
     NotificationPopups {}

@@ -152,7 +152,8 @@ Scope {
                             return null;
                         const sw = per.modelData.width, sh = per.modelData.height;
                         const bt = Theme.barGap + Theme.barThickness;
-                        const bar = Theme.barPosition;
+                        // (While the bar is dragged: where it would go.)
+                        const bar = ShellState.barDragTarget || Theme.barPosition;
                         const len = body.targetLength, th = root.thickness, g = root.gap;
                         if (root.position === "bottom") {
                             const x0 = bar === "left" ? bt : 0, x1 = sw - (bar === "right" ? bt : 0);

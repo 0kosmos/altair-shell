@@ -186,13 +186,23 @@ AltairPanel {
 
                 // Open on the current wallpaper, without animation.
                 function centerOn(i: int): void {
+                    centred = true;
                     highlightMoveDuration = 0;
                     currentIndex = i;
                     positionViewAtIndex(i, PathView.Center);
                     highlightMoveDuration = Qt.binding(() => Theme.anim.slow);
                 }
-                onCountChanged: {
-                    if (currentIndex >= 0 || count === 0)
+                // (A PathView's index is never -1, so a flag says whether it has
+                // been centred on the current wallpaper yet.)
+                property bool centred: false
+                onCountChanged: centreOnCurrent()
+                Connections {
+                    target: files
+                    function onStatusChanged() { list.centreOnCurrent(); }
+                }
+                // Once the folder is fully listed (it fills in gradually).
+                function centreOnCurrent(): void {
+                    if (centred || count === 0 || files.status !== FolderListModel.Ready)
                         return;
                     let start = 0;
                     for (let i = 0; i < count; i++)

@@ -109,7 +109,8 @@ Singleton {
         const g = widgetGap;
         const t = Theme.barGap + Theme.barThickness + g;
         const l = [];
-        switch (Theme.barPosition) {
+        // While the bar is dragged: where it would go (widgets preview it).
+        switch (ShellState.barDragTarget || Theme.barPosition) {
         case "top": l.push({ x: -1e4, y: -1e4, w: 3e4, h: 1e4 + t }); break;
         case "bottom": l.push({ x: -1e4, y: h - t, w: 3e4, h: 1e4 }); break;
         case "left": l.push({ x: -1e4, y: -1e4, w: 1e4 + t, h: 3e4 }); break;
