@@ -21,6 +21,8 @@ All notable changes to Altair. Versions follow [semantic versioning](https://sem
   countdown before log out / restart / shut down. The desktop menu opens it.
 
 ### Look
+- **Settings layouts**: sidebar left or right, an icon rail, or tabs on
+  top or below; a sliding marker shows the current page.
 - **Moving panel backgrounds**: Flow, Nebula, Waves, Prism, Stars, Pulse,
   Lava, Ripple, Snow and Plasma, animated only while a panel, menu or
   Settings is open; intensity, colours

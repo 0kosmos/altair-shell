@@ -33,6 +33,8 @@ Singleton {
     function vec(c: color): vector4d {
         return Qt.vector4d(c.r, c.g, c.b, 1);
     }
+    // Settings window layout (Settings > Appearance).
+    readonly property string settingsLayout: ["right", "rail", "top", "bottom"].indexOf(Config.appearance.settingsLayout) !== -1 ? Config.appearance.settingsLayout : "left"
     // How panels and Settings open/close (Settings > Effects > Panel motion).
     readonly property list<string> panelMotions: ["glide", "spring", "zoom", "drop", "fade", "pop", "flip", "unfold", "swing"]
     readonly property string panelMotion: panelMotions.indexOf(Config.effects.panelMotion) !== -1 ? Config.effects.panelMotion : "glide"

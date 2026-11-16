@@ -165,7 +165,9 @@ frosted glass, smooth motion and close to zero CPU when idle.
     with adjustable speed.
   - five wallpapers of its own come with it (Aurora, Dusk, Lagoon, Ember,
     Glacier), put into `~/Pictures/Wallpapers` by install.sh.
-- **Settings app** (`SUPER + ,` or the gear in the bar):
+- **Settings app** (`SUPER + ,` or the gear in the bar), laid out as a
+  sidebar (left or right), a slim icon rail, or tabs on top or below
+  (*Appearance → Settings layout*):
   - dark / light, 16 five-colour palettes plus your own, accent colour with a
     colour picker;
   - corners: square to very round (presets or a slider) for every panel,
