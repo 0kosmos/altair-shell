@@ -136,9 +136,7 @@ Singleton {
             }
         }
     }
-    function openPath(path: string): void {
-        Quickshell.execDetached(["xdg-open", path]);
-    }
+
 
     // SIGINT: gpu-screen-recorder finishes writing the file and exits.
     function stop(): void {
@@ -160,17 +158,29 @@ Singleton {
         }
     }
 
-    // Through the notification daemon (Altair's own), with "Open folder".
+    // Through the notification daemon (Altair's own). A saved clip gets
+    // "Play" and "Show in folder" (the file manager, with the clip selected).
     function notify(title: string, body: string, withAction: bool): void {
-        const args = ["notify-send", "-a", "Altair", "-i", "media-record", title, body];
         if (withAction) {
-            opener.command = ["sh", "-c", 'a=$(notify-send -a Altair -i media-record -A open="Open folder" "$1" "$2") && [ "$a" = open ] && xdg-open "$3"', "sh", title, body, folder];
+            opener.clip = file;
+            opener.command = ["notify-send", "-a", "Altair", "-i", "media-record",
+                "-A", "play=Play", "-A", "show=Show in folder", title, body];
             opener.running = true;
         } else {
-            Quickshell.execDetached(args);
+            Quickshell.execDetached(["notify-send", "-a", "Altair", "-i", "media-record", title, body]);
         }
     }
     Process {
         id: opener
+        property string clip
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const a = this.text.trim();
+                if (a === "play")
+                    Files.open(opener.clip);
+                else if (a === "show")
+                    Files.showItem(opener.clip);
+            }
+        }
     }
 }

@@ -59,7 +59,7 @@ AltairPanel {
                         icon: "folder_open"
                         onClicked: {
                             ShellState.close();
-                            Recorder.openPath(Recorder.folder);
+                            Files.showFolder(Recorder.folder);
                         }
                     }
                 }
@@ -198,7 +198,7 @@ AltairPanel {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             ShellState.close();
-                            Recorder.openPath(modelData.path);
+                            Files.open(modelData.path);
                         }
                         Rectangle {
                             anchors.fill: parent
@@ -218,6 +218,16 @@ AltairPanel {
                                 Layout.fillWidth: true
                                 text: clip.modelData.name.replace(/^Recording_/, "").replace(/\.(mp4|mkv|webm)$/, "").replace("_", "  ").replace(/-(\d\d)-(\d\d)$/, ":$1:$2")
                                 elide: Text.ElideRight
+                            }
+                            IconButton {
+                                icon: "folder_open"
+                                size: 26
+                                iconSize: 16
+                                opacity: clip.containsMouse ? 1 : 0
+                                onClicked: {
+                                    ShellState.close();
+                                    Files.showItem(clip.modelData.path);
+                                }
                             }
                             StyledText {
                                 text: clip.modelData.size >= 1073741824 ? (clip.modelData.size / 1073741824).toFixed(1) + " GB"
