@@ -355,6 +355,8 @@ Item {
         // Style changes switch the widget's look in place.
         onLoaded: {
             item.style = Qt.binding(() => Widgets.styleOf(frame.item));
+            if (item.vis !== undefined)
+                item.vis = Qt.binding(() => Widgets.visOf(frame.item));
             if (item.live !== undefined)
                 item.live = Qt.binding(() => frame.live);
             // Where the widget is on its monitor (Weather draws moving effects
@@ -635,13 +637,16 @@ Item {
             // Style: click to cycle through the type's styles.
             MouseArea {
                 id: styleButton
-                readonly property var styles: frame.type?.styles ?? []
+                readonly property var styles: Widgets.stylesFor(frame.item)
                 visible: styles.length > 1
                 implicitWidth: styleRow.implicitWidth + Theme.space.s * 2
                 implicitHeight: 26
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: Widgets.cycleStyle(frame.itemId)
+                onClicked: {
+                    Sounds.click();
+                    Widgets.cycleStyle(frame.itemId);
+                }
                 Rectangle {
                     anchors.fill: parent
                     radius: height / 2
@@ -658,6 +663,39 @@ Item {
                     }
                     StyledText {
                         text: styleButton.styles.find(s => s.id === Widgets.styleOf(frame.item))?.name ?? ""
+                        font.pixelSize: Theme.font.small
+                    }
+                }
+            }
+            // Music: the built-in visualizer, click to cycle its modes.
+            MouseArea {
+                id: visButton
+                readonly property var modes: Widgets.visModes(frame.item)
+                visible: modes.length > 1
+                implicitWidth: visRow.implicitWidth + Theme.space.s * 2
+                implicitHeight: 26
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    Sounds.click();
+                    Widgets.cycleVis(frame.itemId);
+                }
+                Rectangle {
+                    anchors.fill: parent
+                    radius: height / 2
+                    color: visButton.containsMouse ? Theme.hover : "transparent"
+                }
+                RowLayout {
+                    id: visRow
+                    anchors.centerIn: parent
+                    spacing: 4
+                    Icon {
+                        name: "graphic_eq"
+                        size: 15
+                        color: Widgets.visOf(frame.item) === "off" ? Theme.fgMuted : Theme.accent
+                    }
+                    StyledText {
+                        text: Widgets.visNames[Widgets.visOf(frame.item)] ?? ""
                         font.pixelSize: Theme.font.small
                     }
                 }

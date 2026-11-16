@@ -14,6 +14,12 @@ import qs.theme
 //   minimal  title, artist, small controls, a thin progress line
 // A Visualizer and/or Equalizer widget can attach below it (magnetic groups,
 // see WidgetFrame.qml).
+// Built-in visualizer (`vis`, per widget, what each style offers is in
+// services/Widgets.qml): ring = circle bars around a round album art (or
+// the record), glow = a glow behind the art swelling with the bass,
+// bars / wave / mirror = faint levels behind the whole player. Costs like
+// the Visualizer widget (a redraw per cava frame), only while playing and
+// not covered.
 // With nothing playing: a compact "Nothing playing", or hidden.
 //
 // Cost notes: MPRIS doesn't push the playback position, so it is asked for
@@ -23,6 +29,8 @@ import qs.theme
 Item {
     id: root
     property string style: "card"
+    property string vis: "off"
+    readonly property bool visOn: vis !== "off" && !idle && live
     property bool live: true        // false while covered by windows (WidgetFrame)
     readonly property var player: Media.player
     readonly property bool idle: !Media.hasTrack
@@ -58,6 +66,57 @@ Item {
             fillMode: Image.PreserveAspectCrop
             asynchronous: true
             cache: true
+        }
+    }
+
+    // The album art with the built-in ring or glow around it. `size` = the
+    // art's normal size; with the ring the art turns round and shrinks a
+    // little so the bars fit in the same space plus `ringRoom`.
+    component AlbumSpot: Item {
+        id: spot
+        property real size: 96
+        property real ringRoom: 14
+        property real radius: Theme.radius.m
+        property real glowScale: 1.5     // glow size relative to the art
+        readonly property bool ring: root.vis === "ring"
+        readonly property real art: ring ? size - 14 : size
+        readonly property real len: Math.round(size * 0.17)
+        implicitWidth: ring ? art + 2 * (len + 4) - ringRoom : size
+        implicitHeight: implicitWidth
+
+        Loader {
+            active: root.visOn && (spot.ring || root.vis === "glow")
+            anchors.centerIn: parent
+            width: spot.ring ? spot.art + 2 * (spot.len + 4) : spot.size * spot.glowScale
+            height: width
+            sourceComponent: Visualizer {
+                style: spot.ring ? "circle" : "glow"
+                ringRadius: spot.art / 2 + 3
+                ringLength: spot.len
+                ringLine: false
+            }
+        }
+        Art {
+            anchors.centerIn: parent
+            width: spot.art
+            height: width
+            r: spot.ring ? width / 2 : spot.radius
+        }
+    }
+
+    // Faint levels behind the whole player (bars along the bottom, a wave,
+    // or mirrored bars through the middle).
+    Loader {
+        // Only while playing: its resting dots would cross the controls.
+        active: root.visOn && Media.playing && ["bars", "wave", "mirror"].indexOf(root.vis) !== -1
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: 12
+        height: root.vis === "mirror" ? parent.height - 24 : Math.round(parent.height * 0.5)
+        opacity: 0.3
+        sourceComponent: Visualizer {
+            style: root.vis
         }
     }
 
@@ -323,10 +382,11 @@ Item {
         id: card
         RowLayout {
             spacing: 14
-            Art {
-                Layout.leftMargin: 12
-                Layout.preferredWidth: 96
-                Layout.preferredHeight: 96
+            AlbumSpot {
+                Layout.leftMargin: ring ? 2 : 12
+                Layout.preferredWidth: implicitWidth
+                Layout.preferredHeight: implicitHeight
+                size: 96
             }
             ColumnLayout {
                 Layout.fillWidth: true
@@ -357,13 +417,33 @@ Item {
             // The record: grooves, the art as its label, a spindle hole. Turns
             // while playing; a tonearm lowers onto it when playback starts.
             Item {
-                Layout.leftMargin: 10
-                Layout.preferredWidth: 130
-                Layout.preferredHeight: 130
+                id: deck
+                readonly property bool ring: root.vis === "ring"
+                readonly property real recordSize: ring ? 112 : 130
+                readonly property real len: 15
+                Layout.leftMargin: ring ? 0 : 10
+                Layout.preferredWidth: ring ? recordSize + 2 * (len + 4) : 130
+                Layout.preferredHeight: Layout.preferredWidth
+
+                // Ring or glow around the record.
+                Loader {
+                    active: root.visOn && (deck.ring || root.vis === "glow")
+                    anchors.centerIn: parent
+                    width: deck.ring ? parent.width : deck.recordSize * 1.6
+                    height: width
+                    sourceComponent: Visualizer {
+                        style: deck.ring ? "circle" : "glow"
+                        ringRadius: deck.recordSize / 2 + 3
+                        ringLength: deck.len
+                        ringLine: false
+                    }
+                }
 
                 Item {
                     id: record
-                    anchors.fill: parent
+                    anchors.centerIn: parent
+                    width: deck.recordSize
+                    height: width
 
                     Rectangle {
                         anchors.fill: parent
@@ -418,8 +498,8 @@ Item {
 
                 // Tonearm: rests off the record, swings on when playing.
                 Item {
-                    x: parent.width - 18
-                    y: 2
+                    x: record.x + record.width - 18
+                    y: record.y + 2
                     width: 8
                     height: 76
                     transformOrigin: Item.Top
@@ -482,10 +562,11 @@ Item {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.topMargin: 12
                 spacing: 6
-                Art {
+                AlbumSpot {
                     Layout.preferredWidth: 184
                     Layout.preferredHeight: 184
-                    r: Theme.radius.m
+                    size: 184
+                    glowScale: 1.2
                 }
                 VolumeBar {
                     Layout.preferredHeight: 184

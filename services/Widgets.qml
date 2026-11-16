@@ -11,6 +11,8 @@ import qs.core
 //
 // An item: { id, type, monitor, x, y, scale, opacity, style, attachedTo, attachSide }
 //   style       one of the type's `styles` ids (missing = the first)
+//   vis         Music only: built-in visualizer ("off", "ring", "glow",
+//               "bars", "wave", "mirror"; what a style offers: its `vis`)
 //   attachedTo  id of the widget it hangs on (Visualizer/Equalizer on Music,
 //               see widgets/WidgetFrame.qml); its x/y/scale then only matter
 //               once it is detached
@@ -128,15 +130,20 @@ Singleton {
         { type: "roundclock", name: "Round clock", icon: "nest_clock_farsight_analog", w: 220, h: 220, attach: "any",
           styles: [{ id: "classic", name: "Classic" }, { id: "minimal", name: "Minimal" }, { id: "numbers", name: "Numbers" }, { id: "dots", name: "Dots" }] },
         { type: "music", name: "Music", icon: "music_note", w: 360, h: 120,
-          styles: [{ id: "card", name: "Card", w: 380, h: 136 }, { id: "disc", name: "Disc", w: 420, h: 156 },
-                   { id: "cover", name: "Cover", w: 236, h: 324 }, { id: "minimal", name: "Minimal", w: 320, h: 84 }] },
+          // `vis`: the built-in visualizer modes this style offers (item.vis).
+          styles: [{ id: "card", name: "Card", w: 380, h: 136, vis: ["off", "ring", "glow", "bars", "wave", "mirror"] },
+                   { id: "disc", name: "Disc", w: 420, h: 156, vis: ["off", "ring", "glow", "bars", "wave"] },
+                   { id: "cover", name: "Cover", w: 236, h: 324, vis: ["off", "glow", "bars", "wave", "mirror"] },
+                   { id: "minimal", name: "Minimal", w: 320, h: 84, vis: ["off", "bars", "wave"] }] },
         { type: "weather", name: "Weather", icon: "partly_cloudy_day", w: 300, h: 130, attach: "any",
           styles: [{ id: "card", name: "Card" }, { id: "forecast", name: "Forecast", w: 380, h: 170 },
                    { id: "hourly", name: "Hourly", w: 380, h: 130 }, { id: "minimal", name: "Minimal", w: 240, h: 64 },
                    { id: "big", name: "Big", w: 240, h: 170 }] },
         { type: "visualizer", name: "Visualizer", icon: "graphic_eq", w: 360, h: 130, attach: "music",
           styles: [{ id: "bars", name: "Bars" }, { id: "mirror", name: "Mirror" }, { id: "wave", name: "Wave" },
-                   { id: "peaks", name: "Peaks" }, { id: "circle", name: "Circle", w: 240, h: 240 }] },
+                   // alone: not while attached (a second album art next to
+                   // the player's; the player has its own ring for that).
+                   { id: "peaks", name: "Peaks" }, { id: "circle", name: "Circle", w: 240, h: 240, alone: true }] },
         { type: "eq", name: "Equalizer", icon: "tune", w: 380, h: 230, attach: "music" },
         { type: "lyrics", name: "Lyrics", icon: "lyrics", w: 360, h: 200, attach: "music",
           styles: [{ id: "scroll", name: "Scroll" }, { id: "focus", name: "Focus", w: 380, h: 120 },
@@ -194,9 +201,32 @@ Singleton {
     }
 
     // The item's style id (valid for its type; else the type's first).
+    // Styles marked `alone` fall back to the first while attached.
     function styleOf(item: var): string {
-        const styles = typeType(item?.type ?? "")?.styles ?? [];
+        const styles = stylesFor(item);
         return styles.find(s => s.id === item?.style)?.id ?? styles[0]?.id ?? "";
+    }
+    function stylesFor(item: var): var {
+        const styles = typeType(item?.type ?? "")?.styles ?? [];
+        return item?.attachedTo ? styles.filter(s => !s.alone) : styles;
+    }
+
+    // Music: the built-in visualizer mode (one the style offers, else "off").
+    readonly property var visNames: ({ off: "No visualizer", ring: "Ring", glow: "Glow", bars: "Bars", wave: "Wave", mirror: "Mirror" })
+    function visModes(item: var): var {
+        const st = (typeType(item?.type ?? "")?.styles ?? []).find(s => s.id === styleOf(item));
+        return st?.vis ?? [];
+    }
+    function visOf(item: var): string {
+        const m = visModes(item);
+        return m.indexOf(item?.vis) !== -1 ? item.vis : "off";
+    }
+    function cycleVis(id: string): void {
+        const item = byId(id);
+        const m = visModes(item);
+        if (m.length < 2)
+            return;
+        update(id, { vis: m[(m.indexOf(visOf(item)) + 1) % m.length] });
     }
 
     // Base size of an item ({ w, h }): its style's size if it has one, else
@@ -237,7 +267,7 @@ Singleton {
     // Next style for this widget (the toolbar's style button).
     function cycleStyle(id: string): void {
         const item = byId(id);
-        const styles = typeType(item?.type ?? "")?.styles ?? [];
+        const styles = stylesFor(item);
         if (styles.length < 2)
             return;
         const i = styles.findIndex(s => s.id === styleOf(item));

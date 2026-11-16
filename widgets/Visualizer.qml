@@ -10,7 +10,9 @@ import qs.theme
 //   wave    a smooth line through the levels, softly filled below
 //   peaks   bars with a cap on top that falls back slowly
 //   circle  bars radiating from a ring (mirrored left/right), leaving the
-//           middle free (the Visualizer widget puts the album art there)
+//           middle free (the Visualizer widget puts the album art there;
+//           ringRadius/ringLength fit it around something else)
+//   glow    a soft round glow that swells with the bass (behind album art)
 // It redraws only when cava delivers a frame (at the chosen fps), never at
 // the monitor's refresh rate; with no data (paused, cava missing) the bars
 // rest as small dots.
@@ -18,6 +20,11 @@ Item {
     id: root
 
     property string style: "bars"
+    // Circle: inner radius and longest bar in px (-1 = from the size), and
+    // whether the thin ring line is drawn.
+    property real ringRadius: -1
+    property real ringLength: -1
+    property bool ringLine: true
     // Counts as a cava user only while shown and not covered.
     property bool active: true
     property bool counted: false
@@ -97,10 +104,11 @@ Item {
         visible: root.style === "circle"
         readonly property real size: Math.min(width, height)
         // Inner ring radius and the longest a bar can grow.
-        readonly property real r0: size * 0.3
-        readonly property real len: size * 0.19
+        readonly property real r0: root.ringRadius > 0 ? root.ringRadius : size * 0.3
+        readonly property real len: root.ringLength > 0 ? root.ringLength : size * 0.19
 
         Rectangle {
+            visible: root.ringLine
             anchors.centerIn: parent
             width: circle.r0 * 2 - 4
             height: width
@@ -128,6 +136,47 @@ Item {
                     y: parent.height / 2 - circle.r0 - height
                     color: root.barColor
                 }
+            }
+        }
+    }
+
+    // ---- Glow ----------------------------------------------------------------------
+    // One static radial gradient; only its scale and opacity follow the bass
+    // (the lowest quarter of the bars), so a frame is cheap to draw.
+    Shape {
+        id: glow
+        anchors.centerIn: parent
+        width: Math.min(parent.width, parent.height)
+        height: width
+        visible: root.style === "glow"
+        preferredRendererType: Shape.GeometryRenderer
+        readonly property real bass: {
+            const k = Math.max(1, Math.floor(root.n / 4));
+            let s = 0;
+            for (let i = 0; i < k; i++)
+                s += root.level(i);
+            return s / k;
+        }
+        scale: 0.78 + 0.3 * bass
+        opacity: 0.35 + 0.65 * bass
+        ShapePath {
+            strokeWidth: -1
+            fillGradient: RadialGradient {
+                centerX: glow.width / 2
+                centerY: glow.height / 2
+                centerRadius: glow.width / 2
+                focalX: centerX
+                focalY: centerY
+                GradientStop { position: 0; color: Qt.alpha(Theme.accent, 0.75) }
+                GradientStop { position: 0.45; color: Qt.alpha(Theme.accent, 0.3) }
+                GradientStop { position: 1; color: Qt.alpha(Theme.accent, 0) }
+            }
+            PathAngleArc {
+                centerX: glow.width / 2
+                centerY: glow.height / 2
+                radiusX: glow.width / 2
+                radiusY: glow.height / 2
+                sweepAngle: 360
             }
         }
     }
