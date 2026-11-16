@@ -306,9 +306,15 @@ Singleton {
             }
 
             // Screen recorder (services/Recorder.qml, needs gpu-screen-recorder).
+            // Screen recorder (services/Recorder.qml); right-click the bar button.
             property JsonObject recorder: JsonObject {
                 property bool showButton: true         // record button in the bar
                 property string audio: "system"        // "none" | "system" | "both" (+ microphone)
+                property string target: "screen"       // "screen" (focused monitor) | "region" (drag with slurp)
+                property int fps: 60                   // 30 | 60 | 120 | 144 | 165
+                property string quality: "high"        // "medium" | "high" | "very_high" | "ultra"
+                property string codec: "h264"          // "h264" | "hevc" | "av1" (if the GPU can)
+                property bool cursor: true
             }
 
             property JsonObject desktop: JsonObject {

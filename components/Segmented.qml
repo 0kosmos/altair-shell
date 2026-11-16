@@ -17,13 +17,17 @@ Item {
     // All segments are equally wide: wide enough for the longest label plus
     // padding on both sides (at least 84 px).
     readonly property int labelPadding: 16
-    readonly property int segment: {
+    // stretch: segments share the width the layout gives (e.g. Layout.fillWidth
+    // in a narrow menu) instead of their natural size.
+    property bool stretch: false
+    readonly property int naturalSegment: {
         void measure.count;   // re-evaluate when the labels change
         let widest = 0;
         for (let i = 0; i < measure.count; i++)
             widest = Math.max(widest, measure.itemAt(i)?.implicitWidth ?? 0);
-        return Math.max(84, Math.ceil(widest) + labelPadding * 2);
+        return Math.max(stretch ? 40 : 84, Math.ceil(widest) + (stretch ? 20 : labelPadding * 2));
     }
+    readonly property real segment: stretch && width > 0 && options.length > 0 ? (width - 4) / options.length : naturalSegment
 
     // Invisible copies of the labels, only to measure them.
     Repeater {
@@ -38,7 +42,7 @@ Item {
         }
     }
 
-    implicitWidth: options.length * segment + 4
+    implicitWidth: options.length * naturalSegment + 4
     implicitHeight: 32
 
     Rectangle {

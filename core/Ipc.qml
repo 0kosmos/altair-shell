@@ -150,8 +150,9 @@ Scope {
     IpcHandler {
         target: "recorder"
 
-        // Start/stop recording the focused monitor (60 fps). Returns whether
-        // it is recording afterwards.
+        // Start/stop recording with the menu's settings (screen or region).
+        // Returns whether it is recording afterwards (a region is still
+        // being selected: false).
         function toggle(): bool {
             Recorder.toggle();
             return !Recorder.recording;

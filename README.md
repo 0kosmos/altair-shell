@@ -87,12 +87,15 @@ frosted glass, smooth motion and close to zero CPU when idle.
   [If the lock screen breaks](#if-the-lock-screen-breaks).
 - **Desktop menu**: right-click the empty desktop to open an app or a
   terminal, change the wallpaper, edit widgets, record the screen, toggle
-  Do not disturb / low-power mode, open Settings, restart Altair, or log
-  out / restart / shut down (these need a second click to confirm).
-- **Screen recorder**: a button in the bar records the screen you are on at
-  60 fps, encoded on the graphics card (barely any CPU), with system sound
-  (optionally the microphone too); click again to save to
-  `~/Videos/Recordings`. Needs `gpu-screen-recorder`.
+  Do not disturb / low-power mode, open Settings, restart Altair, lock,
+  or open the power menu.
+- **Screen recorder**: left-click the bar's record button to record, again
+  to save to `~/Videos/Recordings`; encoded on the graphics card (barely
+  any CPU). Right-click it for the recorder menu: the whole screen or a
+  region you drag (needs `slurp`), sound (none / system / + microphone),
+  frame rate up to your monitor's refresh rate, quality, codec (only those
+  your GPU can encode, e.g. H.264 / HEVC / AV1), mouse pointer, and your
+  latest clips. Needs `gpu-screen-recorder`.
 - **Calendar**: click the clock for a month calendar next to a clock
   (Classic, Minimal, Numbers, Dots, Digital) and the weather (a strip with
   the next days, or one line); the tune button switches styles. Round
@@ -229,7 +232,7 @@ Installed by `install.sh` (all from the official repositories):
 Optional: `networkmanager` (network status and menu), `bluez` (Bluetooth
 menu; enable it with `sudo systemctl enable --now bluetooth`), `ddcutil`
 (monitor brightness over DDC/CI; needs the `i2c-dev` module), `upower` (battery),
-`libnotify` ("Send test" notification button), `gpu-screen-recorder` (screen recorder), `cliphist` + `wl-clipboard` (clipboard history), `libpulse` (`pactl`, routes
+`libnotify` ("Send test" notification button), `gpu-screen-recorder` (screen recorder), `cliphist` + `wl-clipboard` (clipboard history), `slurp` (record a region), `libpulse` (`pactl`, routes
 the music player into the equalizer), `cava` (music visualizer
 and Visualizer widget), `nvidia-utils` (GPU
 temperature in the System widget; comes with the NVIDIA driver). The Music

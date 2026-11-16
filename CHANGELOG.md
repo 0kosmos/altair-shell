@@ -20,6 +20,11 @@ All notable changes to Altair. Versions follow [semantic versioning](https://sem
   available), log out, restart, shut down; keyboard letters; a cancellable
   countdown before log out / restart / shut down. The desktop menu opens it.
 
+### Recorder
+- **Recorder menu**: right-click the record button (left click still
+  records): screen or a dragged region, sound, frame rate, quality, codec
+  (what your GPU supports), mouse pointer, latest clips.
+
 ### Clipboard
 - **Clipboard history** (opt-in, `SUPER + SHIFT + V`, needs `cliphist`):
   search, image thumbnails, paste into the previous window, delete, clear;

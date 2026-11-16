@@ -12,7 +12,7 @@ Singleton {
 
     // Panels that can be toggled over IPC. Only one is open at a time;
     // opening another closes the current one.
-    readonly property list<string> panels: ["launcher", "dashboard", "notifications", "wallpaper", "calendar", "network", "bluetooth", "brightness", "alttab", "power", "clipboard"]
+    readonly property list<string> panels: ["launcher", "dashboard", "notifications", "wallpaper", "calendar", "network", "bluetooth", "brightness", "alttab", "power", "clipboard", "recorder"]
 
     // Name of the open panel, or "" when none is open.
     property string openPanel: ""

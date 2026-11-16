@@ -6,13 +6,19 @@ import qs.core
 import qs.services
 import qs.theme
 
-// Screen recording (services/Recorder.qml): click to record the focused
-// monitor at 60 fps, click again to stop and save. While recording: a red dot
-// and the time, updated once a second.
+// Screen recording (services/Recorder.qml): left-click to record (screen or
+// region, as set in the menu), again to stop and save; right-click for the
+// recorder menu (recorder/RecorderPanel.qml). While recording: a red dot and
+// the time, updated once a second.
 BarButton {
     id: root
     visible: Config.recorder.showButton
-    onClicked: Recorder.toggle()
+    onClicked: mouse => {
+        if (mouse.button === Qt.RightButton)
+            ShellState.toggle("recorder");
+        else if (mouse.button === Qt.LeftButton)
+            Recorder.toggle();
+    }
 
     property int elapsed: 0
     Timer {
@@ -26,6 +32,7 @@ BarButton {
     Icon {
         visible: !Recorder.recording
         name: "screen_record"
+        color: ShellState.openPanel === "recorder" ? Theme.accent : Theme.fg
     }
     Rectangle {
         visible: Recorder.recording
