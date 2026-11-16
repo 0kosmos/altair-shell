@@ -15,6 +15,11 @@ All notable changes to Altair. Versions follow [semantic versioning](https://sem
   console unlocks, and a broken password check shows an error instead of
   freezing. See README, "If the lock screen breaks".
 
+### Pop-ups
+- **Volume and brightness pop-up**: shows volume, mute, microphone mute
+  and brightness changes for a moment, whatever made them (keys, apps,
+  the bar). Bottom or top; *Settings → Notifications*.
+
 ## [0.2.0] — 2026-11-16
 
 A big update: desktop widgets, a dock, Alt+Tab, sounds, network and display

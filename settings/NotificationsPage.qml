@@ -47,4 +47,23 @@ Page {
             onClicked: Notifs.clearAll()
         }
     }
+
+    Section { text: "Volume and brightness pop-up" }
+
+    SettingRow {
+        title: "Show changes"
+        description: "A small pill for a moment when the volume, mute, microphone or brightness changes, also from keys and other apps."
+        Toggle {
+            checked: Config.osd.enabled
+            onToggled: value => Config.osd.enabled = value
+        }
+    }
+    SettingRow {
+        title: "Position"
+        Segmented {
+            options: [{ label: "Bottom", value: "bottom" }, { label: "Top", value: "top" }]
+            current: Config.osd.position
+            onSelected: value => Config.osd.position = value
+        }
+    }
 }

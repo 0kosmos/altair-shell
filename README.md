@@ -57,6 +57,12 @@ frosted glass, smooth motion and close to zero CPU when idle.
   reorder; drag a running app among the pinned ones to pin it. Recent / most
   used apps after a thin line (on by default). Auto-hide, icon size, pinning
   apps by search, and whether windows keep clear of it in *Settings → Dock*.
+- **Volume and brightness pop-up**: a small frosted pill for a moment when
+  the volume, mute, microphone mute or brightness changes, from your own
+  keys (e.g. `wpctl` binds), other apps or the bar. Bottom or top
+  (*Settings → Notifications*); clear of the bar and dock; exists only
+  while shown. It reacts to changes, so a volume key at 100 % shows
+  nothing (Altair's own brightness keys always show it).
 - **Lock screen** (`SUPER + L`): your blurred wallpaper, the time, the
   song that's playing, and a password field with six typing animations
   (Pop, Wave, Glow, Shapes, Bars, Minimal; live preview in *Settings →
@@ -322,6 +328,7 @@ Measured on an older desktop (2012 quad-core CPU, entry-level NVIDIA GPU):
 | Dock shown | ~0 % (redraws only on hover and window changes) | +5–10 MB |
 | Live wallpaper playing (separate process) | ~1.5 % of the whole CPU | +~400 MB |
 | Live wallpaper paused | 0 % | +~370 MB |
+| Volume/brightness pop-up | ~0 % hidden (no window); ~12 % while a key is held | only while shown |
 | Lock screen shown | 0 % (the clock redraws once a minute) | only while locked |
 
 Most of the base memory is the graphics driver. Live wallpapers run in their

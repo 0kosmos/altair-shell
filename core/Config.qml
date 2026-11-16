@@ -44,6 +44,7 @@ Singleton {
     readonly property alias sounds: adapter.sounds
     readonly property alias display: adapter.display
     readonly property alias lock: adapter.lock
+    readonly property alias osd: adapter.osd
 
     function reload(): void {
         file.reload();
@@ -188,6 +189,12 @@ Singleton {
                 property bool doNotDisturb: false
                 // Play a short sound for new notifications (via pw-play).
                 property bool sound: false
+            }
+
+            // Volume / brightness pop-up (osd/Osd.qml).
+            property JsonObject osd: JsonObject {
+                property bool enabled: true
+                property string position: "bottom"     // "bottom" | "top"
             }
 
             property JsonObject wallpaper: JsonObject {

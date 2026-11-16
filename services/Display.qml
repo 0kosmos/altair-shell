@@ -63,8 +63,15 @@ Singleton {
         if (!hasHardware)
             Config.display.dim = Math.max(0.2, pct / 100);
     }
+    // A step that changes nothing (already at 0 or 100) still tells the
+    // volume/brightness pop-up, so a key press always gets feedback.
+    signal nudged()
     function changeBrightness(delta: int): void {
-        setBrightness(brightness + delta);
+        const target = Math.max(0, Math.min(100, brightness + delta));
+        if (target === brightness)
+            nudged();
+        else
+            setBrightness(target);
     }
 
     // Value of a VCP feature of monitor `i` (0–max), or -1.

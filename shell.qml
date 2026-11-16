@@ -13,6 +13,7 @@ import qs.dock
 import qs.launcher
 import qs.lock
 import qs.notifications
+import qs.osd
 import qs.services
 import qs.settings
 import qs.theme
@@ -38,6 +39,7 @@ ShellRoot {
     WallpaperStrip {}
     WallpaperGrid {}
     LockScreen {}
+    Osd {}
 
     // Singletons and Quickshell services start lazily, on first access.
     // Touch the ones we want ready at startup: Config (load/create the file),

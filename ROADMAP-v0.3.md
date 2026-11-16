@@ -77,7 +77,7 @@ do-not-disturb and the recorder, reusing the existing menus.
 ## Checklist
 
 - [x] 1. Lock screen + lock on idle
-- [ ] 2. Volume / brightness OSD
+- [x] 2. Volume / brightness OSD
 - [ ] 3. Power menu
 - [ ] 4. Clipboard history
 - [ ] 5. Quick settings
@@ -88,3 +88,4 @@ do-not-disturb and the recorder, reusing the existing menus.
 (Add one line per finished feature here.)
 
 - F1 lock: services/Locker.qml (state, PAM via PamContext with /etc/pam.d/login (a custom configDirectory breaks `include login`: PAM resolves includes in that same directory), IdleMonitor x2, logind via `gdbus monitor` wrapped in `sh … cat` so it dies with the shell, sleep delay inhibitor `systemd-inhibit … cat` held while unlocked), lock/LockScreen.qml (LazyLoader + WlSessionLock, `held` until the compositor lets go), LockSurface.qml (no TextInput: keys edit Locker.buffer; Caps Lock from `hyprctl devices -j` after a key), PasswordField.qml (ListView add/remove/displaced transitions per style; `live: false` + count/status for the Settings preview). Flag file `$XDG_RUNTIME_DIR/altair/locked-<HYPRLAND_INSTANCE_SIGNATURE>` = relock on start. hypr/init.lua: allow_session_lock_restore, MOD+L, restart bind `locked = true`. DPMS: `hl.dsp.dpms({ action = "off" })`. TESTING: nested Hyprland (`Hyprland -c <test.lua>` opens a window; stop it by PID, never `pkill Hyprland`/patterns that match your own command), test shell with symlinked folders + `XDG_CONFIG_HOME` copy + `ALTAIR_LOCK_PAM_DIR`/`ALTAIR_LOCK_PAM_CONFIG` pointing at a test PAM file (pam_exec checker + pam_deny); never test wrong passwords against the real `login` stack (pam_faillock: 3 = 10 min lockout). From a TTY `loginctl unlock-session` (no ID) targets the TTY's own session; `unlock-sessions` needs auth_admin. TODO before v0.3.0: remove the fail-open Unlock button (Locker.forceUnlock / `broken`).
+- F2 OSD: osd/Osd.qml (LazyLoader PanelWindow "altair-osd", Overlay, empty mask = click-through, ExclusionMode.Normal + extra margin for a non-reserving bottom dock). Triggers on value changes (Audio.volume/muted/micMuted, Display.brightness + Display.nudged for steps at 0/100), armed 2.5 s after start and re-armed 0.8 s after a default device change. Audio gained source/micMuted/toggleMicMute (PwObjectTracker tracks both). Skipped while locked and for brightness while the brightness panel is open. Cost: 0 idle, ~12 % shell CPU while a key is held (blurred layer redraws).

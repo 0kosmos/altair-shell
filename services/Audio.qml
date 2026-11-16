@@ -5,7 +5,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Services.Pipewire
 
-// Default output device (PipeWire sink): volume and mute.
+// Default output device (PipeWire sink): volume and mute; the default
+// input's (microphone) mute.
 Singleton {
     id: root
 
@@ -15,6 +16,15 @@ Singleton {
     // 0.0 – 1.0 (PipeWire allows more; we cap user changes at 100%).
     readonly property real volume: available ? sink.audio.volume : 0
     readonly property bool muted: available ? sink.audio.muted : false
+
+    readonly property PwNode source: Pipewire.defaultAudioSource
+    readonly property bool micAvailable: source !== null && source.ready && source.audio !== null
+    readonly property bool micMuted: micAvailable ? source.audio.muted : false
+
+    function toggleMicMute(): void {
+        if (micAvailable)
+            source.audio.muted = !source.audio.muted;
+    }
 
     function setVolume(value: real): void {
         if (!available)
@@ -37,6 +47,6 @@ Singleton {
     // A node's properties (volume, mute) are only kept up to date while the
     // node is bound by a tracker.
     PwObjectTracker {
-        objects: root.sink ? [root.sink] : []
+        objects: [root.sink, root.source].filter(n => n !== null)
     }
 }
