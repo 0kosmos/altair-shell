@@ -5,6 +5,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
+import Quickshell.Services.Pipewire
 import qs.core
 import qs.theme
 
@@ -14,6 +15,12 @@ import qs.theme
 // (`users` > 0), something is playing, and the focused workspace is not
 // fullscreen. Otherwise it is stopped (no process, no CPU). Its raw output
 // (one line of `bars` numbers 0–100 per frame) becomes `values` (0–1).
+//
+// It hears only the music player: cava's own PipeWire input can only record
+// a device or the whole speaker output (with UI and notification sounds), so
+// it starts unconnected (node "altair-cava", autoconnect off) and
+// `pw-link` wires the player's output stream(s) straight into it. If the
+// player's stream can't be found, it falls back to the whole output.
 Singleton {
     id: root
 
@@ -40,6 +47,73 @@ Singleton {
 
     readonly property bool wanted: users > 0 && enabled && Media.playing && !paused
     onWantedChanged: update()
+
+    // The player's audio streams in PipeWire (node names), matched like the
+    // player volume in Media.qml. Links follow when they change; another
+    // player means a fresh cava (its old links go with it).
+    readonly property var playerStreams: {
+        const p = Media.player;
+        if (!p)
+            return [];
+        const names = [p.identity, p.desktopEntry, Media.appName].filter(n => n).map(n => String(n).toLowerCase());
+        const nodes = (Pipewire.nodes?.values ?? []).filter(n => {
+            if (!n.isStream || n.isSink)
+                return false;
+            const pr = n.properties ?? {};
+            const app = String(pr["application.name"] ?? "").toLowerCase();
+            const bin = String(pr["application.process.binary"] ?? "").toLowerCase();
+            return names.some(x => x && (app === x || bin === x || app.includes(x) || (x.includes(app) && app.length > 2)));
+        });
+        return [...new Set(nodes.map(n => n.name).filter(n => n))].sort();
+    }
+    readonly property string streamKey: playerStreams.join(",")
+    onStreamKeyChanged: if (proc.running) linkTimer.restart()
+    property var startedFor: null
+    Connections {
+        target: Media
+        function onPlayerChanged(): void {
+            if (proc.running && Media.player && Media.player !== root.startedFor) {
+                root.restartPending = true;
+                proc.running = false;
+            }
+        }
+    }
+
+    // Wire the player (or, failing that, the speaker output) into cava.
+    // Runs a moment after cava starts (its node must exist) and when the
+    // player's streams change; pw-link ignores links that already exist.
+    Timer {
+        id: linkTimer
+        interval: 250
+        onTriggered: {
+            const sink = Pipewire.defaultAudioSink?.name ?? "";
+            linker.command = ["sh", "-c", root.linkScript, "sh", sink].concat(root.playerStreams);
+            linker.running = true;
+        }
+    }
+    readonly property string linkScript: '
+sink=$1; shift
+link() { pw-link "$1" "altair-cava:input_$2" 2>/dev/null; }
+found=0
+if [ $# -gt 0 ]; then
+    pw-link -o -I > "${XDG_RUNTIME_DIR:-/tmp}/altair-cava-ports" 2>/dev/null
+    while read -r id name; do
+        node=${name%%:*}; port=${name#*:}
+        for n in "$@"; do
+            [ "$node" = "$n" ] || continue
+            case $port in *_FL|*_MONO|*_0|*_AUX0) link "$id" FL; found=1;; esac
+            case $port in *_FR|*_MONO|*_1|*_AUX1) link "$id" FR; found=1;; esac
+        done
+    done < "${XDG_RUNTIME_DIR:-/tmp}/altair-cava-ports"
+    rm -f "${XDG_RUNTIME_DIR:-/tmp}/altair-cava-ports"
+fi
+if [ $found = 0 ] && [ -n "$sink" ]; then
+    link "$sink:monitor_FL" FL; link "$sink:monitor_FR" FR
+fi
+'
+    Process {
+        id: linker
+    }
 
     property var values: []
 
@@ -146,6 +220,9 @@ Singleton {
     Process {
         id: proc
         command: ["cava", "-p", root.confPath]
+        // Own node name, not connected by the session manager (see top).
+        environment: ({ PIPEWIRE_PROPS: "{ node.name = altair-cava node.autoconnect = false }" })
+        onRunningChanged: if (running) { root.startedFor = Media.player; linkTimer.restart(); }
         stdout: SplitParser {
             onRead: line => {
                 const v = line.split(";");
