@@ -24,6 +24,12 @@ frosted glass, smooth motion and close to zero CPU when idle.
 - **Bar**: workspaces (sliding indicator), clock, system tray with themed
   menus, volume, network, battery (laptops), notifications and settings.
   Top or bottom.
+- **Dock** (optional, off by default): pinned apps and open windows at the
+  bottom, left or right edge. Click to open or switch (again: next window),
+  middle-click for a new window, right-click for the app's windows, its own
+  actions (e.g. "New private window"), pin/unpin and close. Drag icons to
+  reorder; drag a running app among the pinned ones to pin it. Auto-hide,
+  icon size, and whether windows keep clear of it in *Settings → Dock*.
 - **Screen recorder**: a button in the bar records the screen you are on at
   60 fps, encoded on the graphics card (barely any CPU), with system sound
   (optionally the microphone too); click again to save to
@@ -211,6 +217,8 @@ qs -c altair ipc show                                # everything available
 qs -c altair ipc call panels toggle launcher         # launcher | notifications | wallpaper | calendar | settings
 qs -c altair ipc call widgets toggleEdit           # desktop widgets' edit mode
 qs -c altair ipc call recorder toggle              # start/stop screen recording
+qs -c altair ipc call dock toggle                  # show/hide the dock
+qs -c altair ipc call dock pin firefox -1          # pin an app (desktop id) at a position, -1 = end
 qs -c altair ipc call wallpaper set ~/Pictures/Wallpapers/forest.jpg
 qs -c altair ipc call settings setAccent '#7aa2f7'   # or "mono"
 qs -c altair ipc call settings toggleLowPower
@@ -225,6 +233,7 @@ Measured on an older desktop (2012 quad-core CPU, entry-level NVIDIA GPU):
 |---|---|---|
 | Idle, bar only | 0.00 % | ~160 MB |
 | Launcher / settings open | 0–0.8 % | +20–35 MB |
+| Dock shown | ~0 % (redraws only on hover and window changes) | +5–10 MB |
 | Live wallpaper playing (separate process) | ~1.5 % of the whole CPU | +~400 MB |
 | Live wallpaper paused | 0 % | +~370 MB |
 

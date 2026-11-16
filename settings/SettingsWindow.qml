@@ -83,6 +83,7 @@ Scope {
                 { id: "appearance", label: "Appearance", icon: "palette", group: "Personalise" },
                 { id: "wallpaper", label: "Wallpaper", icon: "wallpaper", group: "Personalise" },
                 { id: "bar", label: "Bar", icon: "toolbar", group: "Personalise" },
+                { id: "dock", label: "Dock", icon: "dock_to_bottom", group: "Personalise" },
                 { id: "windows", label: "Windows", icon: "select_window", group: "Desktop" },
                 { id: "transparency", label: "Transparency", icon: "opacity", group: "Desktop" },
                 { id: "widgets", label: "Widgets", icon: "widgets", group: "Desktop" },
@@ -541,6 +542,7 @@ Scope {
                 switch (id) {
                 case "wallpaper": return "WallpaperPage.qml";
                 case "bar": return "BarPage.qml";
+                case "dock": return "DockPage.qml";
                 case "windows": return "WindowsPage.qml";
                 case "transparency": return "TransparencyPage.qml";
                 case "widgets": return "WidgetsPage.qml";

@@ -39,6 +39,7 @@ Singleton {
     readonly property alias widgets: adapter.widgets
     readonly property alias equalizer: adapter.equalizer
     readonly property alias recorder: adapter.recorder
+    readonly property alias dock: adapter.dock
 
     function reload(): void {
         file.reload();
@@ -241,6 +242,21 @@ Singleton {
             property JsonObject recorder: JsonObject {
                 property bool showButton: true         // record button in the bar
                 property string audio: "system"        // "none" | "system" | "both" (+ microphone)
+            }
+
+            // Dock / taskbar (dock/Dock.qml, services/DockApps.qml).
+            property JsonObject dock: JsonObject {
+                property bool enabled: false
+                property string position: "bottom"     // "bottom" | "left" | "right"
+                property int iconSize: 44              // 32–64 px
+                // Slide away; show again when the pointer touches the edge.
+                property bool autoHide: false
+                // Windows don't go under the dock (ignored while auto-hiding).
+                property bool reserveSpace: true
+                // App grid button at the start of the dock (opens the launcher).
+                property bool launcherButton: true
+                // Pinned apps, as desktop entry ids (e.g. "firefox"), in order.
+                property var pinned: []
             }
 
             property JsonObject alttab: JsonObject {

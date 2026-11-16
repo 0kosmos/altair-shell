@@ -160,7 +160,7 @@ perf.sh shows no idle cost.
 - [x] 3. Smooth workspace switching + Alt+Tab
 - [x] 4. Precise moving (snapping + dim)
 - [x] 5. Desktop widgets + edit mode
-- [ ] 6. Taskbar / dock
+- [x] 6. Taskbar / dock
 - [ ] 7. UI sounds
 - [ ] Release v0.2.0 (README screenshots, changelog, tag)
 
@@ -186,3 +186,4 @@ perf.sh shows no idle cost.
 - Weather: services/Weather.qml (Open-Meteo forecast + geocoding via XMLHttpRequest, every 30 min only while a Weather widget exists, `configured` needs coordinates). Types have `attach`: "music" (visualizer/eq/lyrics) or "any" (weather); standalone hosts offer top/bottom, plus left/right when 2:1 wide, slots skipped if the child's scale would leave 0.45-2.5. Max 2 widgets per type. QML gotcha: a RowLayout of Repeater ColumnLayouts kept content width; explicit-width Row works.
 - Lyrics: services/Lyrics.qml from LRCLIB (/api/get, fallback /api/search; header Lrclib-Client), in-memory cache of 60 tracks, only while a Lyrics widget exists. Synced LRC follows an estimated position (player position every 2 s + elapsed time, line check 4x/s, only `index` changes redraw); plain lyrics get an estimated line from progress, labelled. Qt's JS has no String.matchAll: use a regex exec loop.
 - Screen recorder: services/Recorder.qml runs `gpu-screen-recorder -w <focused monitor> -f 60 -c mp4 -q high [-a default_output[|default_input]]`, stopped with Process.signal(2) (SIGINT saves the file); bar/RecordButton.qml. Measured: 1080p60 H.264 + Opus, recorder ~8 % of one core (NVENC). Seen once while dragging widgets: "Binding loop detected for property targetScale" (WidgetFrame.qml:203), not reproducible on start; look into it if it shows up again.
+- F6 dock: services/DockApps.qml (items = pinned desktop ids from config + running Hyprland toplevels grouped by Wayland appId -> DesktopEntries.heuristicLookup, cached; Spotify matches spotify-launcher), dock/Dock.qml (one Top-layer strip per screen, full length so the dock resizes inside it; mask = dock or a 3 px trigger when auto-hidden; exclusiveZone 0 when not reserving so it still stacks next to the bar), DockItem.qml (zoom/tooltip/drag), DockMenu.qml (PopupWindow), components/MenuRow.qml (moved out of TrayMenu). Gotchas: a vertical layer surface needs BOTH top and bottom anchors or it ends up 1 px long and reserves nothing; changing anchors on a live surface misbehaves, so a position change rebuilds the window; the singleton can't be called `Dock` (clashes with the dock/Dock.qml type). `hl.dsp.cursor.move` warps the pointer but layer surfaces get no hover from it, so hover/drag/click need the user. IPC `dock list|pin|unpin|toggle`.

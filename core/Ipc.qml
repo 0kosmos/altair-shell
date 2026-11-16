@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import qs.core
 import qs.services
@@ -136,6 +137,27 @@ Scope {
         }
         function recording(): bool {
             return Recorder.recording;
+        }
+    }
+
+    IpcHandler {
+        target: "dock"
+
+        // Show/hide the dock (Settings > Dock > Show dock). Returns the new state.
+        function toggle(): bool {
+            Config.dock.enabled = !Config.dock.enabled;
+            return Config.dock.enabled;
+        }
+        // Pin an app (desktop id, e.g. "firefox") at a position (-1 = end).
+        function pin(id: string, at: int): void {
+            DockApps.pin(id, at);
+        }
+        function unpin(id: string): void {
+            DockApps.unpin(id);
+        }
+        // Apps in the dock, one per line: key, pinned, window count, focused.
+        function list(): string {
+            return DockApps.items.map(i => i.key + (i.pinned ? " pinned" : "") + " " + i.windows.length + (i.windows.indexOf(Hyprland.activeToplevel) !== -1 ? " focused" : "")).join("\n") + "\nactive: " + (Hyprland.activeToplevel?.address ?? "none");
         }
     }
 }

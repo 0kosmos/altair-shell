@@ -7,6 +7,7 @@ import qs.bar
 import qs.calendar
 import qs.components
 import qs.core
+import qs.dock
 import qs.launcher
 import qs.notifications
 import qs.services
@@ -19,6 +20,7 @@ ShellRoot {
     Ipc {}
     Wallpaper {}
     Bar {}
+    Dock {}
     Launcher {}
     NotificationPopups {}
     NotificationCenter {}
