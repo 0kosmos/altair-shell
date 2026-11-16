@@ -112,8 +112,8 @@ frosted glass, smooth motion and close to zero CPU when idle.
 - **UI sounds** (*Settings → Sounds*): short, soft sounds for notifications,
   opening/closing panels, clicks, switches, slider drags (the tick rises with
   the value), typing in the launcher, volume changes, widget edit mode and
-  snapping. Six built-in families (Glass, Soft, Minimal, Bubble, Wood, Pulse)
-  or your own file per event, a preview button for each, one master volume. Only
+  snapping. Eleven built-in families (Glass, Soft, Minimal, Bubble, Wood,
+  Pulse, Retro, Bell, Mechanical, Sci-fi, Air) or your own file per event, a preview button for each, one master volume. Only
   notifications are on by default; low-power mode silences everything.
   Played by `pw-play`, so they cost nothing while quiet.
 - **Alt+Tab** window switcher: most recently used first, still previews (or

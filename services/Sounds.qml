@@ -24,7 +24,7 @@ Singleton {
     id: root
 
     readonly property list<string> events: ["notification", "open", "close", "click", "toggle", "slide", "typing", "volume", "edit", "snap"]
-    readonly property list<string> builtIn: ["glass", "soft", "minimal", "bubble", "wood", "pulse"]
+    readonly property list<string> builtIn: ["glass", "soft", "minimal", "bubble", "wood", "pulse", "retro", "bell", "mechanical", "scifi", "air"]
     readonly property string dir: Quickshell.shellDir + "/assets/sounds"
     readonly property string systemNotification: "/usr/share/sounds/freedesktop/stereo/message-new-instant.oga"
     readonly property int slideSteps: 8

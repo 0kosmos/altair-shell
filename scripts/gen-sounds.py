@@ -169,6 +169,81 @@ def fm(f, dur=0.08, decay=0.025, ratio=2.0, index=2.0, glide=0.0):
     return lowpass(fade_tail(out), 7000)
 
 
+def square(f, dur=0.06, decay=0.02, duty=0.25, glide=0.0, cutoff=5000):
+    """Retro pulse wave (8-bit consoles), softened by a low-pass."""
+    n = int(dur * RATE)
+    out = []
+    ph = 0.0
+    for i in range(n):
+        t = i / n
+        fi = f * 2 ** (glide * t / 12)
+        ph = (ph + fi / RATE) % 1.0
+        out.append((1.0 if ph < duty else -1.0) * env(i, 0.001, decay))
+    return lowpass(lowpass(fade_tail(out), cutoff), cutoff)
+
+
+def arp(notes, step=0.035, each=0.05, decay=0.02, duty=0.25):
+    return mix(*[(i * step, square(note(n), each, decay, duty)) for i, n in enumerate(notes)])
+
+
+# Bell: tuned-bell partials (hum, prime, tierce, quint, nominal), long ring.
+BELL = ((0.5, 0.25, 1.4), (1, 1.0, 1.0), (1.19, 0.35, 0.8), (1.5, 0.3, 0.7), (2.0, 0.5, 0.55), (2.66, 0.18, 0.4))
+
+
+def bell(f, dur=0.5, decay=0.16):
+    return lowpass(tone(f, dur, BELL, attack=0.001, decay=decay), 9000)
+
+
+def thock(body=140, dur=0.07, click_lp=6000, gain_click=1.0, gain_body=0.8):
+    """Mechanical key: a bright switch click plus a low, damped body."""
+    click = noise_tick(0.018, 1500, click_lp, 0.0025)
+    b = tone(body, dur, ((1, 1.0, 1.0), (2.3, 0.3, 0.4)), attack=0.0008, decay=0.012)
+    return mix((0, [v * gain_click for v in click]), (0.001, [v * gain_body for v in b]))
+
+
+def sweep(f0, f1, dur=0.12, q=0.92, decay=0.05):
+    """Sci-fi: a saw wave through a resonant low-pass whose cutoff sweeps
+    from f0 to f1 (exponentially)."""
+    n = int(dur * RATE)
+    out = []
+    ph = 0.0
+    lp = bp = 0.0
+    for i in range(n):
+        t = i / n
+        fc = f0 * (f1 / f0) ** t
+        ph = (ph + 110 / RATE) % 1.0
+        x = 2 * ph - 1
+        # Chamberlin state-variable filter.
+        k = 2 * math.sin(math.pi * min(fc, RATE / 6) / RATE)
+        lp += k * bp
+        hp = x - lp - (1 - q) * 2 * bp
+        bp += k * hp
+        out.append(bp * env(i, 0.004, decay))
+    return fade_tail(out)
+
+
+def zap(f, dur=0.05, decay=0.015, glide=-14):
+    return lowpass(tone(f, dur, ((1, 1.0, 1.0), (3, 0.25, 0.5)), attack=0.001, decay=decay, glide=glide), 8000)
+
+
+def whoosh(dur=0.16, lo=400, hi=3000, up=True, decay=0.08):
+    """Air: filtered noise whose brightness rises (up) or falls."""
+    n = int(dur * RATE)
+    out = []
+    lp1 = lp2 = 0.0
+    for i in range(n):
+        t = i / n
+        fc = lo * (hi / lo) ** (t if up else 1 - t)
+        a = math.exp(-2 * math.pi * fc / RATE)
+        x = random.uniform(-1, 1)
+        lp1 = (1 - a) * x + a * lp1
+        lp2 = (1 - a) * lp1 + a * lp2
+        # Swell in, then fade: a breath, not a click.
+        e = math.sin(math.pi * min(1.0, t * 1.6)) if t < 0.31 else math.exp(-(t - 0.31) * dur / decay)
+        out.append((lp1 - lp2) * e)
+    return fade_tail(out)
+
+
 def steps(fn, lo, hi, n):
     """n variants rising from lo to hi Hz (slider ticks: pitch follows the value)."""
     return tuple(fn(lo * (hi / lo) ** (k / (n - 1))) for k in range(n))
@@ -260,6 +335,76 @@ styles = {
         "edit-exit": fm(note("C6"), 0.2, 0.06, 2, 2.5, glide=-12),
         "snap": fm(note("F#7"), 0.03, 0.007, 2, 1.2),
         "slide": steps(lambda f: fm(f, 0.022, 0.005, 2, 1.0), 900, 2600, SLIDE_STEPS),
+    },
+    "retro": {
+        "notification": arp(("C6", "E6", "G6", "C7", "G6", "C7"), 0.05, 0.07, 0.03),
+        "open": arp(("C5", "G5", "C6"), 0.03, 0.045, 0.018),
+        "close": arp(("C6", "G5", "C5"), 0.03, 0.045, 0.018),
+        "click": square(note("A5"), 0.03, 0.008, 0.5),
+        "toggle-on": arp(("E5", "B5"), 0.035, 0.045, 0.016, 0.125),
+        "toggle-off": arp(("B5", "E5"), 0.035, 0.045, 0.016, 0.125),
+        "typing": tuple(square(f, 0.018, 0.004, 0.5, cutoff=3500) for f in (660, 740, 830)),
+        "volume": square(note("A5"), 0.05, 0.015, 0.25),
+        "edit-enter": arp(("C5", "E5", "G5", "C6", "E6"), 0.035, 0.05, 0.02),
+        "edit-exit": arp(("E6", "C6", "G5", "E5", "C5"), 0.035, 0.05, 0.02),
+        "snap": square(note("C7"), 0.025, 0.006, 0.125),
+        "slide": steps(lambda f: square(f, 0.018, 0.004, 0.5, cutoff=4000), 330, 1320, SLIDE_STEPS),
+    },
+    "bell": {
+        "notification": mix((0, bell(note("C6"), 0.9, 0.28)), (0.14, bell(note("G6"), 0.8, 0.24))),
+        "open": bell(note("E6"), 0.35, 0.1),
+        "close": bell(note("A5"), 0.35, 0.1),
+        "click": bell(note("C7"), 0.09, 0.02),
+        "toggle-on": mix((0, bell(note("G6"), 0.2, 0.05)), (0.06, bell(note("D7"), 0.25, 0.06))),
+        "toggle-off": mix((0, bell(note("D7"), 0.2, 0.05)), (0.06, bell(note("G6"), 0.25, 0.06))),
+        "typing": tuple(bell(f, 0.05, 0.01) for f in (3000, 3300, 3600)),
+        "volume": bell(note("E7"), 0.18, 0.045),
+        "edit-enter": mix(*[(i * 0.07, bell(note(n), 0.4, 0.1)) for i, n in enumerate(("C6", "E6", "G6"))]),
+        "edit-exit": mix(*[(i * 0.07, bell(note(n), 0.4, 0.1)) for i, n in enumerate(("G6", "E6", "C6"))]),
+        "snap": bell(note("G7"), 0.07, 0.015),
+        "slide": steps(lambda f: bell(f, 0.05, 0.01), 1500, 3600, SLIDE_STEPS),
+    },
+    "mechanical": {
+        "notification": mix((0, thock(160, 0.08)), (0.09, thock(160, 0.08)), (0.18, thock(120, 0.1, gain_body=1.0))),
+        "open": mix((0, thock(130, 0.08)), (0.05, noise_tick(0.02, 3000, 9000, 0.002))),
+        "close": mix((0, noise_tick(0.02, 3000, 9000, 0.002)), (0.04, thock(110, 0.09))),
+        "click": thock(170, 0.05, gain_body=0.5),
+        "toggle-on": mix((0, thock(150, 0.06)), (0.035, noise_tick(0.012, 4000, 10000, 0.0015))),
+        "toggle-off": mix((0, noise_tick(0.012, 4000, 10000, 0.0015)), (0.03, thock(120, 0.06))),
+        "typing": tuple(thock(150 + 25 * k, 0.04, 5000 + 1000 * k, gain_body=0.6) for k in range(3)),
+        "volume": thock(180, 0.05, gain_body=0.6),
+        "edit-enter": mix(*[(i * 0.05, thock(110 + 30 * i, 0.06)) for i in range(3)]),
+        "edit-exit": mix(*[(i * 0.05, thock(170 - 30 * i, 0.06)) for i in range(3)]),
+        "snap": noise_tick(0.015, 3500, 10000, 0.0018),
+        "slide": tuple(noise_tick(0.012, 1500 * (2.0 ** (k / 7)), 9000, 0.0015) for k in range(SLIDE_STEPS)),
+    },
+    "scifi": {
+        "notification": mix((0, sweep(300, 4000, 0.22, 0.95, 0.08)), (0.12, zap(note("E6"), 0.12, 0.04, 7))),
+        "open": sweep(250, 3500, 0.13, 0.94, 0.05),
+        "close": sweep(3500, 250, 0.13, 0.94, 0.05),
+        "click": zap(note("A6"), 0.03, 0.008, -10),
+        "toggle-on": zap(note("C6"), 0.07, 0.02, 12),
+        "toggle-off": zap(note("C7"), 0.07, 0.02, -12),
+        "typing": tuple(zap(f, 0.02, 0.005, -6) for f in (1800, 2000, 2200)),
+        "volume": zap(note("A5"), 0.05, 0.015, 5),
+        "edit-enter": mix((0, sweep(200, 5000, 0.25, 0.96, 0.09)), (0.1, zap(note("G6"), 0.08, 0.025, 12))),
+        "edit-exit": mix((0, sweep(5000, 200, 0.25, 0.96, 0.09)), (0.1, zap(note("G5"), 0.08, 0.025, -12))),
+        "snap": zap(note("E7"), 0.025, 0.006, -8),
+        "slide": steps(lambda f: zap(f, 0.02, 0.005, -4), 700, 2400, SLIDE_STEPS),
+    },
+    "air": {
+        "notification": mix((0, whoosh(0.3, 300, 2500, True, 0.12)), (0.12, soft(note("A5"), 0.3, 0.1))),
+        "open": whoosh(0.16, 350, 3200, True, 0.06),
+        "close": whoosh(0.16, 350, 3200, False, 0.06),
+        "click": whoosh(0.035, 2000, 7000, True, 0.01),
+        "toggle-on": whoosh(0.09, 600, 4000, True, 0.03),
+        "toggle-off": whoosh(0.09, 600, 4000, False, 0.03),
+        "typing": tuple(whoosh(0.025, 2500 + 400 * k, 8000, True, 0.006) for k in range(3)),
+        "volume": whoosh(0.06, 900, 3500, True, 0.02),
+        "edit-enter": whoosh(0.3, 200, 5000, True, 0.12),
+        "edit-exit": whoosh(0.3, 200, 5000, False, 0.12),
+        "snap": whoosh(0.03, 3000, 9000, True, 0.008),
+        "slide": tuple(whoosh(0.025, 800 * (2.4 ** (k / 7)), 9000, True, 0.006) for k in range(SLIDE_STEPS)),
     },
 }
 
