@@ -2,6 +2,19 @@
 
 All notable changes to Altair. Versions follow [semantic versioning](https://semver.org).
 
+## [Unreleased]
+
+### Lock screen
+- **Lock screen** (`SUPER + L`, *Settings → Lock screen*): blurred
+  wallpaper, clock, music controls and a password field with six typing
+  animations (Pop, Wave, Glow, Shapes, Bars, Minimal) and a live preview.
+- Locks when idle (respects apps that keep the screen awake), before sleep
+  and on `loginctl lock-session`; screen off while locked.
+- Safe by design: a crashed lock screen comes back locked
+  (`SUPER + SHIFT + R` works on it), `loginctl unlock-session(s)` from a
+  console unlocks, and a broken password check shows an error instead of
+  freezing. See README, "If the lock screen breaks".
+
 ## [0.2.0] — 2026-11-16
 
 A big update: desktop widgets, a dock, Alt+Tab, sounds, network and display

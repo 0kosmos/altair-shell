@@ -1,0 +1,5 @@
+#%PAM-1.0
+# Altair lock screen: the same password check as logging in on this computer
+# (the same as swaylock and hyprlock do). Read from this folder by
+# services/Locker.qml; nothing is installed in /etc/pam.d.
+auth include login

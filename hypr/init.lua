@@ -27,11 +27,13 @@
 --   last_workspace_key = back to the last-used workspace (default: MOD + Tab)
 --   alttab    = Alt+Tab window switcher (default: true)
 --   widgets_key = desktop widgets' edit mode (default: MOD + D)
+--   lock_key  = lock the screen (default: MOD + L)
 --   (any key option: false = no bind)
 --
 -- The escape hatches below are plain Hyprland binds, so they work even when the
 -- shell has crashed or hangs:
---   MOD + SHIFT + R       restart Altair
+--   MOD + SHIFT + R       restart Altair (also on the lock screen: the shell
+--                         locks again at once, see services/Locker.qml)
 --   MOD + SHIFT + Return  open a terminal
 
 local M = {}
@@ -102,8 +104,18 @@ function M.setup(opts)
     end
 
     -- Escape hatches.
-    hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd(restart))
+    -- locked = true: works on the lock screen too, so a lock screen that
+    -- hangs can be restarted from the keyboard (it comes back locked).
+    hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd(restart), { locked = true })
     hl.bind(mod .. " + SHIFT + Return", hl.dsp.exec_cmd(terminal))
+
+    -- Lock screen. If the shell dies while locked, Hyprland keeps the session
+    -- locked; this lets the restarted shell take the lock over (and ask for
+    -- the password) instead of leaving Hyprland's "lock screen died" screen.
+    hl.config({ misc = { allow_session_lock_restore = true } })
+    if opts.lock_key ~= false then
+        hl.bind(opts.lock_key or (mod .. " + L"), hl.dsp.exec_cmd("qs -c altair ipc call lock lock"))
+    end
 
     -- Panels.
     local ipc = "qs -c altair ipc call panels toggle "

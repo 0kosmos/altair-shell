@@ -7,8 +7,8 @@ A clean, fast desktop shell for [Hyprland](https://hypr.land), built with
 frosted glass, smooth motion and close to zero CPU when idle.
 
 > **Status:** v0.2: widgets, dock, Alt+Tab, sounds, network and display
-> controls (see the [changelog](CHANGELOG.md)). Dashboard and lock screen
-> are planned for a later version.
+> controls (see the [changelog](CHANGELOG.md)). v0.3 (in progress) adds a
+> lock screen.
 
 ## Screenshots
 
@@ -57,6 +57,16 @@ frosted glass, smooth motion and close to zero CPU when idle.
   reorder; drag a running app among the pinned ones to pin it. Recent / most
   used apps after a thin line (on by default). Auto-hide, icon size, pinning
   apps by search, and whether windows keep clear of it in *Settings → Dock*.
+- **Lock screen** (`SUPER + L`): your blurred wallpaper, the time, the
+  song that's playing, and a password field with six typing animations
+  (Pop, Wave, Glow, Shapes, Bars, Minimal; live preview in *Settings →
+  Lock screen*). Locks after a set idle time (videos and games that keep
+  the screen awake prevent it), before sleep, and on
+  `loginctl lock-session`; turns the screen off while locked. Uses your
+  normal login password through PAM (Altair's own `pam/altair-lock` file
+  points to the system's `login` rules; nothing is installed in
+  `/etc/pam.d`). Built to never lock you out: see
+  [If the lock screen breaks](#if-the-lock-screen-breaks).
 - **Desktop menu**: right-click the empty desktop to open an app or a
   terminal, change the wallpaper, edit widgets, record the screen, toggle
   Do not disturb / low-power mode, open Settings, restart Altair, or log
@@ -256,7 +266,7 @@ and add `require("altair").setup({ terminal = "your-terminal" })` to the end of
 | `icon_theme` | your GTK icon theme | icon theme for apps and tray |
 | `alttab` | `true` | the Alt+Tab switcher (`false` = leave ALT+Tab alone) |
 | `brightness_keys` | `false` | brightness keys through Altair (works for external monitors too); leave off if your config binds them to `brightnessctl` |
-| `launcher_key`, `notifications_key`, `wallpaper_key`, `settings_key`, `workspace_prev_key`, `workspace_next_key`, `last_workspace_key`, `widgets_key` | see below | other keys (e.g. `"SUPER + CTRL + H"`), or `false` for none |
+| `launcher_key`, `notifications_key`, `wallpaper_key`, `settings_key`, `workspace_prev_key`, `workspace_next_key`, `last_workspace_key`, `widgets_key`, `lock_key` | see below | other keys (e.g. `"SUPER + CTRL + H"`), or `false` for none |
 
 ## Keys
 
@@ -270,11 +280,14 @@ and add `require("altair").setup({ terminal = "your-terminal" })` to the end of
 | `SUPER + D` | edit desktop widgets (Escape or Done to leave) |
 | `SUPER + CTRL + Left` / `Right` | previous / next workspace |
 | `SUPER + Tab` | back to the last-used workspace |
-| `SUPER + SHIFT + R` | restart Altair |
+| `SUPER + L` | lock the screen |
+| `SUPER + SHIFT + R` | restart Altair (also on the lock screen: it comes back locked) |
 | `SUPER + SHIFT + Return` | terminal (works even if Altair is down) |
 
 The last two are defined in Hyprland itself, so they keep working if the shell
-crashes or hangs.
+crashes or hangs. `setup()` also turns on Hyprland's
+`misc.allow_session_lock_restore`, so a restarted shell can take over a lock
+screen that crashed.
 
 ## Configuration
 
@@ -296,6 +309,7 @@ qs -c altair ipc call wallpaper set ~/Pictures/Wallpapers/forest.jpg
 qs -c altair ipc call settings setAccent '#7aa2f7'   # or "mono"
 qs -c altair ipc call settings toggleLowPower
 qs -c altair ipc call notifications toggleDnd
+qs -c altair ipc call lock lock                     # lock the screen (or: loginctl lock-session)
 ```
 
 ## Performance
@@ -309,6 +323,7 @@ Measured on an older desktop (2012 quad-core CPU, entry-level NVIDIA GPU):
 | Dock shown | ~0 % (redraws only on hover and window changes) | +5–10 MB |
 | Live wallpaper playing (separate process) | ~1.5 % of the whole CPU | +~400 MB |
 | Live wallpaper paused | 0 % | +~370 MB |
+| Lock screen shown | 0 % (the clock redraws once a minute) | only while locked |
 
 Most of the base memory is the graphics driver. Live wallpapers run in their
 own process that only exists while one is set; switching to a picture frees
@@ -324,6 +339,45 @@ that memory. Measure on your machine with `scripts/perf.sh 30`, or see
 - **Live wallpaper doesn't move:** by default it pauses while windows are open
   on screen (*Settings → Wallpaper → Pause when*).
 - **Low on memory:** turn off live wallpapers, or use low-power mode.
+
+### If the lock screen breaks
+
+The lock screen is built so that you can always get back in:
+
+- **A wrong password never unlocks**, and every attempt goes through the
+  system's own rules. On most distributions **3 wrong passwords in a row
+  lock the account for 10 minutes** (`pam_faillock`, also on the console).
+  To lift it early, log in as root on a console and run
+  `faillock --user <you> --reset`.
+- **The lock screen froze or vanished** (Hyprland shows "the lockscreen
+  app died" or a plain colour): press `SUPER + SHIFT + R`. Altair restarts
+  and shows the lock screen again; the session stays locked in between.
+- **Nothing helps:** press `Ctrl + Alt + F3`, log in with your user name and
+  password, and unlock the Hyprland session:
+
+  ```sh
+  loginctl unlock-sessions      # all your sessions; may ask for your password
+  # or, without admin rights: find Hyprland's session ID and unlock just that
+  loginctl list-sessions
+  loginctl unlock-session <ID>
+  ```
+
+  Go back with `Ctrl + Alt + F1` or `F2` (wherever Hyprland runs). If the
+  lock screen is still there, Altair isn't running: start it from the
+  console (it comes back locked), then unlock again:
+
+  ```sh
+  hyprctl --instance 0 eval 'hl.exec_cmd(require("altair").restart_cmd)'
+  sleep 3; loginctl unlock-sessions
+  ```
+
+  (A session lock only ends when a lock screen ends it, so Altair has to be
+  running. Last resort: `hyprctl --instance 0 dispatch 'hl.dsp.exit()'`
+  ends the Hyprland session; unsaved work in open apps is lost.)
+- **The password check itself is broken** (e.g. after a system update):
+  the lock screen says so instead of freezing. While Altair 0.3 is in
+  testing it also offers an *Unlock* button in that case only; that button
+  will be removed before the release.
 
 ## Uninstall
 

@@ -186,6 +186,11 @@ PanelWindow {
             visible: root.powerOpen
 
             MenuRow {
+                iconName: "lock"
+                label: "Lock"
+                onClicked: root.then(() => Locker.lock())
+            }
+            MenuRow {
                 iconName: "logout"
                 label: root.armed === "logout" ? "Click again to log out" : "Log out"
                 onClicked: root.confirm("logout", () => Hyprland.dispatch("hl.dsp.exit()"))

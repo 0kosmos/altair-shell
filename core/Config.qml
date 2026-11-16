@@ -43,6 +43,7 @@ Singleton {
     readonly property alias desktop: adapter.desktop
     readonly property alias sounds: adapter.sounds
     readonly property alias display: adapter.display
+    readonly property alias lock: adapter.lock
 
     function reload(): void {
         file.reload();
@@ -394,6 +395,17 @@ Singleton {
                 // Custom sound files (absolute paths: wav, ogg, oga, flac, mp3),
                 // e.g. { "notification": "/home/me/ding.ogg" }.
                 property var custom: ({})
+            }
+
+            // Lock screen (services/Locker.qml, lock/).
+            property JsonObject lock: JsonObject {
+                property int idleMinutes: 10           // lock after this long idle; 0 = never
+                property int screenOffSeconds: 60      // screen off while locked and idle; 0 = never
+                property bool beforeSleep: true        // lock before suspend / hibernate
+                // Password field: "pop" | "wave" | "glow" | "shapes" | "bars" | "minimal"
+                property string typing: "pop"
+                property bool media: true              // music controls on the lock screen
+                property bool blurWallpaper: true
             }
 
             property JsonObject performance: JsonObject {

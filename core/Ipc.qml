@@ -44,6 +44,19 @@ Scope {
     }
 
     IpcHandler {
+        target: "lock"
+
+        // Lock the screen (also: `loginctl lock-session`). There is no
+        // unlock call on purpose: only the password (or logind) unlocks.
+        function lock(): void {
+            Locker.lock();
+        }
+        function isLocked(): bool {
+            return Locker.locked;
+        }
+    }
+
+    IpcHandler {
         target: "notifications"
 
         function clearAll(): void {

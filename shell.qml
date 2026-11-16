@@ -11,6 +11,7 @@ import qs.core
 import qs.display
 import qs.dock
 import qs.launcher
+import qs.lock
 import qs.notifications
 import qs.services
 import qs.settings
@@ -36,6 +37,7 @@ ShellRoot {
     SettingsWindow {}
     WallpaperStrip {}
     WallpaperGrid {}
+    LockScreen {}
 
     // Singletons and Quickshell services start lazily, on first access.
     // Touch the ones we want ready at startup: Config (load/create the file),
@@ -52,6 +54,7 @@ ShellRoot {
         void WallpaperTheme.mode; // themes that follow the wallpaper
         void Sounds.enabled;      // listen for panel/volume/edit-mode events
         void Display.brightness;  // find monitors, re-apply the colour shader
+        void Locker.locked;       // idle lock, logind, re-lock after a crash while locked
     }
 
     Connections {
