@@ -38,6 +38,7 @@ REQUIRED=(
 OPTIONAL=(
     networkmanager                 # network status and menu in the bar
     bluez                          # Bluetooth menu (enable bluetooth.service yourself)
+    ddcutil                        # monitor brightness/contrast over DDC/CI (desktop PCs)
     upower                         # battery in the bar (laptops)
     libnotify                      # "Send test" notification button
     cava                           # music visualizer (Music widget)

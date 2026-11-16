@@ -31,6 +31,15 @@ frosted glass, smooth motion and close to zero CPU when idle.
   connect with a password, disconnect, forget. Scans only while open.
 - **Bluetooth menu** (shown when there is an adapter): on/off, your devices
   with battery level, connect/disconnect/forget, pair new devices nearby.
+- **Brightness and colour**: a bar button like the volume one (scroll to
+  change, click for brightness, night light and saturation) and
+  *Settings → Display*. Hardware control where possible: the laptop
+  backlight, or the monitor's own brightness, contrast, colour preset and
+  RGB gain over DDC/CI (`ddcutil`). Saturation (digital vibrance), night
+  light, gamma and extra dimming are a Hyprland screen shader that is only
+  on while one of them is changed. Keys: `qs -c altair ipc call display
+  up|down`; if colours ever look wrong: `… display resetColour` or
+  `hyprctl reload`.
 - **Dock** (optional, off by default): pinned apps and open windows at the
   bottom, left or right edge. Click to open or switch (again: next window),
   middle-click for a new window, right-click for the app's windows, its own
@@ -175,7 +184,8 @@ Installed by `install.sh` (all from the official repositories):
 | `xdg-utils` | opening folders (fallback) |
 
 Optional: `networkmanager` (network status and menu), `bluez` (Bluetooth
-menu; enable it with `sudo systemctl enable --now bluetooth`), `upower` (battery),
+menu; enable it with `sudo systemctl enable --now bluetooth`), `ddcutil`
+(monitor brightness over DDC/CI; needs the `i2c-dev` module), `upower` (battery),
 `libnotify` ("Send test" notification button), `gpu-screen-recorder` (screen recorder), `libpulse` (`pactl`, routes
 the music player into the equalizer), `cava` (music visualizer
 and Visualizer widget), `nvidia-utils` (GPU
@@ -230,6 +240,7 @@ and add `require("altair").setup({ terminal = "your-terminal" })` to the end of
 | `nvidia_egl_only` | `false` | on **NVIDIA-only** desktops: load only NVIDIA's EGL driver (saves ~100 MB). Don't use on laptops where an Intel/AMD GPU drives the screen. |
 | `icon_theme` | your GTK icon theme | icon theme for apps and tray |
 | `alttab` | `true` | the Alt+Tab switcher (`false` = leave ALT+Tab alone) |
+| `brightness_keys` | `false` | brightness keys through Altair (works for external monitors too); leave off if your config binds them to `brightnessctl` |
 | `launcher_key`, `notifications_key`, `wallpaper_key`, `settings_key`, `workspace_prev_key`, `workspace_next_key`, `last_workspace_key`, `widgets_key` | see below | other keys (e.g. `"SUPER + CTRL + H"`), or `false` for none |
 
 ## Keys

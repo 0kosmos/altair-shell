@@ -207,4 +207,33 @@ Scope {
                 + "\nall: " + (Sounds.commonStyle() || "mixed");
         }
     }
+
+    IpcHandler {
+        target: "display"
+
+        // Brightness of every screen, 0–100 (for brightness keys:
+        // `ipc call display up` / `down` change it by 5).
+        function brightness(): int {
+            return Display.brightness;
+        }
+        function setBrightness(percent: int): void {
+            Display.setBrightness(percent);
+        }
+        function up(): void {
+            Display.changeBrightness(5);
+        }
+        function down(): void {
+            Display.changeBrightness(-5);
+        }
+        // Software colour back to neutral (no screen shader). If the screen
+        // ever looks wrong: `qs -c altair ipc call display resetColour`, or
+        // `hyprctl reload` drops the shader too.
+        function resetColour(): void {
+            Display.resetColour();
+        }
+        // Night light 0–100 (0 = off).
+        function nightLight(percent: int): void {
+            Config.display.warmth = Math.max(0, Math.min(100, percent)) / 100;
+        }
+    }
 }

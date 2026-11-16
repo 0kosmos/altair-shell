@@ -122,6 +122,14 @@ function M.setup(opts)
     if opts.settings_key ~= false then
         hl.bind(opts.settings_key or (mod .. " + comma"), hl.dsp.exec_cmd(ipc .. "settings"))
     end
+    -- Brightness keys through Altair (also external monitors over DDC/CI).
+    -- Opt-in: the stock config already binds them to brightnessctl, and both
+    -- would step twice.
+    if opts.brightness_keys == true then
+        local d = "qs -c altair ipc call display "
+        hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd(d .. "up"), { locked = true, repeating = true })
+        hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd(d .. "down"), { locked = true, repeating = true })
+    end
 
     -- Workspaces. Animated by Hyprland (style/speed set by Altair at runtime).
     if opts.workspace_prev_key ~= false then

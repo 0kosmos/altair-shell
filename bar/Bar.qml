@@ -193,6 +193,7 @@ Variants {
 
             Tray {}
             Volume {}
+            BrightnessButton {}
             NetworkStatus {}
             BluetoothButton {}
             BatteryStatus {}

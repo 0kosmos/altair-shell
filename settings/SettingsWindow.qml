@@ -96,6 +96,7 @@ Scope {
                 { id: "transparency", label: "Transparency", icon: "opacity", group: "Desktop" },
                 { id: "widgets", label: "Widgets", icon: "widgets", group: "Desktop" },
                 { id: "effects", label: "Effects", icon: "auto_awesome", group: "Desktop" },
+                { id: "display", label: "Display", icon: "brightness_6", group: "System" },
                 { id: "notifications", label: "Notifications", icon: "notifications", group: "System" },
                 { id: "sounds", label: "Sounds", icon: "volume_up", group: "System" },
                 { id: "performance", label: "Performance", icon: "speed", group: "System" },
@@ -574,6 +575,7 @@ Scope {
                 case "transparency": return "TransparencyPage.qml";
                 case "widgets": return "WidgetsPage.qml";
                 case "effects": return "EffectsPage.qml";
+                case "display": return "DisplayPage.qml";
                 case "notifications": return "NotificationsPage.qml";
                 case "sounds": return "SoundsPage.qml";
                 case "performance": return "PerformancePage.qml";

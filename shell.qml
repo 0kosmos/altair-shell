@@ -8,6 +8,7 @@ import qs.calendar
 import qs.components
 import qs.connections
 import qs.core
+import qs.display
 import qs.dock
 import qs.launcher
 import qs.notifications
@@ -28,6 +29,7 @@ ShellRoot {
     CalendarPopup {}
     NetworkPanel {}
     BluetoothPanel {}
+    BrightnessPanel {}
     AltTab {}
     DragOverlay {}
     WidgetLayer {}
@@ -49,6 +51,7 @@ ShellRoot {
         void Equalizer.enabled;   // restore the music equalizer (and clean up a leftover)
         void WallpaperTheme.mode; // themes that follow the wallpaper
         void Sounds.enabled;      // listen for panel/volume/edit-mode events
+        void Display.brightness;  // find monitors, re-apply the colour shader
     }
 
     Connections {

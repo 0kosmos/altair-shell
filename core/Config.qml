@@ -42,6 +42,7 @@ Singleton {
     readonly property alias dock: adapter.dock
     readonly property alias desktop: adapter.desktop
     readonly property alias sounds: adapter.sounds
+    readonly property alias display: adapter.display
 
     function reload(): void {
         file.reload();
@@ -334,6 +335,18 @@ Singleton {
                 // "compact" (now only) | "off". Needs a place (Settings > Widgets).
                 property string popupWeather: "strip"
                 property bool clockSeconds: true       // its seconds hand (ticks once a second while open)
+            }
+
+            // Screen brightness and colour (services/Display.qml). Hardware
+            // values (brightness, contrast, ...) live in the screen itself;
+            // these are the software ones (Hyprland screen shader, off when
+            // all are neutral).
+            property JsonObject display: JsonObject {
+                property real saturation: 1            // 0–2 (1 = unchanged)
+                property real warmth: 0                // 0–1: 6500 K -> 3300 K (night light)
+                property real gamma: 1                 // 0.6–1.6
+                property real dim: 1                   // 0.2–1 (software brightness)
+                property bool barButton: true          // brightness button in the bar
             }
 
             // UI sounds (services/Sounds.qml). The notification sound's on/off
