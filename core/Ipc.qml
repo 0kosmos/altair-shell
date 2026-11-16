@@ -164,4 +164,13 @@ Scope {
             return DockApps.items.map(i => i.key + (i.pinned ? " pinned" : "") + " " + i.windows.length + (i.windows.indexOf(Hyprland.activeToplevel) !== -1 ? " focused" : "")).join("\n") + "\nactive: " + (Hyprland.activeToplevel?.address ?? "none");
         }
     }
+
+    IpcHandler {
+        target: "desktop"
+
+        // Open the desktop's right-click menu in the middle of the focused monitor.
+        function menu(): void {
+            ShellState.desktopMenuRequested(Hyprland.focusedMonitor?.name ?? "", -1, -1);
+        }
+    }
 }

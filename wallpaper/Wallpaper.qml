@@ -2,6 +2,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import qs.core
 import qs.services
 import qs.theme
 
@@ -13,7 +14,9 @@ import qs.theme
 //   bottom layer      only while the picker previews another wallpaper:
 //                     above the live video, below all windows
 //
-// No wallpaper set = no windows at all, so Hyprland's own background shows.
+// No wallpaper set = the background window is transparent (Hyprland's own
+// background shows through) and only exists for the desktop's right-click
+// menu; with that menu off too, there is no window at all.
 // Memory: images are decoded at screen size (sourceSize), never at their
 // original size, so a 5K image costs the same as a 1080p one (~8 MB).
 Scope {
@@ -26,8 +29,9 @@ Scope {
 
             // ---- Current wallpaper --------------------------------------------
             PanelWindow {
+                id: bgWin
                 screen: perScreen.modelData
-                visible: Wallpapers.current !== ""
+                visible: Wallpapers.current !== "" || Config.desktop.menu
 
                 WlrLayershell.namespace: "altair-background"
                 WlrLayershell.layer: WlrLayer.Background
@@ -38,12 +42,44 @@ Scope {
                     left: true
                     right: true
                 }
-                color: "#000000"
+                color: Wallpapers.current !== "" ? "#000000" : "transparent"
 
                 CrossfadeImage {
                     anchors.fill: parent
+                    visible: Wallpapers.current !== ""
                     path: Wallpapers.stillFor(Wallpapers.current)
                     duration: 600
+                }
+
+                // Right-click on the empty desktop: the desktop menu.
+                MouseArea {
+                    anchors.fill: parent
+                    enabled: Config.desktop.menu
+                    acceptedButtons: Qt.RightButton
+                    onClicked: mouse => {
+                        menuLoader.at = Qt.point(mouse.x, mouse.y);
+                        menuLoader.active = false;
+                        menuLoader.active = true;
+                    }
+                }
+                Connections {
+                    target: ShellState
+                    function onDesktopMenuRequested(monitor, x, y) {
+                        if (monitor !== perScreen.modelData.name || !Config.desktop.menu)
+                            return;
+                        menuLoader.at = Qt.point(x < 0 ? bgWin.width / 2 : x, y < 0 ? bgWin.height / 2 : y);
+                        menuLoader.active = false;
+                        menuLoader.active = true;
+                    }
+                }
+                LazyLoader {
+                    id: menuLoader
+                    property point at
+                    DesktopMenu {
+                        anchorWindow: bgWin
+                        at: menuLoader.at
+                        onDismissed: menuLoader.active = false
+                    }
                 }
             }
 

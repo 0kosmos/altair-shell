@@ -72,6 +72,8 @@ ShellRoot {
         // Transparent until the first frame: the main shell's still frame of
         // this video shows through, so starting looks seamless.
         color: "transparent"
+        // Clicks go through to the main shell's background (desktop menu).
+        mask: Region {}
 
         VideoOutput {
             id: output

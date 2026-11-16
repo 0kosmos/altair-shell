@@ -31,6 +31,10 @@ frosted glass, smooth motion and close to zero CPU when idle.
   reorder; drag a running app among the pinned ones to pin it. Recent / most
   used apps after a thin line (on by default). Auto-hide, icon size, pinning
   apps by search, and whether windows keep clear of it in *Settings → Dock*.
+- **Desktop menu**: right-click the empty desktop to open an app or a
+  terminal, change the wallpaper, edit widgets, record the screen, toggle
+  Do not disturb / low-power mode, open Settings, restart Altair, or log
+  out / restart / shut down (these need a second click to confirm).
 - **Screen recorder**: a button in the bar records the screen you are on at
   60 fps, encoded on the graphics card (barely any CPU), with system sound
   (optionally the microphone too); click again to save to
@@ -223,6 +227,7 @@ qs -c altair ipc call recorder toggle              # start/stop screen recording
 qs -c altair ipc call dock toggle                  # show/hide the dock
 qs -c altair ipc call dock pin firefox -1          # pin an app (desktop id) at a position, -1 = end
 qs -c altair ipc call dock peek                    # show an auto-hidden dock for 2 s
+qs -c altair ipc call desktop menu                 # the desktop's right-click menu
 qs -c altair ipc call wallpaper set ~/Pictures/Wallpapers/forest.jpg
 qs -c altair ipc call settings setAccent '#7aa2f7'   # or "mono"
 qs -c altair ipc call settings toggleLowPower

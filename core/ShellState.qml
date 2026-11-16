@@ -22,6 +22,10 @@ Singleton {
     // open/close/toggle too.
     property bool settingsOpen: false
 
+    // Ask the desktop on a monitor to open its right-click menu at (x, y)
+    // (IPC "desktop menu"). x/y < 0 = the screen's centre.
+    signal desktopMenuRequested(string monitor, int x, int y)
+
     function isPanel(name: string): bool {
         return panels.indexOf(name) !== -1;
     }

@@ -40,6 +40,7 @@ Singleton {
     readonly property alias equalizer: adapter.equalizer
     readonly property alias recorder: adapter.recorder
     readonly property alias dock: adapter.dock
+    readonly property alias desktop: adapter.desktop
 
     function reload(): void {
         file.reload();
@@ -242,6 +243,11 @@ Singleton {
             property JsonObject recorder: JsonObject {
                 property bool showButton: true         // record button in the bar
                 property string audio: "system"        // "none" | "system" | "both" (+ microphone)
+            }
+
+            property JsonObject desktop: JsonObject {
+                // Right-click menu on the empty desktop (wallpaper/DesktopMenu.qml).
+                property bool menu: true
             }
 
             // Dock / taskbar (dock/Dock.qml, services/DockApps.qml).

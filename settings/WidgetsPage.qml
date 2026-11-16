@@ -27,6 +27,15 @@ Page {
         }
     }
 
+    SettingRow {
+        title: "Desktop menu"
+        description: "Right-click the empty desktop for apps, wallpaper, widgets, recording, settings and power options."
+        Toggle {
+            checked: Config.desktop.menu
+            onToggled: value => Config.desktop.menu = value
+        }
+    }
+
     Section { text: "Music" }
 
     SettingRow {
