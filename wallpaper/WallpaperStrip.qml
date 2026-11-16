@@ -36,7 +36,7 @@ AltairPanel {
     // About five cards wide.
     panelWidth: cardWidth * 5 + cardSpacing * 4 + 48
     // Header, cards, and the theme row under them.
-    panelHeight: 46 + cardHeight + cardPad * 2 + 14 + 56
+    panelHeight: 52 + cardHeight + cardPad * 2 + 14 + 56
 
     content: Component {
         FocusScope {
@@ -74,7 +74,7 @@ AltairPanel {
             FolderListModel {
                 id: files
                 folder: Wallpapers.url(Wallpapers.folder)
-                nameFilters: [...Wallpapers.imageFilters, ...Wallpapers.videoFilters]
+                nameFilters: filter.nameFilters
                 caseSensitive: false
                 showDirs: false
                 sortField: FolderListModel.Name
@@ -89,7 +89,7 @@ AltairPanel {
                 anchors.topMargin: Theme.space.m
                 anchors.leftMargin: Theme.space.l
                 anchors.rightMargin: Theme.space.m
-                height: 28
+                height: 34
                 spacing: Theme.space.s
 
                 StyledText {
@@ -105,6 +105,11 @@ AltairPanel {
                     }
                     color: Theme.fgMuted
                     font.pixelSize: Theme.font.small + 1
+                }
+                PickerFilter {
+                    id: filter
+                    // A new filter: start again on the current wallpaper (or the first match).
+                    onNameFiltersChanged: list.centred = false
                 }
                 PillButton {
                     text: "Open folder"
@@ -230,6 +235,10 @@ AltairPanel {
                 }
 
                 Keys.onPressed: event => {
+                    if (filter.handleKey(event)) {
+                        event.accepted = true;
+                        return;
+                    }
                     if (event.key === Qt.Key_Right || event.key === Qt.Key_Tab)
                         advance(1, true);
                     else if (event.key === Qt.Key_Left || event.key === Qt.Key_Backtab)
@@ -291,11 +300,15 @@ AltairPanel {
                     spacing: Theme.space.xs
                     StyledText {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: "No images or videos in " + Wallpapers.pretty(Wallpapers.folder)
+                        text: filter.query !== "" ? `Nothing matches "${filter.query}"`
+                            : filter.kind === "live" ? "No live wallpapers (videos) in " + Wallpapers.pretty(Wallpapers.folder)
+                            : filter.kind === "pictures" ? "No pictures in " + Wallpapers.pretty(Wallpapers.folder)
+                            : "No images or videos in " + Wallpapers.pretty(Wallpapers.folder)
                         color: Theme.fgMuted
                     }
                     StyledText {
                         anchors.horizontalCenter: parent.horizontalCenter
+                        visible: filter.query === ""
                         text: "Add JPG, PNG, WebP or MP4/WebM files there; they appear here right away."
                         color: Theme.fgDisabled
                         font.pixelSize: Theme.font.small

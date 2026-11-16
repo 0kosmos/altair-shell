@@ -228,6 +228,8 @@ Singleton {
                 property string fill: "crop"           // "crop" | "fit"
                 // Picker: "strip" (scrollable row, docked to an edge) or "grid".
                 property string picker: "strip"
+                // Picker filter: "all" | "pictures" | "live" (videos).
+                property string pickerKind: "all"
                 property string pickerPosition: "bottom"   // "bottom" | "center" | "top"
                 // Themes with wallpapers (services/WallpaperTheme.qml):
                 // "keep" | "saved" | "auto", and the saved ones:

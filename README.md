@@ -154,7 +154,8 @@ frosted glass, smooth motion and close to zero CPU when idle.
 - **Wallpapers** (`SUPER + W`), drawn by Altair itself (no wallpaper daemon):
   - pictures (JPG, PNG, WebP, AVIF, JXL) and **live wallpapers** (MP4, WebM, MKV);
   - a carousel picker at the bottom, centre or top (hover or arrow keys to
-    preview on the desktop, click to apply), or a grid;
+    preview on the desktop, click to apply), or a grid; **All / Pictures /
+    Live** tabs and search (just type while the picker is open; Esc clears);
   - cached thumbnails, crossfades, Fill / Fit;
   - live wallpapers pause while windows are open (or fullscreen, or never),
     with adjustable speed.

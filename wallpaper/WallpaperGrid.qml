@@ -57,7 +57,7 @@ AltairPanel {
             FolderListModel {
                 id: files
                 folder: Wallpapers.url(Wallpapers.folder)
-                nameFilters: [...Wallpapers.imageFilters, ...Wallpapers.videoFilters]
+                nameFilters: filter.nameFilters
                 caseSensitive: false
                 showDirs: false
                 sortField: FolderListModel.Name
@@ -90,6 +90,10 @@ AltairPanel {
                     }
                 }
 
+                PickerFilter {
+                    id: filter
+                    onNameFiltersChanged: grid.currentIndex = -1
+                }
                 PillButton {
                     text: "Open folder"
                     // Ask the file manager directly (org.freedesktop.FileManager1,
@@ -138,9 +142,17 @@ AltairPanel {
                 currentIndex: -1
 
                 onCurrentIndexChanged: if (currentIndex >= 0) root.previewSoon(files.get(currentIndex, "filePath"))
+                // Typing searches (see PickerFilter); the rest is for the grid.
+                Keys.onPressed: event => {
+                    if (filter.handleKey(event)) {
+                        event.accepted = true;
+                    } else if (event.key === Qt.Key_Space) {
+                        root.apply(currentIndex, false);
+                        event.accepted = true;
+                    }
+                }
                 Keys.onReturnPressed: root.apply(currentIndex, true)
                 Keys.onEnterPressed: root.apply(currentIndex, true)
-                Keys.onSpacePressed: root.apply(currentIndex, false)
 
                 delegate: Item {
                     id: cell
@@ -180,7 +192,10 @@ AltairPanel {
                 }
                 StyledText {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: "No images or videos in " + Wallpapers.pretty(Wallpapers.folder)
+                    text: filter.query !== "" ? `Nothing matches "${filter.query}"`
+                        : filter.kind === "live" ? "No live wallpapers (videos) in " + Wallpapers.pretty(Wallpapers.folder)
+                        : filter.kind === "pictures" ? "No pictures in " + Wallpapers.pretty(Wallpapers.folder)
+                        : "No images or videos in " + Wallpapers.pretty(Wallpapers.folder)
                     color: Theme.fgMuted
                 }
                 StyledText {

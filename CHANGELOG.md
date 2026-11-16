@@ -31,6 +31,10 @@ All notable changes to Altair. Versions follow [semantic versioning](https://sem
   slider) for every panel, menu, card, bar, dock, widget and Settings;
   optionally Hyprland's window corners too (your rounding × the setting).
 
+### Wallpapers
+- The picker has **All / Pictures / Live** tabs and a **search** (type
+  while it is open).
+
 ### Sounds
 - Four new, clearly different UI sound families: **Retro** (8-bit
   beeps), **Bell** (chimes), **Mechanical** (keyboard-switch clicks) and
