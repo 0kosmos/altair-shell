@@ -129,7 +129,7 @@ Singleton {
                    { id: "stacked", name: "Stacked", w: 200, h: 200 }, { id: "split", name: "Split", w: 300, h: 140 }] },
         { type: "roundclock", name: "Round clock", icon: "nest_clock_farsight_analog", w: 220, h: 220, attach: "any",
           styles: [{ id: "classic", name: "Classic" }, { id: "minimal", name: "Minimal" }, { id: "numbers", name: "Numbers" }, { id: "dots", name: "Dots" }] },
-        { type: "music", name: "Music", icon: "music_note", w: 360, h: 120,
+        { type: "music", name: "Music", icon: "music_note", w: 360, h: 120, attach: "any",
           // `vis`: the built-in visualizer modes this style offers (item.vis).
           styles: [{ id: "card", name: "Card", w: 400, h: 136, vis: ["off", "ring", "glow", "bars", "wave", "mirror"] },
                    { id: "disc", name: "Disc", w: 440, h: 156, vis: ["off", "ring", "glow", "bars", "wave"] },

@@ -63,9 +63,51 @@ Item {
     readonly property var childLeft: childOn("left")
     readonly property var childRight: childOn("right")
 
+    // ---- Rows: widgets joined side by side -------------------------------------------
+    // A widget attached on top of or under a widget spans that widget's whole
+    // row (e.g. Music under a Clock + Weather pair). Built from sizes and
+    // joins only, never positions (no binding loops).
+    function leftOf(f: var): var {
+        return f.childLeft?.attached ? f.childLeft : f.joinSide === "right" ? f.joinParent : null;
+    }
+    function rightOf(f: var): var {
+        return f.childRight?.attached ? f.childRight : f.joinSide === "left" ? f.joinParent : null;
+    }
+    function leftWidth(f: var): real {
+        let w = 0;
+        for (let g = leftOf(f), n = 0; g && n < 12; g = leftOf(g), n++)
+            w += g.width;
+        return w;
+    }
+    function rightWidth(f: var): real {
+        let w = 0;
+        for (let g = rightOf(f), n = 0; g && n < 12; g = rightOf(g), n++)
+            w += g.width;
+        return w;
+    }
+    function rowOf(f: var): var {
+        const l = [f];
+        for (let g = leftOf(f), n = 0; g && n < 12; g = leftOf(g), n++) l.push(g);
+        for (let g = rightOf(f), n = 0; g && n < 12; g = rightOf(g), n++) l.push(g);
+        return l;
+    }
+    // A widget of this row with something attached on side sd (spanning it).
+    function rowChild(f: var, sd: string): var {
+        for (const g of rowOf(f)) {
+            const c = g.childOn(sd);
+            if (c)
+                return c;
+        }
+        return null;
+    }
+
     // Sides touching another widget of the group.
-    readonly property bool joinedTop: joinSide === "bottom" || childTop !== null
-    readonly property bool joinedBottom: joinSide === "top" || childBottom !== null
+    readonly property bool joinedTop: joinSide === "bottom" || childTop !== null || (rowSpanned("top"))
+    readonly property bool joinedBottom: joinSide === "top" || childBottom !== null || (rowSpanned("bottom"))
+    // Something spans this widget's row on that side (attached to a neighbour).
+    function rowSpanned(sd: string): bool {
+        return (leftOf(frame) !== null || rightOf(frame) !== null) && rowChild(frame, sd) !== null;
+    }
     readonly property bool joinedLeft: joinSide === "right" || childLeft !== null
     readonly property bool joinedRight: joinSide === "left" || childRight !== null
 
@@ -181,29 +223,40 @@ Item {
             return null;
         const mine = subtree();
         const gap = (f, sd) => {
-            const ox = Math.min(r.x + r.w, f.x + f.width) - Math.max(r.x, f.x);
+            // Top/bottom: the whole row counts (it is what the slot spans).
+            const fx = sd === "top" || sd === "bottom" ? f.x - leftWidth(f) : f.x;
+            const fw = sd === "top" || sd === "bottom" ? leftWidth(f) + f.width + rightWidth(f) : f.width;
+            const ox = Math.min(r.x + r.w, fx + fw) - Math.max(r.x, fx);
             const oy = Math.min(r.y + r.h, f.y + f.height) - Math.max(r.y, f.y);
             switch (sd) {
-            case "bottom": return ox > Math.min(r.w, f.width) * 0.3 ? Math.abs(r.y - (f.y + f.height)) : 1e9;
-            case "top": return ox > Math.min(r.w, f.width) * 0.3 ? Math.abs(r.y + r.h - f.y) : 1e9;
+            case "bottom": return ox > Math.min(r.w, fw) * 0.3 ? Math.abs(r.y - (f.y + f.height)) : 1e9;
+            case "top": return ox > Math.min(r.w, fw) * 0.3 ? Math.abs(r.y + r.h - f.y) : 1e9;
             case "right": return oy > Math.min(r.h, f.height) * 0.3 ? Math.abs(r.x - (f.x + f.width)) : 1e9;
             default: return oy > Math.min(r.h, f.height) * 0.3 ? Math.abs(r.x + r.w - f.x) : 1e9;
             }
         };
         const free = (f, sd) => {
-            const c = f.childOn(sd);
+            const c = sd === "top" || sd === "bottom" ? rowChild(f, sd) : f.childOn(sd);
             return !c || c === frame;
         };
         if (keep && mine.indexOf(keep.frame) === -1 && slotsOf(keep.frame).indexOf(keep.side) !== -1
-                && free(keep.frame, keep.side) && gap(keep.frame, keep.side) <= magnetRelease)
+                && free(keep.frame, keep.side) && !frame.childOn({ top: "bottom", bottom: "top", left: "right", right: "left" }[keep.side])
+                && gap(keep.frame, keep.side) <= magnetRelease)
             return keep;
+        // This widget's own side facing the slot must be free (e.g. Music
+        // with Lyrics on top can't go under another widget).
+        const facing = { top: "bottom", bottom: "top", left: "right", right: "left" };
+        const ownFree = sd => {
+            const c = frame.childOn(facing[sd]);
+            return !c || mine.indexOf(c) === -1;
+        };
         let best = null;
         for (const f of siblings) {
             if (!f || mine.indexOf(f) !== -1 || !f.visible)
                 continue;
             for (const sd of slotsOf(f)) {
                 const d = gap(f, sd);
-                if (d <= magnet && free(f, sd) && (!best || d < best.d))
+                if (d <= magnet && free(f, sd) && ownFree(sd) && (!best || d < best.d))
                     best = { frame: f, side: sd, d };
             }
         }
@@ -211,11 +264,13 @@ Item {
     }
 
     // Scale and position in the slot `sd` of frame `f`.
+    // Top/bottom slots span the row of `f` (its side-by-side neighbours).
     function scaleIn(f: var, sd: string): real {
-        return sd === "left" || sd === "right" ? f.height / Math.max(1, base.h) : f.width / Math.max(1, base.w);
+        return sd === "left" || sd === "right" ? f.height / Math.max(1, base.h)
+            : (leftWidth(f) + f.width + rightWidth(f)) / Math.max(1, base.w);
     }
     function slotPos(f: var, sd: string, w: real, h: real): point {
-        return Qt.point(sd === "left" ? f.x - w : sd === "right" ? f.x + f.width : f.x,
+        return Qt.point(sd === "left" ? f.x - w : sd === "right" ? f.x + f.width : f.x - leftWidth(f),
                         sd === "top" ? f.y - h : sd === "bottom" ? f.y + f.height : f.y);
     }
 
@@ -686,7 +741,7 @@ Item {
         y: below ? frame.height + 10 : -height - 10
         width: bar.implicitWidth + Theme.space.m * 2
         height: 36
-        radius: height / 2
+        radius: Theme.pill(height)
         color: Theme.surfaceRaised
         border.width: 1
         border.color: Theme.border
@@ -711,7 +766,7 @@ Item {
                 }
                 Rectangle {
                     anchors.fill: parent
-                    radius: height / 2
+                    radius: Theme.pill(height)
                     color: styleButton.containsMouse ? Theme.hover : "transparent"
                 }
                 RowLayout {
@@ -744,7 +799,7 @@ Item {
                 }
                 Rectangle {
                     anchors.fill: parent
-                    radius: height / 2
+                    radius: Theme.pill(height)
                     color: visButton.containsMouse ? Theme.hover : "transparent"
                 }
                 RowLayout {
