@@ -31,6 +31,19 @@ Singleton {
         selected = "";
         selecting = false;
         picked = [];
+        layerSettled = false;
+        if (!editing)
+            settleTimer.restart();
+    }
+    // True a moment after leaving edit mode, once the widget layer is back on
+    // the Bottom layer. Widget overlays (FrameOverlay) are only created then:
+    // Hyprland puts a surface that changes layer on top of that layer, so an
+    // overlay made earlier would end up under the widgets' blurred glass.
+    property bool layerSettled: true
+    Timer {
+        id: settleTimer
+        interval: 600
+        onTriggered: root.layerSettled = !root.editing
     }
 
     // ---- Edit mode tools (EditDock toolbar) ----------------------------------------
@@ -66,19 +79,36 @@ Singleton {
 
     // Undo: the layouts before the last changes (this session, up to 30).
     // Consecutive saves within 600 ms (one drag: detach + drop) count as one.
+    // Redo: what Undo took back (cleared by any new change).
     property var history: []
+    property var future: []
     property real lastSave: 0
     readonly property bool canUndo: history.length > 0
+    readonly property bool canRedo: future.length > 0
     property bool undoing: false
+    function snapshot(): var {
+        return JSON.parse(JSON.stringify(items));
+    }
     function undo(): void {
         if (history.length === 0)
             return;
-        const prev = history[history.length - 1];
+        future = future.concat([snapshot()]);
+        restore(history[history.length - 1]);
         history = history.slice(0, -1);
+    }
+    function redo(): void {
+        if (future.length === 0)
+            return;
+        history = history.concat([snapshot()]);
+        restore(future[future.length - 1]);
+        future = future.slice(0, -1);
+    }
+    function restore(list: var): void {
         undoing = true;
-        Config.widgets.items = prev;
+        Config.widgets.items = list;
         undoing = false;
         selected = "";
+        picked = [];
     }
     // In edit mode: the widget whose toolbar is shown (last clicked or added).
     property string selected: ""
@@ -226,7 +256,9 @@ Singleton {
     function save(list: var): void {
         const now = Date.now();
         if (!undoing && now - lastSave > 600)
-            history = history.concat([JSON.parse(JSON.stringify(items))]).slice(-30);
+            history = history.concat([snapshot()]).slice(-30);
+        if (!undoing)
+            future = [];
         lastSave = now;
         Config.widgets.items = list;
     }

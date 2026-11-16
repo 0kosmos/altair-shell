@@ -25,7 +25,7 @@ Scope {
     // What to draw; it fills the window.
     property Component content
 
-    readonly property bool showing: wanted && !moving && !Widgets.editing
+    readonly property bool showing: wanted && !moving && !Widgets.editing && Widgets.layerSettled
         && frameRect.width > 0 && screenName !== ""
 
     LazyLoader {

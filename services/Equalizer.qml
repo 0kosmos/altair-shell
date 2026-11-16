@@ -84,7 +84,7 @@ Singleton {
     readonly property string confPath: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/altair-eq.conf"
     readonly property string sinkName: "altair_eq_sink"
     // True once the filter's sink exists in PipeWire.
-    readonly property bool ready: proc.running && Pipewire.nodes.values.some(n => n.name === sinkName)
+    readonly property bool ready: proc.running && (Pipewire.nodes?.values ?? []).some(n => n.name === sinkName)
 
     onWantedChanged: Qt.callLater(update)
     Component.onCompleted: cleanup.running = true   // a leftover from a previous run
@@ -216,7 +216,7 @@ context.modules = [
     // Re-checked when the filter becomes ready, the player changes, or audio
     // streams come and go (e.g. the player opens a new stream).
     readonly property string playerApp: Media.player ? [Media.player.identity, Media.player.desktopEntry].join("|") : ""
-    readonly property int streamCount: Pipewire.nodes.values.filter(n => n.isStream).length
+    readonly property int streamCount: (Pipewire.nodes?.values ?? []).filter(n => n.isStream).length
     onReadyChanged: if (ready) { applyTimer.restart(); routeTimer.restart(); }
     onPlayerAppChanged: if (ready) routeTimer.restart()
     onStreamCountChanged: if (ready) routeTimer.restart()

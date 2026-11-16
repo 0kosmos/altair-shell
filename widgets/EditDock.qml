@@ -6,10 +6,12 @@ import qs.core
 import qs.services
 import qs.theme
 
-// Edit mode's dock: slides up from the bottom; click a widget type to add it
+// Edit mode's dock: slides in from its edge; click a widget type to add it
 // in the middle of the screen; "Done" leaves edit mode (everything is saved
 // as it changes). A toolbar above the list: widget settings, Select (pick
-// several widgets to move or delete together), Undo, Clear all.
+// several widgets to move or delete together), Undo, Redo, Clear all, and a
+// button that moves this panel to the next edge (bottom, right, top, left)
+// when it is in the way. On the left/right it is a column (cards in 2 columns).
 Item {
     id: dock
 
@@ -17,14 +19,25 @@ Item {
     required property var area
     required property string monitor
     property bool shown: false
+    readonly property string side: ["top", "left", "right"].indexOf(Config.widgets.editDockSide) !== -1 ? Config.widgets.editDockSide : "bottom"
+    readonly property bool vertical: side === "left" || side === "right"
+    function nextSide(): void {
+        const order = ["bottom", "right", "top", "left"];
+        Config.widgets.editDockSide = order[(order.indexOf(side) + 1) % order.length];
+    }
 
-    width: Math.max(row.implicitWidth, tools.implicitWidth) + Theme.space.m * 2
-    height: 108 + 44
+    width: content.implicitWidth + Theme.space.m * 2
+    height: content.implicitHeight + Theme.space.m * 2
     opacity: shown ? 1 : 0
+    // Slides in from its edge.
     transform: Translate {
-        y: dock.shown ? 0 : 40
+        x: dock.shown ? 0 : dock.side === "left" ? -40 : dock.side === "right" ? 40 : 0
+        y: dock.shown ? 0 : dock.side === "top" ? -40 : dock.side === "bottom" ? 40 : 0
+        Behavior on x {
+            NumberAnimation { duration: Theme.anim.slow; easing.type: Easing.OutQuint }
+        }
         Behavior on y {
-            NumberAnimation { duration: Theme.anim.normal; easing.type: Theme.anim.easingSlide }
+            NumberAnimation { duration: Theme.anim.slow; easing.type: Easing.OutQuint }
         }
     }
     Behavior on opacity {
@@ -84,11 +97,23 @@ Item {
         onTriggered: dock.clearArmed = false
     }
 
-    RowLayout {
+    ColumnLayout {
+        id: content
+        anchors.centerIn: parent
+        spacing: Theme.space.m
+
+    Flow {
         id: tools
-        anchors.top: parent.top
-        anchors.topMargin: Theme.space.m
-        anchors.horizontalCenter: parent.horizontalCenter
+        Layout.alignment: Qt.AlignHCenter
+        // As wide as the cards (wraps in the narrow side panel).
+        Layout.preferredWidth: dock.vertical ? cards.implicitWidth : implicitWidthAll
+        readonly property real implicitWidthAll: {
+            let w = 0;
+            for (let i = 0; i < children.length; i++)
+                if (children[i].visible)
+                    w += children[i].implicitWidth + spacing;
+            return Math.max(0, w - spacing);
+        }
         spacing: Theme.space.s
 
         Tool {
@@ -119,6 +144,12 @@ Item {
             onClicked: Widgets.undo()
         }
         Tool {
+            icon: "redo"
+            label: "Redo"
+            enabled: Widgets.canRedo
+            onClicked: Widgets.redo()
+        }
+        Tool {
             icon: "clear_all"
             label: dock.clearArmed ? "Click again to remove all" : "Clear all"
             danger: dock.clearArmed
@@ -133,14 +164,47 @@ Item {
                 }
             }
         }
+        // Move this panel to the next edge (it may be in the way).
+        Tool {
+            icon: dock.side === "bottom" ? "arrow_forward" : dock.side === "right" ? "arrow_upward" : dock.side === "top" ? "arrow_back" : "arrow_downward"
+            label: "Move panel"
+            onClicked: dock.nextSide()
+        }
+        // "Done": an accent pill.
+        MouseArea {
+            id: done
+            implicitWidth: doneText.implicitWidth + Theme.space.l * 2
+            implicitHeight: 36
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: Widgets.editing = false
+            scale: pressed ? Theme.anim.pressScale : 1
+            Behavior on scale {
+                NumberAnimation { duration: Theme.anim.fast; easing.type: Easing.OutBack; easing.overshoot: 2.5 }
+            }
+            Rectangle {
+                anchors.fill: parent
+                radius: height / 2
+                color: done.containsMouse ? Qt.lighter(Theme.accent, 1.1) : Theme.accent
+            }
+            StyledText {
+                id: doneText
+                anchors.centerIn: parent
+                text: "Done"
+                color: Theme.onAccent
+                font.weight: Font.DemiBold
+            }
+        }
     }
 
-    RowLayout {
-        id: row
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: (108 - 86) / 2
-        spacing: Theme.space.s
+    GridLayout {
+        id: cards
+        Layout.alignment: Qt.AlignHCenter
+        columns: dock.vertical ? 2 : -1
+        rows: dock.vertical ? -1 : 1
+        flow: dock.vertical ? GridLayout.LeftToRight : GridLayout.LeftToRight
+        rowSpacing: Theme.space.s
+        columnSpacing: Theme.space.s
 
         Repeater {
             model: Widgets.types
@@ -199,39 +263,6 @@ Item {
             }
         }
 
-        Rectangle {
-            Layout.fillHeight: true
-            Layout.topMargin: Theme.space.m
-            Layout.bottomMargin: Theme.space.m
-            implicitWidth: 1
-            color: Theme.border
-        }
-
-        // "Done": an accent pill.
-        MouseArea {
-            id: done
-            Layout.leftMargin: Theme.space.xs
-            implicitWidth: doneText.implicitWidth + Theme.space.l * 2
-            implicitHeight: 36
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: Widgets.editing = false
-            scale: pressed ? Theme.anim.pressScale : 1
-            Behavior on scale {
-                NumberAnimation { duration: Theme.anim.fast; easing.type: Easing.OutBack; easing.overshoot: 2.5 }
-            }
-            Rectangle {
-                anchors.fill: parent
-                radius: height / 2
-                color: done.containsMouse ? Qt.lighter(Theme.accent, 1.1) : Theme.accent
-            }
-            StyledText {
-                id: doneText
-                anchors.centerIn: parent
-                text: "Done"
-                color: Theme.onAccent
-                font.weight: Font.DemiBold
-            }
-        }
+    }
     }
 }

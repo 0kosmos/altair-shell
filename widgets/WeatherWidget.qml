@@ -264,24 +264,43 @@ Item {
 
     Component {
         id: minimal
+        // Icon, temperature, then the condition over today's high/low; even
+        // margins, so nothing touches the edges whatever the text.
         RowLayout {
-            anchors.centerIn: parent
-            spacing: 8
+            anchors.fill: parent
+            anchors.leftMargin: 16
+            anchors.rightMargin: 16
+            spacing: 10
             Icon {
                 name: Weather.icon(Weather.code, Weather.isDay)
-                size: 26
-                fill: 0
+                size: 28
+                fill: 1
                 color: Theme.accent
             }
             Temp {
                 value: Weather.temp
-                font.pixelSize: 24
+                font.pixelSize: 26
                 font.weight: Font.DemiBold
             }
-            StyledText {
-                text: Weather.text(Weather.code)
-                color: Theme.fgMuted
-                font.pixelSize: Theme.font.small
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.leftMargin: 2
+                spacing: 0
+                StyledText {
+                    Layout.fillWidth: true
+                    text: Weather.text(Weather.code)
+                    font.pixelSize: Theme.font.small
+                    font.weight: Font.Medium
+                    elide: Text.ElideRight
+                }
+                StyledText {
+                    Layout.fillWidth: true
+                    visible: !!root.today
+                    text: root.today ? "↑ " + Weather.deg(root.today.max) + "  ↓ " + Weather.deg(root.today.min) : ""
+                    color: Theme.fgMuted
+                    font.pixelSize: 11
+                    tabular: true
+                }
             }
         }
     }

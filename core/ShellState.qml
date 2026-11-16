@@ -21,6 +21,11 @@ Singleton {
     // open while you use the launcher, for example). "settings" is accepted by
     // open/close/toggle too.
     property bool settingsOpen: false
+    // Dragging the bar to another edge (bar/Bar.qml): the edge it would go
+    // to ("" = not dragging) and the monitor; bar/BarMoveHint.qml shows it.
+    property string barDragTarget: ""
+    property string barDragScreen: ""
+
     // Open Settings on a page ("widgets", "dock", ...).
     signal settingsPageRequested(string page)
     function openSettings(page: string): void {

@@ -185,7 +185,10 @@ Singleton {
     }
     function tick(): void {
         if (status === "plain") {
-            const i = length > 0 ? Math.min(lines.length - 1, Math.floor(position() / length * lines.length)) : -1;
+            let i = length > 0 ? Math.min(lines.length - 1, Math.floor(position() / length * lines.length)) : -1;
+            // (Same as below: no flicker back by one line.)
+            if (i === index - 1)
+                i = index;
             if (i !== index)
                 index = i;
             lineTimer.interval = 1000;
@@ -202,6 +205,11 @@ Singleton {
         let i = -1;
         for (let j = 0; j < lines.length && lines[j].t <= p; j++)
             i = j;
+        // Never step back because the player's reported position lags our
+        // estimate a little (that made a line flash back and come again);
+        // only a real seek back (more than 1.5 s) goes to an earlier line.
+        if (i < index && index < lines.length && lines[index].t - p < 1.5)
+            i = index;
         if (i !== index)
             index = i;
         // Wake up when the next line is due (at most 2 s, in case of a seek

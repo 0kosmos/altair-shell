@@ -218,6 +218,8 @@ Singleton {
                 // Placed desktop widgets (see services/Widgets.qml):
                 //   { id, type, monitor, x, y, scale, opacity }
                 property var items: []
+                // Edit mode's widget panel: "bottom" | "top" | "left" | "right".
+                property string editDockSide: "bottom"
                 // Music widget: hide it while nothing is playing (else a
                 // compact "Nothing playing").
                 property bool musicHideIdle: false

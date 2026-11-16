@@ -13,7 +13,7 @@ import qs.theme
 // Bottom, centre or top of the screen (Settings -> Wallpaper). SUPER+W.
 //
 //   arrows / Tab           move one wallpaper, wrapping around at the ends
-//   wheel                  up = right, down = left (stops at the ends)
+//   wheel                  up = right, down = left (endless, wraps round)
 //   hover                  preview that wallpaper
 //   click                  apply it (and bring it to the middle)
 //   Enter / double-click   apply and close
@@ -36,7 +36,7 @@ AltairPanel {
     // About five cards wide.
     panelWidth: cardWidth * 5 + cardSpacing * 4 + 48
     // Header, cards, and the theme row under them.
-    panelHeight: 46 + cardHeight + cardPad * 2 + 14 + 46
+    panelHeight: 46 + cardHeight + cardPad * 2 + 14 + 56
 
     content: Component {
         FocusScope {
@@ -128,8 +128,10 @@ AltairPanel {
             }
 
             // ---- Carousel ------------------------------------------------------------
-            // Colour themes for the wallpaper (WallpaperTheme).
+            // Colour themes for the wallpaper (WallpaperTheme). Above the cards,
+            // so its name tooltips are never under the enlarged middle card.
             ThemeRow {
+                z: 5
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
@@ -138,7 +140,9 @@ AltairPanel {
                 anchors.bottomMargin: Theme.space.m
             }
 
-            ListView {
+            // An endless carousel: past the last wallpaper the first one
+            // comes round again (PathView wraps by itself).
+            PathView {
                 id: list
 
                 anchors.top: header.bottom
@@ -146,33 +150,45 @@ AltairPanel {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 height: strip.cardHeight + strip.cardPad * 2
-
-                orientation: ListView.Horizontal
-                spacing: strip.cardSpacing
-                // Empty room at both ends, so the first and last wallpapers
-                // can also reach the middle.
-                leftMargin: (width - strip.cardWidth) / 2
-                rightMargin: (width - strip.cardWidth) / 2
                 clip: true
                 focus: true
                 model: files
-                boundsBehavior: Flickable.StopAtBounds
 
+                // Cards on the path (odd, so one is in the middle).
+                readonly property int slots: 7
+                readonly property real cell: strip.cardWidth + strip.cardSpacing
+                pathItemCount: Math.min(count, slots)
+                readonly property real span: Math.max(1, pathItemCount) * cell
                 // The current item always sits in the middle; moving glides.
-                highlightRangeMode: ListView.StrictlyEnforceRange
-                preferredHighlightBegin: (width - strip.cardWidth) / 2
-                preferredHighlightEnd: (width + strip.cardWidth) / 2
+                preferredHighlightBegin: 0.5
+                preferredHighlightEnd: 0.5
+                highlightRangeMode: PathView.StrictlyEnforceRange
                 highlightMoveDuration: Theme.anim.slow
-                highlightMoveVelocity: -1
+                snapMode: PathView.SnapToItem
+                // Scrolling is done by the wheel handler and keys below.
+                interactive: false
                 currentIndex: -1
 
-                // Open on the current wallpaper, without animation. Done again
-                // when the width changes: the centre is computed from it, and
-                // it is still 0 the first time the files are listed.
+                // "near": 1 in the middle, 0 one card away and beyond.
+                path: Path {
+                    startX: list.width / 2 - list.span / 2
+                    startY: list.height / 2
+                    PathAttribute { name: "near"; value: 0 }
+                    PathLine { x: list.width / 2 - list.cell; y: list.height / 2 }
+                    PathAttribute { name: "near"; value: 0 }
+                    PathLine { x: list.width / 2; y: list.height / 2 }
+                    PathAttribute { name: "near"; value: 1 }
+                    PathLine { x: list.width / 2 + list.cell; y: list.height / 2 }
+                    PathAttribute { name: "near"; value: 0 }
+                    PathLine { x: list.width / 2 + list.span / 2; y: list.height / 2 }
+                    PathAttribute { name: "near"; value: 0 }
+                }
+
+                // Open on the current wallpaper, without animation.
                 function centerOn(i: int): void {
                     highlightMoveDuration = 0;
                     currentIndex = i;
-                    positionViewAtIndex(i, ListView.Center);
+                    positionViewAtIndex(i, PathView.Center);
                     highlightMoveDuration = Qt.binding(() => Theme.anim.slow);
                 }
                 onCountChanged: {
@@ -186,28 +202,32 @@ AltairPanel {
                         }
                     Qt.callLater(centerOn, start);
                 }
-                onWidthChanged: if (currentIndex >= 0) Qt.callLater(centerOn, currentIndex)
                 // The middle one is previewed (nothing happens for the current one).
                 onCurrentIndexChanged: if (currentIndex >= 0 && count > 0) root.previewSoon(files.get(currentIndex, "filePath"))
 
-                // wrap: past the last one, start again at the first (and back).
-                function step(delta: int, wrap: bool): void {
+                // Always wraps (the second argument is kept for Home/End).
+                function advance(delta: int, wrap: bool): void {
                     root.hoveredName = "";
                     if (count === 0)
                         return;
-                    const i = currentIndex + delta;
-                    currentIndex = wrap ? (i % count + count) % count : Math.max(0, Math.min(count - 1, i));
+                    if (!wrap) {
+                        currentIndex = Math.max(0, Math.min(count - 1, currentIndex + delta));
+                        return;
+                    }
+                    // incrementCurrentIndex takes the short way round the loop.
+                    for (let k = 0; k < Math.abs(delta); k++)
+                        delta > 0 ? incrementCurrentIndex() : decrementCurrentIndex();
                 }
 
                 Keys.onPressed: event => {
                     if (event.key === Qt.Key_Right || event.key === Qt.Key_Tab)
-                        step(1, true);
+                        advance(1, true);
                     else if (event.key === Qt.Key_Left || event.key === Qt.Key_Backtab)
-                        step(-1, true);
+                        advance(-1, true);
                     else if (event.key === Qt.Key_Home)
-                        step(-count, false);
+                        advance(-count, false);
                     else if (event.key === Qt.Key_End)
-                        step(count, false);
+                        advance(count, false);
                     else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
                         root.apply(currentIndex, true);
                     else if (event.key === Qt.Key_Space)
@@ -229,10 +249,10 @@ AltairPanel {
                     width: strip.cardWidth
                     height: list.height
 
-                    // 0 in the middle, 1 one card away, more further out —
-                    // follows the scroll position every frame while gliding.
-                    readonly property real distance: Math.abs(x - list.contentX - list.preferredHighlightBegin) / (strip.cardWidth + strip.cardSpacing)
-                    readonly property real nearness: 1 - Math.min(1, distance)
+                    // 1 in the middle, 0 one card away and further out (from
+                    // the path), following the scroll every frame while gliding.
+                    readonly property real nearness: PathView.near ?? 0
+                    z: nearness
 
                     WallpaperThumb {
                         anchors.centerIn: parent
@@ -244,7 +264,7 @@ AltairPanel {
                         filePath: card.filePath
                         fileModified: card.fileModified
                         fileSize: card.fileSize
-                        focused: card.ListView.isCurrentItem
+                        focused: card.PathView.isCurrentItem
                         onHovered: {
                             root.hoveredName = card.name;
                             root.previewSoon(card.filePath);
@@ -288,7 +308,7 @@ AltairPanel {
                     while (Math.abs(accum) >= 120) {
                         const dir = accum > 0 ? 1 : -1;
                         accum -= dir * 120;
-                        list.step(dir, false);
+                        list.advance(dir, true);   // endless, like the arrows
                     }
                 }
             }

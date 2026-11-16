@@ -379,6 +379,12 @@ Scope {
             }
 
             property string shownPage: page
+            // Compile every page in the background when Settings opens, so
+            // switching to one later doesn't stall (Qt caches the types).
+            property var precompiled: []
+            Component.onCompleted: Qt.callLater(() => {
+                win.precompiled = pages.map(p => Qt.createComponent(win.pageSource(p.id), Component.Asynchronous));
+            })
             onPageChanged: {
                 if (Theme.anim.fast === 0) {
                     shownPage = page;
@@ -392,6 +398,11 @@ Scope {
                 NumberAnimation { target: pageLoader; property: "opacity"; to: 0; duration: 90; easing.type: Theme.anim.easingIn }
                 ScriptAction { script: win.shownPage = win.page }
                 PropertyAction { target: pageShift; property: "y"; value: 10 }
+                // Loading a page blocks for a moment; the animation clock keeps
+                // running meanwhile, which made the fade-in jump (it looked
+                // like the page reloaded). This pause swallows that time, so
+                // the fade always starts from the beginning.
+                PauseAnimation { duration: 30 }
                 ParallelAnimation {
                     NumberAnimation { target: pageLoader; property: "opacity"; to: 1; duration: Theme.anim.normal; easing.type: Theme.anim.easing }
                     NumberAnimation { target: pageShift; property: "y"; to: 0; duration: Theme.anim.normal; easing.type: Theme.anim.easingSlide }

@@ -56,6 +56,62 @@ Variants {
             radius: Theme.radius.m
         }
 
+        // Drag the bar by an empty spot to another screen edge: the nearest
+        // edge to the pointer is shown (BarMoveHint) and taken on release.
+        // Under everything else, so the clock, buttons and tray keep their
+        // clicks.
+        MouseArea {
+            id: barDrag
+            anchors.fill: parent
+            hoverEnabled: true
+            preventStealing: true
+            cursorShape: dragging ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+            property point pressAt
+            property bool dragging: false
+
+            // This window's top-left on its screen (from where the bar sits).
+            function origin(): point {
+                const sw = win.screen.width, sh = win.screen.height, g = Theme.barGap;
+                switch (win.pos) {
+                case "bottom": return Qt.point(g, sh - g - win.height);
+                case "right": return Qt.point(sw - g - win.width, g);
+                default: return Qt.point(g, g);
+                }
+            }
+            function targetAt(m): string {
+                const o = origin();
+                const x = o.x + m.x, y = o.y + m.y;
+                const sw = win.screen.width, sh = win.screen.height;
+                const d = { top: y, bottom: sh - y, left: x, right: sw - x };
+                return Object.keys(d).reduce((a, b) => d[b] < d[a] ? b : a);
+            }
+
+            onPressed: mouse => {
+                pressAt = Qt.point(mouse.x, mouse.y);
+                dragging = false;
+            }
+            onPositionChanged: mouse => {
+                if (!pressed)
+                    return;
+                if (!dragging && Math.hypot(mouse.x - pressAt.x, mouse.y - pressAt.y) > 12) {
+                    dragging = true;
+                    ShellState.barDragScreen = win.screen.name;
+                }
+                if (dragging)
+                    ShellState.barDragTarget = targetAt(mouse);
+            }
+            onReleased: {
+                if (dragging && ShellState.barDragTarget && ShellState.barDragTarget !== Theme.barPosition)
+                    Config.appearance.barPosition = ShellState.barDragTarget;
+                dragging = false;
+                ShellState.barDragTarget = "";
+            }
+            onCanceled: {
+                dragging = false;
+                ShellState.barDragTarget = "";
+            }
+        }
+
         Workspaces {
             x: win.vertical ? 0 : Theme.space.s
             y: win.vertical ? Theme.space.s : (parent.height - height) / 2

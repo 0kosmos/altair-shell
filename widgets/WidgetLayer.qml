@@ -152,10 +152,17 @@ Scope {
                         }
 
                         EditDock {
+                            id: editDock
                             readonly property var u: win.mon.usable
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.bottom: parent.bottom
-                            anchors.bottomMargin: Theme.space.xl
+                            // At its edge of the free area (clear of the bar), centred
+                            // along it; glides when moved to another edge.
+                            readonly property real ux: u.x - win.mon.x
+                            readonly property real uy: u.y - win.mon.y
+                            readonly property int m: Theme.space.xl
+                            x: side === "left" ? ux + m : side === "right" ? ux + u.w - width - m : ux + (u.w - width) / 2
+                            y: side === "top" ? uy + m : side === "bottom" ? uy + u.h - height - m : uy + (u.h - height) / 2
+                            Behavior on x { NumberAnimation { duration: Theme.anim.slow; easing.type: Easing.OutQuint } }
+                            Behavior on y { NumberAnimation { duration: Theme.anim.slow; easing.type: Easing.OutQuint } }
                             visible: Widgets.editing || per.lingering
                             shown: Widgets.editing && Hyprland.focusedMonitor?.name === per.modelData.name
                             monitor: per.modelData.name

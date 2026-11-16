@@ -29,7 +29,7 @@ AltairPanel {
     slideDistance: 12
     readonly property string weatherStyle: !Weather.configured ? "off"
         : ["strip", "compact"].indexOf(Config.bar.popupWeather) !== -1 ? Config.bar.popupWeather : "off"
-    readonly property int weatherHeight: weatherStyle === "strip" ? 104 : weatherStyle === "compact" ? 52 : 0
+    readonly property int weatherHeight: weatherStyle === "strip" ? 116 : weatherStyle === "compact" ? 78 : 0
     // Small choice chips for the style menu.
     component Chips: Flow {
         id: chips
@@ -67,7 +67,8 @@ AltairPanel {
     }
 
     panelWidth: 272 + (Config.bar.weekNumbers ? 26 : 0) + (Config.bar.analogClock ? 262 : 0)
-    panelHeight: 322 + weatherHeight
+    // Narrow (clock off): the style menu wraps onto more lines, give it room.
+    panelHeight: 322 + weatherHeight + (Config.bar.analogClock || weatherHeight > 0 ? 0 : 48)
 
     content: Component {
         FocusScope {
@@ -318,6 +319,8 @@ AltairPanel {
                 // Now.
                 RowLayout {
                     spacing: Theme.space.s
+                    Layout.fillWidth: root.weatherStyle === "compact"
+                    Layout.minimumWidth: 0
                     Icon {
                         name: Weather.icon(Weather.code, Weather.isDay)
                         size: root.weatherStyle === "strip" ? 38 : 26
@@ -337,11 +340,12 @@ AltairPanel {
                             color: Theme.fgMuted
                             font.pixelSize: Theme.font.small
                             elide: Text.ElideRight
+                            Layout.fillWidth: true
                             Layout.maximumWidth: 200
                         }
                     }
                 }
-                Item { Layout.fillWidth: true }
+                Item { visible: root.weatherStyle === "strip"; Layout.fillWidth: true }
                 // Next days (strip only).
                 Repeater {
                     model: root.weatherStyle === "strip" ? Weather.daily.slice(1, 6) : []
@@ -405,7 +409,9 @@ AltairPanel {
                 anchors.right: parent.right
                 anchors.topMargin: Theme.space.s + 30
                 anchors.rightMargin: Theme.space.s
-                width: 300
+                // Fits the popup, also when it narrows (clock off): the
+                // choices wrap onto more lines.
+                width: Math.min(300, parent.width - Theme.space.s * 2)
                 height: stylesCol.implicitHeight + Theme.space.m * 2
                 opacity: open ? 1 : 0
                 visible: opacity > 0

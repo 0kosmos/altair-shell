@@ -38,7 +38,10 @@ Scope {
     readonly property int gap: Theme.barGap
     // Hover zoom (icons grow toward the screen's centre) + tooltip.
     readonly property real zoom: Theme.animations ? 1.22 : 1
-    readonly property int headroom: Math.ceil(iconSize * 0.22) + 44
+    // Room on the inner side for the zoom and the name tooltip. A side dock's
+    // tooltip goes sideways, so it needs room for a whole name (the window is
+    // transparent there and takes no input, so the room costs nothing).
+    readonly property int headroom: vertical ? Math.ceil(iconSize * 0.22) + 240 : Math.ceil(iconSize * 0.22) + 44
     readonly property bool autoHide: Config.dock.autoHide
 
     readonly property int slideIn: Theme.animations ? 420 : 0

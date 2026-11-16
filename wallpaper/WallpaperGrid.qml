@@ -111,6 +111,7 @@ AltairPanel {
             // Colour themes for the wallpaper (WallpaperTheme).
             ThemeRow {
                 id: themes
+                z: 5
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom

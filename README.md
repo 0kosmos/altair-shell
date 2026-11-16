@@ -24,7 +24,7 @@ frosted glass, smooth motion and close to zero CPU when idle.
 - **Bar**: workspaces (sliding indicator), clock, system tray with themed
   menus, volume, network, battery (laptops), notifications and settings.
   Top, bottom, left or right (a side bar stacks everything; the clock reads
-  hours over minutes).
+  hours over minutes). Drag the bar by an empty spot to another edge.
 - **Dock** (optional, off by default): pinned apps and open windows at the
   bottom, left or right edge. Click to open or switch (again: next window),
   middle-click for a new window, right-click for the app's windows, its own
@@ -79,7 +79,7 @@ frosted glass, smooth motion and close to zero CPU when idle.
   windows cover the desktop.
   Edit mode dims the screen and shows a dock to add widgets, with a
   toolbar: widget settings, Select (pick several to move or delete
-  together), Undo, Clear all; drag to move
+  together), Undo, Redo, Clear all, Move panel (to another edge); drag to move
   (with the same smooth snapping, also to other widgets), drag the corner to
   resize, click a widget for its style, opacity and remove buttons. Several
   copies allowed; the layout is saved in `config.json`.

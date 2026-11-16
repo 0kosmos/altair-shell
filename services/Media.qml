@@ -27,8 +27,8 @@ Singleton {
     // The app's name, shortened ("Google Chrome" -> "Chrome"); for a browser
     // also the site, from the track's URL when the player reports one.
     readonly property string appName: (player?.identity ?? "").replace(/^(Google|Mozilla)\s+/, "")
-    readonly property string site: {
-        const url = String(player?.metadata?.["xesam:url"] ?? "");
+    readonly property string site: siteOf(String(player?.metadata?.["xesam:url"] ?? "")) ?? ""
+    function siteOf(url: string): string {
         const m = url.match(/^https?:\/\/(?:www\.|m\.)?([^/:]+)/i);
         if (!m)
             return "";
