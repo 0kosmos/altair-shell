@@ -99,7 +99,7 @@ Item {
     Loader {
         anchors.fill: parent
         active: Weather.configured && Weather.loaded
-        sourceComponent: root.style === "forecast" ? forecast : root.style === "hourly" ? hourly
+        sourceComponent: root.style === "big" ? big : root.style === "forecast" ? forecast : root.style === "hourly" ? hourly
             : root.style === "minimal" ? minimal : card
     }
 
@@ -282,6 +282,43 @@ Item {
                 text: Weather.text(Weather.code)
                 color: Theme.fgMuted
                 font.pixelSize: Theme.font.small
+            }
+        }
+    }
+
+    // ---- Big ----------------------------------------------------------------------
+    Component {
+        id: big
+        ColumnLayout {
+            anchors.centerIn: parent
+            spacing: 2
+            RowLayout {
+                Layout.alignment: Qt.AlignHCenter
+                spacing: 10
+                Icon {
+                    name: Weather.icon(Weather.code, Weather.isDay)
+                    size: 54
+                    fill: 1
+                    color: Theme.accent
+                }
+                Temp {
+                    value: Weather.temp
+                    font.pixelSize: 64
+                    font.weight: Font.Light
+                }
+            }
+            StyledText {
+                Layout.alignment: Qt.AlignHCenter
+                text: Weather.text(Weather.code)
+                font.pixelSize: 15
+                font.weight: Font.Medium
+            }
+            StyledText {
+                Layout.alignment: Qt.AlignHCenter
+                text: root.today ? "↑ " + Weather.deg(root.today.max) + "   ↓ " + Weather.deg(root.today.min) : ""
+                color: Theme.fgMuted
+                font.pixelSize: Theme.font.small
+                tabular: true
             }
         }
     }

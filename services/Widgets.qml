@@ -41,7 +41,8 @@ Singleton {
     // other widgets: "music" (only to a Music widget) or "any".
     readonly property var types: [
         { type: "clock", name: "Clock", icon: "schedule", w: 320, h: 150, attach: "any",
-          styles: [{ id: "classic", name: "Classic" }, { id: "light", name: "Light" }, { id: "minimal", name: "Minimal" }, { id: "date", name: "Date" }] },
+          styles: [{ id: "classic", name: "Classic" }, { id: "light", name: "Light" }, { id: "minimal", name: "Minimal" }, { id: "date", name: "Date" },
+                   { id: "stacked", name: "Stacked", w: 200, h: 200 }, { id: "split", name: "Split", w: 300, h: 140 }] },
         { type: "roundclock", name: "Round clock", icon: "nest_clock_farsight_analog", w: 220, h: 220, attach: "any",
           styles: [{ id: "classic", name: "Classic" }, { id: "minimal", name: "Minimal" }, { id: "numbers", name: "Numbers" }, { id: "dots", name: "Dots" }] },
         { type: "music", name: "Music", icon: "music_note", w: 360, h: 120,
@@ -49,7 +50,8 @@ Singleton {
                    { id: "cover", name: "Cover", w: 236, h: 324 }, { id: "minimal", name: "Minimal", w: 320, h: 84 }] },
         { type: "weather", name: "Weather", icon: "partly_cloudy_day", w: 300, h: 130, attach: "any",
           styles: [{ id: "card", name: "Card" }, { id: "forecast", name: "Forecast", w: 380, h: 170 },
-                   { id: "hourly", name: "Hourly", w: 380, h: 130 }, { id: "minimal", name: "Minimal", w: 240, h: 64 }] },
+                   { id: "hourly", name: "Hourly", w: 380, h: 130 }, { id: "minimal", name: "Minimal", w: 240, h: 64 },
+                   { id: "big", name: "Big", w: 240, h: 170 }] },
         { type: "visualizer", name: "Visualizer", icon: "graphic_eq", w: 360, h: 130, attach: "music",
           styles: [{ id: "bars", name: "Bars" }, { id: "mirror", name: "Mirror" }, { id: "wave", name: "Wave" },
                    { id: "peaks", name: "Peaks" }, { id: "circle", name: "Circle", w: 240, h: 240 }] },
@@ -60,7 +62,7 @@ Singleton {
                    { id: "minimal", name: "Minimal", w: 380, h: 56 }] },
         { type: "stats", name: "System", icon: "monitoring", w: 300, h: 132, attach: "any",
           styles: [{ id: "bars", name: "Bars" }, { id: "rings", name: "Rings", w: 300, h: 140 },
-                   { id: "compact", name: "Compact", w: 360, h: 52 }] },
+                   { id: "compact", name: "Compact", w: 360, h: 52 }, { id: "graph", name: "Graph", w: 320, h: 150 }] },
     ]
 
     // (JsonAdapter hands a `var` list over as a Qt list, not a JS array.)

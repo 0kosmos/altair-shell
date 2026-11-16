@@ -57,16 +57,17 @@ frosted glass, smooth motion and close to zero CPU when idle.
   the previous window without showing anything.
 - **Desktop widgets** (`SUPER + D` to edit), up to 2 of each, frosted like
   the panels, on the desktop (above the wallpaper, below windows):
-  clock (4 styles), round clock (4 styles), music (Card, spinning Disc,
+  clock (6 styles), round clock (4 styles), music (Card, spinning Disc,
   Cover, Minimal; drag the song bar to seek; the player's own volume;
   "Playing on Spotify"; any MPRIS player), visualizer (Bars, Mirror, Wave,
   Peaks, Circle; needs `cava`), **weather** (Card, Forecast, Hourly,
-  Minimal; Open-Meteo, no account; optional rain / snow / storm / sun /
+  Minimal, Big; Open-Meteo, no account; optional rain / snow / storm / sun /
   fog effects), **lyrics** (Scroll, Focus, Karaoke (the line fills from grey to white as it is sung), Minimal; time-synced from LRCLIB when
   available), **equalizer** (16 presets + 6 bands you can
   drag, for the music player only, live; built on PipeWire's own filter, no
   extra daemon) and system (Bars,
-  Rings, Compact: CPU, memory, optional GPU temperature). Drop a Visualizer
+  Rings, Compact, Graph: CPU, memory, optional GPU temperature). Widgets
+  can use their own font (*Settings → Appearance → Fonts*). Drop a Visualizer
   or Equalizer next to a Music widget and it attaches like a magnet (top or
   bottom; left or right too with the Card and Disc styles); weather,
   clocks and system attach to any widget (e.g. weather under a round

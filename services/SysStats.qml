@@ -25,6 +25,9 @@ Singleton {
     property int gpuTemp: -1             // °C, -1 = unknown / off
 
     property var lastCpu: null           // { total, idle }
+    // Last 40 readings (80 s), oldest first, for the Graph style.
+    property var cpuHistory: []
+    property var memHistory: []
 
     Timer {
         interval: 2000
@@ -51,6 +54,8 @@ Singleton {
         };
         memTotal = kb("MemTotal");
         memUsed = memTotal - kb("MemAvailable");
+        cpuHistory = cpuHistory.concat([cpu]).slice(-40);
+        memHistory = memHistory.concat([memTotal > 0 ? memUsed / memTotal : 0]).slice(-40);
     }
 
     FileView {

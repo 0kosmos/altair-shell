@@ -386,4 +386,30 @@ Page {
             }
         }
     }
+
+    Section { text: "Fonts" }
+
+    StyledText {
+        Layout.fillWidth: true
+        text: "Interface (bar, panels, Settings)"
+        color: Theme.fgMuted
+        font.pixelSize: Theme.font.small
+    }
+    FontPicker {
+        current: Config.appearance.fontFamily === "Inter" ? "" : Config.appearance.fontFamily
+        defaultLabel: "Inter (default)"
+        onPicked: family => Config.appearance.fontFamily = family || "Inter"
+    }
+    StyledText {
+        Layout.fillWidth: true
+        Layout.topMargin: Theme.space.s
+        text: "Desktop widgets"
+        color: Theme.fgMuted
+        font.pixelSize: Theme.font.small
+    }
+    FontPicker {
+        current: Config.appearance.widgetFont
+        defaultLabel: "Same as interface"
+        onPicked: family => Config.appearance.widgetFont = family
+    }
 }

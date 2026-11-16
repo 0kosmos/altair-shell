@@ -126,6 +126,8 @@ Singleton {
                 // hyprland.lua), "none" (no borders). Older configs: true/false.
                 property var windowBorders: "accent"
                 property string fontFamily: "Inter"
+                // Desktop widgets' font; "" = the same as fontFamily.
+                property string widgetFont: ""
                 property string iconFontFamily: "Material Symbols Rounded"
             }
 

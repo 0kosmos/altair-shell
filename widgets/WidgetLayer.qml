@@ -92,6 +92,8 @@ Scope {
                     screen: per.modelData
 
                     WlrLayershell.namespace: "altair-widgets"
+                    // Widgets' own font (StyledText picks it up).
+                    property string textFamily: Theme.widgetFont
                     WlrLayershell.layer: Widgets.editing ? WlrLayer.Top : WlrLayer.Bottom
                     WlrLayershell.keyboardFocus: Widgets.editing ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
                     exclusionMode: ExclusionMode.Ignore

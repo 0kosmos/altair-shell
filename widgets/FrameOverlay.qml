@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import qs.services
+import qs.theme
 
 // A small window of its own, exactly over a widget (Bottom layer, above the
 // widget layer, no input). For things that move continuously (rain, the
@@ -33,6 +34,7 @@ Scope {
         PanelWindow {
             screen: Quickshell.screens.find(s => s.name === root.screenName) ?? null
             WlrLayershell.namespace: "altair-widget-fx"
+            property string textFamily: Theme.widgetFont
             WlrLayershell.layer: WlrLayer.Bottom
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
             exclusionMode: ExclusionMode.Ignore

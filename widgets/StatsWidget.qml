@@ -12,6 +12,8 @@ import qs.theme
 //   bars     a labelled bar per value
 //   rings    round gauges
 //   compact  one line of text
+//   graph    CPU and memory over the last 80 s as two soft line charts
+//            (redrawn once per reading, every 2 s)
 // Readings come from services/SysStats.qml, which only reads while at least
 // one of these widgets exists (every 2 s; GPU every 5 s). Nothing here
 // animates between readings, so the widget redraws once per reading.
@@ -226,6 +228,78 @@ Item {
                     font.weight: Font.DemiBold
                     tabular: true
                 }
+            }
+        }
+    }
+
+    // ---- Graph -----------------------------------------------------------------------
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: 16
+        visible: root.style === "graph"
+        spacing: 6
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: Theme.space.m
+            Label { text: "CPU" }
+            StyledText { text: root.cpuText; font.pixelSize: Theme.font.small; font.weight: Font.DemiBold; tabular: true }
+            Item { Layout.fillWidth: true }
+            Rectangle { implicitWidth: 8; implicitHeight: 8; radius: 4; color: Qt.alpha(Theme.fg, 0.55) }
+            Label { text: "MEM" }
+            StyledText { text: Math.round(root.memRatio * 100) + " %"; font.pixelSize: Theme.font.small; font.weight: Font.DemiBold; tabular: true }
+            StyledText { visible: root.gpu; text: "· GPU " + root.gpuText; color: Theme.fgMuted; font.pixelSize: Theme.font.small; tabular: true }
+        }
+        Canvas {
+            id: graph
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: root.style === "graph"
+            readonly property var cpuH: SysStats.cpuHistory
+            readonly property var memH: SysStats.memHistory
+            onCpuHChanged: if (visible) requestPaint()
+            onVisibleChanged: if (visible) requestPaint()
+            onWidthChanged: requestPaint()
+            onHeightChanged: requestPaint()
+            onPaint: {
+                const ctx = getContext("2d");
+                ctx.reset();
+                const w = width, h = height, n = 40;
+                // Faint guide lines at 50 and 100 %.
+                ctx.strokeStyle = Qt.alpha(Theme.fg, 0.08);
+                ctx.lineWidth = 1;
+                for (const f of [0.5, 0])
+                    ctx.beginPath(), ctx.moveTo(0, 1 + f * (h - 2)), ctx.lineTo(w, 1 + f * (h - 2)), ctx.stroke();
+                const line = (data, col, fill) => {
+                    if (data.length < 2)
+                        return;
+                    const step = w / (n - 1);
+                    const x0 = w - (data.length - 1) * step;
+                    const y = v => h - 2 - Math.max(0, Math.min(1, v)) * (h - 4);
+                    ctx.beginPath();
+                    ctx.moveTo(x0, y(data[0]));
+                    // Smooth: midpoints with quadratic curves.
+                    for (let i = 1; i < data.length; i++) {
+                        const px = x0 + (i - 1) * step, cx = x0 + i * step;
+                        ctx.quadraticCurveTo(px, y(data[i - 1]), (px + cx) / 2, (y(data[i - 1]) + y(data[i])) / 2);
+                    }
+                    ctx.lineTo(w, y(data[data.length - 1]));
+                    ctx.strokeStyle = col;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    if (fill) {
+                        ctx.lineTo(w, h);
+                        ctx.lineTo(x0, h);
+                        ctx.closePath();
+                        const g = ctx.createLinearGradient(0, 0, 0, h);
+                        g.addColorStop(0, Qt.alpha(col, 0.28));
+                        g.addColorStop(1, Qt.alpha(col, 0));
+                        ctx.fillStyle = g;
+                        ctx.fill();
+                    }
+                };
+                line(memH, Qt.alpha(Theme.fg, 0.55), false);
+                line(cpuH, Theme.accent, true);
             }
         }
     }

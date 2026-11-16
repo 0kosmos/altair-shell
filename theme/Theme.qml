@@ -103,6 +103,8 @@ Singleton {
     }
 
     // ---- Typography -----------------------------------------------------------
+    // Desktop widgets' font ("" = the UI font).
+    readonly property string widgetFont: Config.appearance.widgetFont || ""
     readonly property QtObject font: QtObject {
         readonly property string family: Config.appearance.fontFamily
         readonly property string icons: Config.appearance.iconFontFamily

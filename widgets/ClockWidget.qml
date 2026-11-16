@@ -11,6 +11,8 @@ import qs.theme
 //   light    large thin time, small spaced-out date
 //   minimal  big time only
 //   date     the weekday large, date and time below
+//   stacked  hours over minutes, large (minutes in the accent colour)
+//   split    hours | minutes either side of a thin line, date below
 Item {
     id: root
     property string style: "classic"
@@ -25,8 +27,73 @@ Item {
         return s.charAt(0).toUpperCase() + s.slice(1);
     }
 
+    readonly property bool classicLike: ["classic", "light", "minimal", "date"].indexOf(style) !== -1
+    readonly property string hh: Qt.locale().toString(clock.date, "HH")
+    readonly property string mm: Qt.locale().toString(clock.date, "mm")
+
+    // ---- Stacked ----------------------------------------------------------------
     ColumnLayout {
         anchors.centerIn: parent
+        visible: root.style === "stacked"
+        spacing: -26
+        StyledText {
+            Layout.alignment: Qt.AlignHCenter
+            text: root.hh
+            font.pixelSize: 96
+            font.weight: Font.Bold
+            font.letterSpacing: -3
+            tabular: true
+        }
+        StyledText {
+            Layout.alignment: Qt.AlignHCenter
+            text: root.mm
+            color: Theme.accent
+            font.pixelSize: 96
+            font.weight: Font.Bold
+            font.letterSpacing: -3
+            tabular: true
+        }
+    }
+
+    // ---- Split ------------------------------------------------------------------
+    ColumnLayout {
+        anchors.centerIn: parent
+        visible: root.style === "split"
+        spacing: 6
+        RowLayout {
+            Layout.alignment: Qt.AlignHCenter
+            spacing: 18
+            StyledText {
+                text: root.hh
+                font.pixelSize: 64
+                font.weight: Font.Light
+                tabular: true
+            }
+            Rectangle {
+                implicitWidth: 2
+                implicitHeight: 52
+                radius: 1
+                color: Theme.accent
+            }
+            StyledText {
+                text: root.mm
+                font.pixelSize: 64
+                font.weight: Font.Light
+                tabular: true
+            }
+        }
+        StyledText {
+            Layout.alignment: Qt.AlignHCenter
+            text: root.cap(Qt.locale().toString(clock.date, "ddd d MMMM"))
+            color: Theme.fgMuted
+            font.pixelSize: 14
+            font.letterSpacing: 1
+        }
+    }
+
+    ColumnLayout {
+        anchors.centerIn: parent
+        visible: root.classicLike
         spacing: root.style === "light" ? 4 : 0
 
         // Main line.
