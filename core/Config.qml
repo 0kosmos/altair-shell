@@ -136,6 +136,9 @@ Singleton {
                 // setting alone. NOTE: global — also affects window blur.
                 property int blurStrength: -1
                 property bool liquidGlass: false
+                // Decoration on panels, menus, Settings, bar and dock:
+                // "none" | "glow" | "aurora" | "grain" (static, no cost).
+                property string panelStyle: "glow"
             }
 
             property JsonObject apps: JsonObject {

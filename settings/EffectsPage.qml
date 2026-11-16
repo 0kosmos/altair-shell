@@ -66,6 +66,17 @@ Page {
     }
 
     SettingRow {
+        title: "Panel backgrounds"
+        description: "A touch of colour on panels, menus, Settings, the bar and the dock, from your accent colour. Drawn once, so it costs nothing while idle."
+        Segmented {
+            options: [{ label: "None", value: "none" }, { label: "Glow", value: "glow" },
+                      { label: "Aurora", value: "aurora" }, { label: "Grain", value: "grain" }]
+            current: ["glow", "aurora", "grain"].indexOf(Config.effects.panelStyle) !== -1 ? Config.effects.panelStyle : "none"
+            onSelected: value => Config.effects.panelStyle = value
+        }
+    }
+
+    SettingRow {
         title: "Animations"
         description: "Fades and slides when things open, close or change."
         Toggle {

@@ -141,12 +141,12 @@ Scope {
                 // (small edge panels, e.g. the calendar, do both, growing out
                 // of the bar).
                 readonly property bool edge: root.dock === "top" || root.dock === "bottom"
-                scale: shown || (edge && root.fullWidth) ? 1 : 0.97
+                scale: shown || (edge && root.fullWidth) ? 1 : 0.95
                 transformOrigin: root.dock === "top" ? Item.Top : root.dock === "bottom" ? Item.Bottom : Item.Center
                 transform: Translate {
                     y: body.shown ? 0 : root.dock === "bottom" ? root.slideDistance : root.dock === "top" ? -root.slideDistance : 0
                     Behavior on y {
-                        NumberAnimation { duration: Theme.anim.normal; easing.type: Theme.anim.easingSlide }
+                        NumberAnimation { duration: body.shown ? Theme.anim.slow : Theme.anim.fast; easing.type: body.shown ? Easing.OutQuint : Easing.InCubic }
                     }
                 }
                 Component.onCompleted: shown = Qt.binding(() => root.open)
@@ -157,10 +157,11 @@ Scope {
                         easing.type: body.shown ? Theme.anim.easing : Theme.anim.easingIn
                     }
                 }
+                // Opening: a long, soft ease-out (fast start, gentle landing).
                 Behavior on scale {
                     NumberAnimation {
-                        duration: body.shown ? Theme.anim.normal : Theme.anim.fast
-                        easing.type: body.shown ? Theme.anim.easing : Theme.anim.easingIn
+                        duration: body.shown ? Theme.anim.slow : Theme.anim.fast
+                        easing.type: body.shown ? Easing.OutQuint : Theme.anim.easingIn
                     }
                 }
                 // Unload once fully faded out.

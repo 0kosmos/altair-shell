@@ -164,6 +164,10 @@ FocusScope {
         highlightFollowsCurrentItem: true
         highlightMoveDuration: Theme.anim.fast
         highlightMoveVelocity: -1
+        // Qt's default grows the highlight at 400 px/s: on open it crept
+        // in from zero width. Rows all have the same size: no resize.
+        highlightResizeDuration: 0
+        highlightResizeVelocity: -1
         highlightRangeMode: ListView.ApplyRange
         preferredHighlightBegin: 0
         preferredHighlightEnd: height

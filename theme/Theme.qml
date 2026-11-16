@@ -16,6 +16,8 @@ Singleton {
     readonly property bool animations: !lowPower && Config.effects.animations
     readonly property bool blur: !lowPower && Config.effects.blur
     readonly property bool liquidGlass: !lowPower && Config.effects.liquidGlass
+    // Panel decoration: 0 none, 1 glow, 2 aurora, 3 grain (off in low-power).
+    readonly property int panelFx: lowPower ? 0 : Math.max(0, ["none", "glow", "aurora", "grain"].indexOf(Config.effects.panelStyle))
 
     // ---- Colours ------------------------------------------------------------
     // Palette: "default" (the built-in dark/light colours), the id of a

@@ -317,6 +317,7 @@ Item {
     GlassBackground {
         anchors.fill: parent
         radius: frame.radius
+        decorated: false
         openTop: frame.joinedTop
         openBottom: frame.joinedBottom
         openLeft: frame.joinedLeft

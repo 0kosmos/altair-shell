@@ -32,6 +32,9 @@ Item {
     // and the group's height (0 = just this item).
     property real tintOffset: 0
     property real tintSpan: 0
+    // Panel decoration (Settings > Effects > Panel backgrounds: glow,
+    // aurora, grain). Widgets and joined surfaces leave it off.
+    property bool decorated: true
 
     function solid(v: vector4d): vector4d {
         return Qt.vector4d(v.x, v.y, v.z, v.w + (1 - v.w) * solidity);
@@ -70,6 +73,21 @@ Item {
             readonly property point tintRange: Qt.point(root.tintOffset, root.tintSpan)
 
             fragmentShader: Qt.resolvedUrl("../shaders/glass.frag.qsb")
+        }
+    }
+
+    // Static decoration on top (shaders/panelfx.frag): drawn only when this
+    // surface redraws anyway, so it costs nothing while idle.
+    Loader {
+        anchors.fill: parent
+        active: root.decorated && !root.anyOpen && Theme.panelFx !== 0
+        sourceComponent: ShaderEffect {
+            readonly property size size: Qt.size(width, height)
+            readonly property real radius: root.radius
+            readonly property real mode: Theme.panelFx
+            readonly property real strength: Theme.dark ? 1.0 : 0.6
+            readonly property vector4d accent: Qt.vector4d(Theme.accent.r, Theme.accent.g, Theme.accent.b, 1)
+            fragmentShader: Qt.resolvedUrl("../shaders/panelfx.frag.qsb")
         }
     }
 }

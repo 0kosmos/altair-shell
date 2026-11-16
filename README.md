@@ -111,6 +111,14 @@ frosted glass, smooth motion and close to zero CPU when idle.
   compositor) and your own values come back when you switch them
   off or uninstall.
 
+### Panel backgrounds
+
+*Settings → Effects → Panel backgrounds* adds a touch of colour from your
+accent to panels, menus, Settings, the bar and the dock: **Glow** (soft
+light from a corner, default), **Aurora** (three soft colour clouds) or
+**Grain** (fine frosted texture). It is a static shader, drawn only when a
+panel redraws anyway, so it costs nothing while idle; off in low-power mode.
+
 ### About "liquid glass"
 
 The frosted background is real blur from the compositor. The gradient tint,
