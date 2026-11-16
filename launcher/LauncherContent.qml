@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import QtQuick
+import QtQuick.Layouts
+import Quickshell
 import qs.components
 import qs.core
 import qs.services
@@ -9,6 +11,7 @@ import "Fuzzy.js" as Fuzzy
 // Search field + ranked results.
 // Keys: type to filter, Up/Down (or Tab/Shift+Tab, Ctrl+N/P) to move,
 // PageUp/PageDown, Enter to launch, Esc to close (handled by AltairPanel).
+// Right-click an app (or Menu / Shift+F10 on the selected one) for its menu.
 FocusScope {
     id: root
 
@@ -16,8 +19,16 @@ FocusScope {
     // to the search field) as soon as the launcher opens.
     focus: true
 
+    property int rows: 7
     property int rowHeight: 52
     property int searchHeight: 52
+
+    // Height the panel shrinks to: search row + the results shown (one row
+    // for "no match"), or more while the app menu needs the room.
+    readonly property real listHeight: Math.max(1, Math.min(rows, results.length)) * rowHeight
+    readonly property real wantedHeight: Math.max(
+        Theme.space.s * 3 + searchHeight + 1 + listHeight,
+        menu.open ? menu.y + menu.height + Theme.space.s : 0)
 
     // Re-ranked on every keystroke (~1.4 ms for ~50 apps).
     readonly property var results: Fuzzy.rank(search.text, Apps.list, Apps.launches)
@@ -83,11 +94,24 @@ FocusScope {
             font.pixelSize: Theme.font.title
             clip: true
 
-            onTextChanged: list.currentIndex = 0
+            onTextChanged: {
+                list.currentIndex = 0;
+                menu.close();
+            }
 
             Keys.onPressed: event => {
                 const ctrl = event.modifiers & Qt.ControlModifier;
-                if (event.key === Qt.Key_Down || event.key === Qt.Key_Tab || (ctrl && event.key === Qt.Key_N)) {
+                if (menu.open && menu.handleKey(event)) {
+                    event.accepted = true;
+                    return;
+                }
+                if (event.key === Qt.Key_Menu || (event.key === Qt.Key_F10 && (event.modifiers & Qt.ShiftModifier))) {
+                    const it = list.currentItem;
+                    if (it) {
+                        root.openMenu(list.currentIndex, it.mapToItem(root, it.width - 200, it.height / 2));
+                        menu.current = 0;
+                    }
+                } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Tab || (ctrl && event.key === Qt.Key_N)) {
                     root.move(1);
                 } else if (event.key === Qt.Key_Up || event.key === Qt.Key_Backtab || (ctrl && event.key === Qt.Key_P)) {
                     root.move(-1);
@@ -163,13 +187,46 @@ FocusScope {
                 list.currentIndex = index;
                 root.launchCurrent();
             }
+            onMenuRequested: pos => {
+                list.currentIndex = index;
+                root.openMenu(index, mapToItem(root, pos.x, pos.y));
+            }
         }
 
         StyledText {
-            anchors.centerIn: parent
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: (root.rowHeight - height) / 2
             visible: root.results.length === 0
             text: Apps.list.length === 0 ? "Loading apps…" : `No apps match "${search.text}"`
             color: Theme.fgMuted
         }
+    }
+
+    // ---- App menu ----------------------------------------------------------------
+    // Drawn inside the launcher (a separate popup surface would fight the
+    // launcher's click-outside grab). The panel grows while it needs room.
+    function openMenu(index: int, pos: point): void {
+        const entry = results[index];
+        if (!entry)
+            return;
+        menu.entry = entry;
+        menu.x = Math.max(Theme.space.s, Math.min(width - menu.width - Theme.space.s, pos.x));
+        menu.y = Math.max(Theme.space.s, pos.y);
+        menu.open = true;
+    }
+
+    // Click anywhere else in the launcher: close the menu.
+    MouseArea {
+        anchors.fill: parent
+        visible: menu.open
+        z: 9
+        acceptedButtons: Qt.AllButtons
+        onPressed: menu.close()
+    }
+
+    AppMenu {
+        id: menu
+        z: 10
+        onLaunched: ShellState.close()
     }
 }

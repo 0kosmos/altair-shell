@@ -17,11 +17,18 @@ MouseArea {
     // (Qt reports both as hover movement).
     signal hovered(point screenPos)
     signal activated()
+    signal menuRequested(point pos)
 
     hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
+    acceptedButtons: Qt.LeftButton | Qt.RightButton
     onPositionChanged: mouse => hovered(mapToGlobal(mouse.x, mouse.y))
-    onClicked: activated()
+    onClicked: mouse => {
+        if (mouse.button === Qt.RightButton)
+            menuRequested(Qt.point(mouse.x, mouse.y));
+        else
+            activated();
+    }
 
     IconImage {
         id: icon

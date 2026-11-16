@@ -41,6 +41,10 @@ Scope {
     // Several panels can share a name (e.g. two picker styles); only the
     // available one opens.
     property bool available: true
+    // Shrink the visible panel to the content's `wantedHeight` (animated);
+    // the window keeps its full size, only the glass, blur and input area
+    // follow. Content anchored to the top.
+    property bool fitContent: false
     property Component content
 
     readonly property bool docked: dock !== ""
@@ -102,6 +106,14 @@ Scope {
             implicitHeight: root.panelHeight
             color: "transparent"
 
+            // Fitted panels: clicks below the visible part go to the windows
+            // there (and close the panel through the focus grab).
+            mask: root.fitContent ? fitMask : null
+            Region {
+                id: fitMask
+                item: background
+            }
+
             // No blur while fading out: the compositor would keep blurring the
             // full rectangle behind a panel that is already half transparent.
             BackgroundEffect.blurRegion: Theme.blur && root.open ? blurShape : null
@@ -158,17 +170,41 @@ Scope {
 
                 GlassBackground {
                     id: background
-                    anchors.fill: parent
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
                     radius: Theme.radius.l
+
+                    readonly property real wanted: root.fitContent && contentLoader.item
+                        ? Math.max(radius * 2, Math.min(body.height, contentLoader.item.wantedHeight ?? body.height))
+                        : body.height
+                    // First size without animation (it opens at the right size).
+                    property bool settled: false
+                    height: wanted
+                    Behavior on height {
+                        enabled: background.settled
+                        NumberAnimation { duration: Theme.anim.normal; easing.type: Easing.OutQuint }
+                    }
+                    Component.onCompleted: Qt.callLater(() => background.settled = true)
                 }
 
                 FocusScope {
-                    anchors.fill: parent
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    height: root.fitContent ? background.height : parent.height
+                    clip: root.fitContent
                     focus: true
                     Keys.onEscapePressed: ShellState.close()
 
                     Loader {
-                        anchors.fill: parent
+                        id: contentLoader
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        // Fitted content keeps its full height (lists don't
+                        // re-layout while the panel animates); the scope clips.
+                        height: body.height
                         focus: true
                         sourceComponent: root.content
                         // Give the panel keyboard focus right away, so it can be
