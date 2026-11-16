@@ -403,6 +403,19 @@ Singleton {
         return Hyprland.toplevels.values.find(t => t.title === title) ?? null;
     }
 
+    // Hyprland's own blur, shadow and border on one window, on or off (live,
+    // that window only). Settings turns them off while it zooms in or out:
+    // they cover the whole window rectangle and would show as a frosted box
+    // around the shrinking content.
+    function windowEffects(address: string, on: bool): void {
+        if (!address)
+            return;
+        const w = `address:${address.startsWith("0x") ? address : "0x" + address}`;
+        const size = on ? (appliedBorderSize >= 0 ? appliedBorderSize : (original?.borderSize ?? 1)) : 0;
+        const set = (p, v) => `hl.dispatch(hl.dsp.window.set_prop({ window = "${w}", prop = "${p}", value = "${v}" })) `;
+        hyprEval(set("no_blur", on ? "false" : "true") + set("no_shadow", on ? "false" : "true") + set("border_size", size));
+    }
+
     // Move a floating window to exact global layout coordinates, instantly.
     function moveWindow(address: string, x: int, y: int): void {
         const w = `address:${address.startsWith("0x") ? address : "0x" + address}`;

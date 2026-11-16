@@ -45,7 +45,12 @@ Scope {
             // The window's corner rounding follows Settings > Appearance > Corners.
             args += ", " + Theme.radius.l;
             // pcall: an older hypr/init.lua without place_settings just centres.
-            command = ["hyprctl", "eval", `local ok, a = pcall(require, "altair") if ok and a.place_settings then a.place_settings(${args}) end`];
+            // The second rule maps the window without Hyprland's blur, shadow
+            // and border; they come back once the opening animation is done
+            // (see body below), so its frosted rectangle never shows around
+            // the content while it zooms.
+            command = ["hyprctl", "eval", `local ok, a = pcall(require, "altair") if ok and a.place_settings then a.place_settings(${args}) end `
+                + `hl.window_rule({ name = "altair-settings-fx", match = { class = "^org.quickshell$", title = "^Altair Settings$" }, no_blur = true, no_shadow = true, border_size = 0 })`];
             running = true;
             placeFallback.restart();
         }
@@ -174,6 +179,29 @@ Scope {
                     target: ShellState
                     function onSettingsOpenChanged() {
                         body.shown = ShellState.settingsOpen;
+                        // Closing: Hyprland's frosted rectangle goes at once,
+                        // only the content zooms out.
+                        effectsOn.stop();
+                        if (!body.shown)
+                            Hypr.windowEffects(body.address(), false);
+                        else
+                            effectsOn.restart();
+                    }
+                }
+                function address(): string {
+                    return Hypr.windowByTitle("Altair Settings")?.address ?? "";
+                }
+                // Opened: Hyprland's blur, shadow and border back on.
+                Timer {
+                    id: effectsOn
+                    interval: Math.max(120, Theme.anim.slow + body.spec.extra) + 40
+                    running: true
+                    onTriggered: {
+                        const a = body.address();
+                        if (a)
+                            Hypr.windowEffects(a, true);
+                        else
+                            restart();   // not mapped yet
                     }
                 }
 
