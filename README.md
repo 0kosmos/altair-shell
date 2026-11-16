@@ -29,8 +29,9 @@ frosted glass, smooth motion and close to zero CPU when idle.
 - **Bar**: workspaces (sliding indicator), clock, system tray with themed
   menus, volume, network, Bluetooth, battery (laptops), notifications and
   settings. Top, bottom, left or right (a side bar stacks everything; the
-  clock reads hours over minutes). Drag the bar by an empty spot to another
-  edge. The clock can sit in the middle or at either end (Settings > Bar).
+  clock reads hours over minutes); set in *Settings → Bar*, or turn on
+  "Move by dragging" there and drag the bar by an empty spot to another
+  edge. The clock can sit in the middle or at either end.
 - **Network menu** (click the network icon): the current connection with
   IP, gateway, DNS and MAC (click to copy), Wi-Fi on/off, nearby networks,
   connect with a password, disconnect, forget. Scans only while open.

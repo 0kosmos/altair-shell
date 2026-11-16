@@ -21,6 +21,15 @@ Page {
         }
     }
 
+    SettingRow {
+        title: "Move by dragging"
+        description: "Press on an empty spot of the bar and drag it to another edge of the screen. Off: only the choice above moves it."
+        Toggle {
+            checked: Config.bar.dragToMove
+            onToggled: value => Config.bar.dragToMove = value
+        }
+    }
+
     Section { text: "Screen recorder" }
 
     SettingRow {

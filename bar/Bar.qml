@@ -11,7 +11,8 @@ import qs.theme
 
 // The bar: one floating panel per screen, on any edge.
 //
-// Moving it: press on an empty spot and drag toward another edge. While
+// Moving it (when Settings > Bar > Move by dragging is on): press on an
+// empty spot and drag toward another edge. While
 // dragging, this same window grows over the whole screen (transparent,
 // still reserving only the bar's strip, so windows don't move): the pointer
 // never leaves it, so the drag can't be lost to the desktop below (Hyprland
@@ -35,6 +36,11 @@ Variants {
         readonly property string pos: Theme.barPosition
         readonly property bool vertical: Theme.barVertical
         readonly property bool dragging: barDrag.dragging
+        // Grown over the whole screen from the moment the button goes down:
+        // the pointer leaves the 36 px strip after a few pixels, and Hyprland
+        // sends a layer surface no motion outside itself, so growing only
+        // once the drag had started (12 px) never happened.
+        readonly property bool grown: barDrag.pressed || barDrag.dragging
         readonly property int t: Theme.barThickness
         readonly property int g: Theme.barGap
         anchors {
@@ -46,16 +52,16 @@ Variants {
         // Dragging: no margins (the window reaches every screen edge) and the
         // reserved strip grows by the margin instead, so it stays the same.
         margins {
-            top: dragging || pos === "bottom" ? 0 : g
-            bottom: dragging || pos === "top" ? 0 : g
-            left: dragging || pos === "right" ? 0 : g
-            right: dragging || pos === "left" ? 0 : g
+            top: grown || pos === "bottom" ? 0 : g
+            bottom: grown || pos === "top" ? 0 : g
+            left: grown || pos === "right" ? 0 : g
+            right: grown || pos === "left" ? 0 : g
         }
         exclusionMode: ExclusionMode.Normal
-        exclusiveZone: t + (dragging ? g : 0)
+        exclusiveZone: t + (grown ? g : 0)
 
-        implicitHeight: vertical ? 0 : dragging ? win.screen.height : t
-        implicitWidth: vertical ? (dragging ? win.screen.width : t) : 0
+        implicitHeight: vertical ? 0 : grown ? win.screen.height : t
+        implicitWidth: vertical ? (grown ? win.screen.width : t) : 0
         color: "transparent"
 
         // Blur is drawn by the compositor (ext-background-effect) behind exactly
@@ -71,10 +77,10 @@ Variants {
         // strip at the edge (where it was), inside the full-screen window.
         Item {
             id: barBody
-            x: !win.dragging ? 0 : win.pos === "right" ? win.width - win.g - win.t : win.g
-            y: !win.dragging ? 0 : win.pos === "bottom" ? win.height - win.g - win.t : win.g
-            width: !win.dragging ? win.width : win.vertical ? win.t : win.width - win.g * 2
-            height: !win.dragging ? win.height : win.vertical ? win.height - win.g * 2 : win.t
+            x: !win.grown ? 0 : win.pos === "right" ? win.width - win.g - win.t : win.g
+            y: !win.grown ? 0 : win.pos === "bottom" ? win.height - win.g - win.t : win.g
+            width: !win.grown ? win.width : win.vertical ? win.t : win.width - win.g * 2
+            height: !win.grown ? win.height : win.vertical ? win.height - win.g * 2 : win.t
             opacity: win.dragging ? 0.45 : 1
             Behavior on opacity { NumberAnimation { duration: Theme.anim.fast } }
 
@@ -91,6 +97,8 @@ Variants {
         MouseArea {
             id: barDrag
             anchors.fill: parent
+            // Off by default (Settings > Bar > Move by dragging).
+            enabled: Config.bar.dragToMove
             hoverEnabled: true
             preventStealing: true
             cursorShape: dragging ? Qt.ClosedHandCursor : Qt.OpenHandCursor

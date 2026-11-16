@@ -26,7 +26,8 @@ controls, and a lot of polish.
   and widgets.
 
 ### Bar
-- Left and right positions; drag the bar to another edge.
+- Left and right positions; optionally drag the bar to another edge
+  (Settings → Bar → Move by dragging, off by default).
 - **Clock popup** with a month calendar, a round clock and the weather.
 - Clock position: middle, left or right, before or after the other items.
 - **Network menu**: connection details, Wi-Fi networks, connect with a password.

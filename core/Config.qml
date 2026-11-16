@@ -333,6 +333,7 @@ Singleton {
                 // "rightLast" (after them). On a side bar left = top, right = bottom.
                 property string clockPosition: "center"
                 property bool bluetooth: true          // Bluetooth button (only shown with an adapter)
+                property bool dragToMove: false        // drag the bar by an empty spot to another edge
                 property bool clockPopup: true         // click the clock: calendar
                 property bool weekNumbers: false       // ISO week numbers in the calendar
                 property bool analogClock: true        // clock in the calendar popup
