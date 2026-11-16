@@ -132,8 +132,11 @@ Singleton {
     readonly property real dragDim: Math.max(0, Math.min(0.6, Config.windows.dragDim))
 
     // ---- Bar ----------------------------------------------------------------------
-    readonly property string barPosition: Config.appearance.barPosition === "bottom" ? "bottom" : "top"
-    readonly property bool barAtTop: barPosition === "top"
+    // "top" | "bottom" | "left" | "right". Popups that open "below the bar"
+    // treat a side bar like a top bar (barAtTop).
+    readonly property string barPosition: ["bottom", "left", "right"].indexOf(Config.appearance.barPosition) !== -1 ? Config.appearance.barPosition : "top"
+    readonly property bool barVertical: barPosition === "left" || barPosition === "right"
+    readonly property bool barAtTop: barPosition !== "bottom"
     readonly property int barHeight: 36
     // The bar's size across its edge (height when horizontal, width when vertical).
     readonly property int barThickness: barHeight

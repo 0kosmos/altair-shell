@@ -17,7 +17,9 @@ AltairPanel {
     id: root
 
     name: "calendar"
-    dock: Theme.barAtTop ? "top" : "bottom"
+    // Under/over the bar, or beside a side bar, centred on the screen's height.
+    dock: Theme.barVertical ? Theme.barPosition : Theme.barAtTop ? "top" : "bottom"
+    centerVertically: Theme.barVertical
     fullWidth: false
     slideDistance: 12
     panelWidth: 272 + (Config.bar.weekNumbers ? 26 : 0) + (Config.bar.analogClock ? 262 : 0)

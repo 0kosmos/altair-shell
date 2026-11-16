@@ -18,6 +18,7 @@ BarButton {
         color: Audio.muted ? Theme.fgDisabled : Theme.fg
     }
     StyledText {
+        visible: !Theme.barVertical   // no room on a side bar
         text: Math.round(Audio.volume * 100) + "%"
         color: Audio.muted ? Theme.fgDisabled : Theme.fg
         font.pixelSize: Theme.font.small

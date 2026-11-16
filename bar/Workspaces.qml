@@ -13,6 +13,8 @@ Item {
     // The HyprlandMonitor this bar is on; its active workspace gets the pill.
     property var monitor
     property int minCount: 5
+    // On a side bar the dots run top to bottom.
+    property bool vertical: false
 
     readonly property int slot: 20
     readonly property var workspaces: Hyprland.workspaces.values
@@ -22,8 +24,8 @@ Item {
     readonly property int count: Math.max(minCount, maxId)
     property int hoveredId: -1
 
-    implicitWidth: count * slot
-    implicitHeight: Theme.barHeight
+    implicitWidth: vertical ? Theme.barThickness : count * slot
+    implicitHeight: vertical ? count * slot : Theme.barHeight
 
     Repeater {
         model: root.count
@@ -38,9 +40,10 @@ Item {
                 return ws !== undefined && ws.toplevels.values.length > 0;
             }
 
-            x: index * root.slot
-            width: root.slot
-            height: parent.height
+            x: root.vertical ? 0 : index * root.slot
+            y: root.vertical ? index * root.slot : 0
+            width: root.vertical ? parent.width : root.slot
+            height: root.vertical ? root.slot : parent.height
 
             Rectangle {
                 anchors.centerIn: parent
@@ -72,16 +75,27 @@ Item {
     // Active indicator, drawn above the dots.
     Rectangle {
         visible: root.activeId >= 1 && root.activeId <= root.count
-        width: 16
-        height: 8
+        width: root.vertical ? 8 : 16
+        height: root.vertical ? 16 : 8
         radius: 4
         color: Theme.accent
-        anchors.verticalCenter: parent.verticalCenter
-        x: (root.activeId - 1) * root.slot + (root.slot - width) / 2
+        readonly property real along: (root.activeId - 1) * root.slot + (root.slot - (root.vertical ? height : width)) / 2
+        x: root.vertical ? (parent.width - width) / 2 : along
+        y: root.vertical ? along : (parent.height - height) / 2
 
         // Moves with Hyprland's workspace animation (same duration and curve),
         // so the pill and the screen arrive together.
+        Behavior on y {
+            enabled: root.vertical
+            NumberAnimation {
+                duration: !Theme.animations ? 0
+                    : Hypr.workspaceDuration > 0 ? Hypr.workspaceDuration : Theme.anim.normal
+                easing.type: Hypr.workspaceStyle === "hyprland" ? Theme.anim.easing : Easing.BezierSpline
+                easing.bezierCurve: Hypr.workspaceCurve.concat([1, 1])
+            }
+        }
         Behavior on x {
+            enabled: !root.vertical
             NumberAnimation {
                 duration: !Theme.animations ? 0
                     : Hypr.workspaceDuration > 0 ? Hypr.workspaceDuration : Theme.anim.normal
@@ -96,14 +110,14 @@ Item {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
 
-        function idAt(x: real): int {
-            return Math.max(1, Math.min(root.count, Math.floor(x / root.slot) + 1));
+        function idAt(x: real, y: real): int {
+            return Math.max(1, Math.min(root.count, Math.floor((root.vertical ? y : x) / root.slot) + 1));
         }
 
-        onPositionChanged: mouse => root.hoveredId = idAt(mouse.x)
+        onPositionChanged: mouse => root.hoveredId = idAt(mouse.x, mouse.y)
         onExited: root.hoveredId = -1
         onClicked: mouse => {
-            const id = idAt(mouse.x);
+            const id = idAt(mouse.x, mouse.y);
             if (id !== root.activeId)
                 Hypr.focusWorkspace(id);
         }

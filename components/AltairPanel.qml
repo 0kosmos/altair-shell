@@ -92,11 +92,15 @@ Scope {
             exclusionMode: root.docked ? ExclusionMode.Normal : ExclusionMode.Ignore
             exclusiveZone: 0
 
-            anchors.top: root.dock === "" || root.dock === "top" || (root.dock === "right" && Theme.barAtTop)
-            anchors.bottom: root.dock === "bottom" || (root.dock === "right" && !Theme.barAtTop)
+            // "left"/"right": at that side (beside a side bar), at the top, or
+            // centred vertically when centerVertically.
+            readonly property bool side: root.dock === "right" || root.dock === "left"
+            anchors.top: root.dock === "" || root.dock === "top" || (side && (root.centerVertically || Theme.barAtTop))
+            anchors.bottom: root.dock === "bottom" || (side && !root.centerVertically && !Theme.barAtTop)
             anchors.right: root.dock === "right" || ((root.dock === "top" || root.dock === "bottom") && root.fullWidth)
-            anchors.left: (root.dock === "top" || root.dock === "bottom") && root.fullWidth
-            margins.top: root.docked ? Theme.barGap
+            anchors.left: root.dock === "left" || ((root.dock === "top" || root.dock === "bottom") && root.fullWidth)
+            margins.top: side && root.centerVertically ? Math.max(Theme.barGap, Math.round(((screen?.height ?? 1080) - root.panelHeight) / 2))
+                : root.docked ? Theme.barGap
                 : root.centerVertically ? Math.round(((screen?.height ?? 1080) - root.panelHeight) / 2)
                 : Math.round((screen?.height ?? 1080) * root.topOffset)
             margins.bottom: root.docked ? Theme.barGap : 0
@@ -142,8 +146,13 @@ Scope {
                 // of the bar).
                 readonly property bool edge: root.dock === "top" || root.dock === "bottom"
                 scale: shown || (edge && root.fullWidth) ? 1 : 0.95
-                transformOrigin: root.dock === "top" ? Item.Top : root.dock === "bottom" ? Item.Bottom : Item.Center
+                transformOrigin: root.dock === "top" ? Item.Top : root.dock === "bottom" ? Item.Bottom
+                    : root.dock === "left" ? Item.Left : root.dock === "right" ? Item.Right : Item.Center
                 transform: Translate {
+                    x: body.shown ? 0 : root.dock === "left" ? -root.slideDistance : root.dock === "right" ? root.slideDistance : 0
+                    Behavior on x {
+                        NumberAnimation { duration: body.shown ? Theme.anim.slow : Theme.anim.fast; easing.type: body.shown ? Easing.OutQuint : Easing.InCubic }
+                    }
                     y: body.shown ? 0 : root.dock === "bottom" ? root.slideDistance : root.dock === "top" ? -root.slideDistance : 0
                     Behavior on y {
                         NumberAnimation { duration: body.shown ? Theme.anim.slow : Theme.anim.fast; easing.type: body.shown ? Easing.OutQuint : Easing.InCubic }

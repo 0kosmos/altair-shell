@@ -24,13 +24,15 @@ PopupWindow {
     readonly property int menuWidth: 240
     readonly property int gap: 6
 
+    // Opens away from the bar: below/above it, or beside a side bar.
+    readonly property string pos: Theme.barPosition
     anchor.item: anchorItem
-    anchor.rect.x: 0
-    anchor.rect.y: Theme.barAtTop ? anchorItem.height + gap : -gap
-    anchor.rect.width: anchorItem.width
-    anchor.rect.height: 1
-    anchor.edges: Theme.barAtTop ? Edges.Bottom : Edges.Top
-    anchor.gravity: Theme.barAtTop ? Edges.Bottom : Edges.Top
+    anchor.rect.x: pos === "left" ? anchorItem.width + gap : pos === "right" ? -gap : 0
+    anchor.rect.y: pos === "top" ? anchorItem.height + gap : pos === "bottom" ? -gap : 0
+    anchor.rect.width: Theme.barVertical ? 1 : anchorItem.width
+    anchor.rect.height: Theme.barVertical ? anchorItem.height : 1
+    anchor.edges: pos === "top" ? Edges.Bottom : pos === "bottom" ? Edges.Top : pos === "left" ? (Edges.Right | Edges.Top) : (Edges.Left | Edges.Top)
+    anchor.gravity: pos === "top" ? Edges.Bottom : pos === "bottom" ? Edges.Top : pos === "left" ? (Edges.Right | Edges.Bottom) : (Edges.Left | Edges.Bottom)
 
     grabFocus: true
     visible: true
@@ -65,13 +67,18 @@ PopupWindow {
         opacity: 0
         transform: Translate {
             id: slide
-            y: Theme.barAtTop ? -6 : 6
+            x: root.pos === "left" ? -6 : root.pos === "right" ? 6 : 0
+            y: root.pos === "top" ? -6 : root.pos === "bottom" ? 6 : 0
+            Behavior on x {
+                NumberAnimation { duration: Theme.anim.fast; easing.type: Theme.anim.easing }
+            }
             Behavior on y {
                 NumberAnimation { duration: Theme.anim.fast; easing.type: Theme.anim.easing }
             }
         }
         Component.onCompleted: {
             opacity = 1;
+            slide.x = 0;
             slide.y = 0;
         }
         Behavior on opacity {
@@ -85,7 +92,7 @@ PopupWindow {
         anchors.margins: Theme.space.xs
         spacing: 0
         opacity: background.opacity
-        transform: Translate { y: slide.y }
+        transform: Translate { x: slide.x; y: slide.y }
 
         // Back row inside submenus.
         MenuRow {

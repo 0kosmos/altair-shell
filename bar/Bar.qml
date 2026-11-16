@@ -21,20 +21,24 @@ Variants {
         WlrLayershell.namespace: "altair-bar"
         WlrLayershell.layer: WlrLayer.Top
 
+        // Along its edge, with a gap to the screen edges.
+        readonly property string pos: Theme.barPosition
+        readonly property bool vertical: Theme.barVertical
         anchors {
-            top: Theme.barAtTop
-            bottom: !Theme.barAtTop
-            left: true
-            right: true
+            top: pos !== "bottom"
+            bottom: pos !== "top"
+            left: pos !== "right"
+            right: pos !== "left"
         }
         margins {
-            top: Theme.barAtTop ? Theme.barGap : 0
-            bottom: Theme.barAtTop ? 0 : Theme.barGap
-            left: Theme.barGap
-            right: Theme.barGap
+            top: pos === "bottom" ? 0 : Theme.barGap
+            bottom: pos === "top" ? 0 : Theme.barGap
+            left: pos === "right" ? 0 : Theme.barGap
+            right: pos === "left" ? 0 : Theme.barGap
         }
 
-        implicitHeight: Theme.barHeight
+        implicitHeight: vertical ? 0 : Theme.barThickness
+        implicitWidth: vertical ? Theme.barThickness : 0
         color: "transparent"
 
         // Blur is drawn by the compositor (ext-background-effect) behind exactly
@@ -53,9 +57,9 @@ Variants {
         }
 
         Workspaces {
-            anchors.left: parent.left
-            anchors.leftMargin: Theme.space.s
-            anchors.verticalCenter: parent.verticalCenter
+            x: win.vertical ? 0 : Theme.space.s
+            y: win.vertical ? Theme.space.s : (parent.height - height) / 2
+            vertical: win.vertical
             monitor: Hyprland.monitorFor(win.screen)
             minCount: Math.max(1, Math.min(10, Config.bar.workspaces))
         }
@@ -64,11 +68,15 @@ Variants {
             anchors.centerIn: parent
         }
 
-        RowLayout {
-            anchors.right: parent.right
-            anchors.rightMargin: Theme.space.xs
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 0
+        // Status items: at the right end, or the bottom of a side bar.
+        GridLayout {
+            x: win.vertical ? (parent.width - width) / 2 : parent.width - width - Theme.space.xs
+            y: win.vertical ? parent.height - height - Theme.space.xs : (parent.height - height) / 2
+            flow: win.vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
+            rows: win.vertical ? -1 : 1
+            columns: win.vertical ? 1 : -1
+            rowSpacing: 0
+            columnSpacing: 0
 
             Tray {}
             Volume {}

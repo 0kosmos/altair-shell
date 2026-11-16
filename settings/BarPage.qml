@@ -14,7 +14,8 @@ Page {
     SettingRow {
         title: "Position"
         Segmented {
-            options: [{ label: "Top", value: "top" }, { label: "Bottom", value: "bottom" }]
+            options: [{ label: "Top", value: "top" }, { label: "Bottom", value: "bottom" },
+                      { label: "Left", value: "left" }, { label: "Right", value: "right" }]
             current: Theme.barPosition
             onSelected: value => Config.appearance.barPosition = value
         }

@@ -23,7 +23,8 @@ frosted glass, smooth motion and close to zero CPU when idle.
 
 - **Bar**: workspaces (sliding indicator), clock, system tray with themed
   menus, volume, network, battery (laptops), notifications and settings.
-  Top or bottom.
+  Top, bottom, left or right (a side bar stacks everything; the clock reads
+  hours over minutes).
 - **Dock** (optional, off by default): pinned apps and open windows at the
   bottom, left or right edge. Click to open or switch (again: next window),
   middle-click for a new window, right-click for the app's windows, its own

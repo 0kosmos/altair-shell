@@ -120,7 +120,7 @@ Singleton {
                 property string palette: "default"
                 // Background, surface, muted, text, accent.
                 property list<string> customPalette: ["#14151a", "#1f2128", "#3a3d47", "#e8e9ee", "#7aa2f7"]
-                property string barPosition: "top"     // "top" | "bottom"
+                property string barPosition: "top"     // "top" | "bottom" | "left" | "right"
                 // Hyprland window borders: "accent" (accent colour for the
                 // focused window, soft grey for others), "hyprland" (colours from
                 // hyprland.lua), "none" (no borders). Older configs: true/false.

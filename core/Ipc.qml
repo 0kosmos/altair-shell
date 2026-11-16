@@ -106,7 +106,7 @@ Scope {
             Config.effects.animations = enabled;
         }
         function setBarPosition(position: string): void {
-            Config.appearance.barPosition = position === "bottom" ? "bottom" : "top";
+            Config.appearance.barPosition = ["bottom", "left", "right"].indexOf(position) !== -1 ? position : "top";
         }
     }
 

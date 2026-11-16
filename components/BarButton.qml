@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import qs.theme
 
 // A rounded, hoverable container for bar items. Children are laid out in a row
-// and the button sizes itself to them.
+// (a column on a vertical bar) and the button sizes itself to them.
 //
 // `stepped(direction)` fires once per wheel notch (+1 up, -1 down). Touchpads
 // send many small deltas; they are accumulated so one gesture ≈ one notch.
@@ -20,8 +20,9 @@ MouseArea {
 
     signal stepped(int direction)
 
-    implicitWidth: row.implicitWidth + padding * 2
-    implicitHeight: Theme.barHeight - Theme.space.xs * 2
+    readonly property bool vertical: Theme.barVertical
+    implicitWidth: vertical ? Theme.barThickness - Theme.space.xs * 2 : row.implicitWidth + padding * 2
+    implicitHeight: vertical ? row.implicitHeight + padding * 2 : Theme.barHeight - Theme.space.xs * 2
 
     hoverEnabled: interactive
     acceptedButtons: interactive ? (Qt.LeftButton | Qt.RightButton | Qt.MiddleButton) : Qt.NoButton
@@ -55,9 +56,14 @@ MouseArea {
         }
     }
 
-    RowLayout {
+    GridLayout {
         id: row
         anchors.centerIn: parent
-        spacing: Theme.space.xs
+        flow: root.vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
+        rows: root.vertical ? -1 : 1
+        columns: root.vertical ? 1 : -1
+        rowSpacing: spacing
+        columnSpacing: spacing
+        property real spacing: Theme.space.xs
     }
 }
