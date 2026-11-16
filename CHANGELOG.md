@@ -31,6 +31,11 @@ All notable changes to Altair. Versions follow [semantic versioning](https://sem
   slider) for every panel, menu, card, bar, dock, widget and Settings;
   optionally Hyprland's window corners too (your rounding × the setting).
 
+### Widgets
+- **Right-click menu** on widgets: style, visualizer, opacity, edit
+  widgets, detach, settings, remove.
+- Joined widgets share one opacity: changing it changes the whole group.
+
 ### Wallpapers
 - The picker has **All / Pictures / Live** tabs and a **search** (type
   while it is open).

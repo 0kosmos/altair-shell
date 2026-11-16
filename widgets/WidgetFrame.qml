@@ -461,6 +461,29 @@ Item {
         }
     }
 
+    // Right-click: the widget menu (style, opacity, edit, remove…). Only the
+    // right button, so left clicks still reach the widget's own controls.
+    MouseArea {
+        anchors.fill: parent
+        z: 50
+        acceptedButtons: Qt.RightButton
+        onClicked: mouse => {
+            const p = mapToItem(null, mouse.x, mouse.y);
+            Widgets.menuRequested(frame.itemId, frame.QsWindow.window?.screen?.name ?? "", p);
+        }
+    }
+    Connections {
+        target: Widgets
+        function onDetachRequested(id) {
+            if (id === frame.itemId)
+                frame.detach();
+        }
+        function onRemoveRequested(id) {
+            if (id === frame.itemId)
+                frame.removeSelf();
+        }
+    }
+
     // Move: drag anywhere on the widget.
     MouseArea {
         id: move
@@ -757,7 +780,8 @@ Item {
                 stepSize: 5
                 showTicks: false
                 value: Math.round((frame.item?.opacity ?? 1) * 100)
-                onMoved: value => Widgets.update(frame.itemId, { opacity: value / 100 })
+                // Joined widgets share one opacity (the whole group changes).
+                onMoved: value => Widgets.updateMany(Widgets.groupOf(frame.itemId), { opacity: value / 100 })
             }
             IconButton {
                 visible: frame.attached

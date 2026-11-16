@@ -136,7 +136,10 @@ frosted glass, smooth motion and close to zero CPU when idle.
   bottom; left or right too with the Card and Disc styles); weather,
   clocks and system attach to any widget (e.g. weather under a round
   clock). Previewed live while dragging: one card that moves together and
-  stays on screen as a whole (drag a part away to detach). Widgets glide
+  stays on screen as a whole (drag a part away to detach); opacity is
+  shared by the whole group. **Right-click a widget** for its menu: style,
+  visualizer (music), opacity, edit widgets, detach, widget settings,
+  remove. Widgets glide
   out of the way when the bar or dock moves over them, and resize to what
   they show (e.g. without the GPU reading). Animated widgets pause while
   windows cover the desktop.

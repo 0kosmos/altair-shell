@@ -118,6 +118,30 @@ Scope {
                     }
                     BackgroundEffect.blurRegion: Theme.blur ? clickRegion : null
 
+                    // Right-click menu of a widget on this screen.
+                    Connections {
+                        target: Widgets
+                        function onMenuRequested(id, screenName, at) {
+                            if (screenName !== win.screen?.name)
+                                return;
+                            menuLoader.itemId = id;
+                            menuLoader.at = at;
+                            menuLoader.active = false;
+                            menuLoader.active = true;
+                        }
+                    }
+                    LazyLoader {
+                        id: menuLoader
+                        property string itemId
+                        property point at
+                        WidgetMenu {
+                            anchorWindow: win
+                            at: menuLoader.at
+                            itemId: menuLoader.itemId
+                            onDismissed: menuLoader.active = false
+                        }
+                    }
+
                     // Edit mode: dim everything behind the widgets.
                     Rectangle {
                         anchors.fill: parent

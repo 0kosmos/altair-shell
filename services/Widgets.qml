@@ -278,6 +278,33 @@ Singleton {
         save(items.map(i => i.id === id ? Object.assign({}, i, changes) : i));
     }
 
+    // The same changes for several widgets at once (one save, one undo step).
+    function updateMany(ids: var, changes: var): void {
+        save(items.map(i => ids.indexOf(i.id) !== -1 ? Object.assign({}, i, changes) : i));
+    }
+
+    // A widget and every widget joined to its group (attachedTo chains),
+    // as ids.
+    function groupOf(id: string): var {
+        let top = byId(id);
+        for (let n = 0; top?.attachedTo && byId(top.attachedTo) && n < 50; n++)
+            top = byId(top.attachedTo);
+        if (!top)
+            return [];
+        const out = [top.id];
+        for (let k = 0; k < out.length; k++)
+            for (const i of items)
+                if (i.attachedTo === out[k] && out.indexOf(i.id) === -1)
+                    out.push(i.id);
+        return out;
+    }
+
+    // From the widget right-click menu (widgets/WidgetMenu.qml); the frames
+    // do the work, as they know their neighbours on screen.
+    signal menuRequested(string id, string screen, point at)
+    signal detachRequested(string id)
+    signal removeRequested(string id)
+
     function remove(id: string): void {
         save(items.filter(i => i.id !== id));
     }
