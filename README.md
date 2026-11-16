@@ -63,9 +63,8 @@ frosted glass, smooth motion and close to zero CPU when idle.
   Lock screen*). Locks after a set idle time (videos and games that keep
   the screen awake prevent it), before sleep, and on
   `loginctl lock-session`; turns the screen off while locked. Uses your
-  normal login password through PAM (Altair's own `pam/altair-lock` file
-  points to the system's `login` rules; nothing is installed in
-  `/etc/pam.d`). Built to never lock you out: see
+  normal login password through PAM (the system's `/etc/pam.d/login`
+  rules; nothing is installed there). Built to never lock you out: see
   [If the lock screen breaks](#if-the-lock-screen-breaks).
 - **Desktop menu**: right-click the empty desktop to open an app or a
   terminal, change the wallpaper, edit widgets, record the screen, toggle

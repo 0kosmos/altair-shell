@@ -40,12 +40,14 @@ Singleton {
     signal typed(int delta)            // +1 a character, -1 deleted one, 0 cleared
     signal rejected()                  // wrong password: shake
 
-    // Altair's own PAM file (pam/altair-lock: the system's normal login rules).
+    // The system's own login rules (/etc/pam.d/login), like swaylock and
+    // hyprlock. (A file of our own with "auth include login" does not work:
+    // PAM resolves the include in the same custom directory.)
     // The environment overrides exist for testing only (a nested Hyprland
     // with a test PAM file); they add no way in that the session lock
     // restore doesn't already give any program running as the user.
-    readonly property string pamDir: Quickshell.env("ALTAIR_LOCK_PAM_DIR") || Quickshell.shellDir + "/pam"
-    readonly property string pamConfig: Quickshell.env("ALTAIR_LOCK_PAM_CONFIG") || "altair-lock"
+    readonly property string pamDir: Quickshell.env("ALTAIR_LOCK_PAM_DIR") || "/etc/pam.d"
+    readonly property string pamConfig: Quickshell.env("ALTAIR_LOCK_PAM_CONFIG") || "login"
 
     readonly property string runtimeDir: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/altair"
     // Per Hyprland instance: a Hyprland started anew is not locked.
