@@ -27,7 +27,7 @@ done
 SHOTS=(
     "desktop|A clean, fast desktop shell for Hyprland|#4a5fd0|#7b5cff"
     "settings|Settings: palettes, accent colours, blur and liquid glass|#3f6fd8|#5a4fcf"
-    "wallpapers|Pictures and live wallpapers, picked from a carousel|#d0662f|#8c2f4a"
+    "wallpapers|Pictures and live wallpapers, with colour themes to match|#d0662f|#8c2f4a"
     "launcher|An app launcher that learns what you use|#3b6fd6|#1aa3c8"
 )
 

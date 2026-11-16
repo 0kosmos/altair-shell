@@ -30,10 +30,16 @@ same licence as Altair (GPL-3.0-or-later). install.sh scales them to
 
 ### Screenshots (`docs/screenshots/`)
 
-- The soft colour wallpapers in the screenshots were generated for Altair;
-  same licence as Altair.
-- "Next" wallpaper by Krystian Zajdel for KDE, CC-BY-SA-4.0, visible in the
-  wallpaper picker screenshot.
+The live wallpapers in the screenshots are not part of Altair and are not
+in this repository; they belong to their owners and were downloaded from
+[MoeWalls](https://moewalls.com):
+
+- "City at Night" (desktop) and "Lucyna Space Station" (wallpaper picker):
+  art from *Cyberpunk 2077* / *Cyberpunk: Edgerunners*, © CD PROJEKT RED.
+- "Forest Pines" (Settings).
+- The other thumbnails in the wallpaper picker are from the developer's own
+  wallpaper folder.
+- The launcher screenshot uses Altair's own "Aurora" wallpaper.
 
 If you add an asset to the repository (an image, a sound, a font), it must
 have a free licence and be listed here.
