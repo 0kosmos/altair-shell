@@ -17,7 +17,8 @@ controls, and a lot of polish.
   visualizer (ring, glow, bars, wave, mirror) and **karaoke lyrics**
   (LRCLIB). The visualizer hears only the music player, not other sounds.
 - **Music equalizer** with presets (PipeWire filter, only the player's audio).
-- **Weather** (Open-Meteo, no API key) with rain, snow and sun effects.
+- **Weather** (Open-Meteo, no API key) with rain, snow and sun effects;
+  the place name can be hidden (screenshots, streaming).
 - **Dock** (optional): pinned and running apps, recent apps, menus, drag to
   reorder, auto-hide, any edge.
 - **Desktop right-click menu**.
