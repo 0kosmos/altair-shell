@@ -21,6 +21,12 @@ Singleton {
     // open while you use the launcher, for example). "settings" is accepted by
     // open/close/toggle too.
     property bool settingsOpen: false
+    // Open Settings on a page ("widgets", "dock", ...).
+    signal settingsPageRequested(string page)
+    function openSettings(page: string): void {
+        settingsOpen = true;
+        settingsPageRequested(page);
+    }
 
     // Ask the desktop on a monitor to open its right-click menu at (x, y)
     // (IPC "desktop menu"). x/y < 0 = the screen's centre.

@@ -77,6 +77,10 @@ Scope {
             color: "transparent"
 
             property string page: "appearance"
+            Connections {
+                target: ShellState
+                function onSettingsPageRequested(p) { win.page = p; }
+            }
             // Sidebar entries, grouped. Add a page: an entry here + a case in
             // pageSource() below + a <Name>Page.qml file.
             readonly property var pages: [

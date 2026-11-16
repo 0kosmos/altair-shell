@@ -27,7 +27,59 @@ Singleton {
 
     // Edit mode (runtime only): widgets above the windows, with handles.
     property bool editing: false
-    onEditingChanged: selected = ""
+    onEditingChanged: {
+        selected = "";
+        selecting = false;
+        picked = [];
+    }
+
+    // ---- Edit mode tools (EditDock toolbar) ----------------------------------------
+    // Select: click widgets to pick several; drag one of them to move them all,
+    // or delete them together.
+    property bool selecting: false
+    onSelectingChanged: if (!selecting) picked = []
+    property var picked: []
+    function isPicked(id: string): bool {
+        return picked.indexOf(id) !== -1;
+    }
+    function togglePick(id: string): void {
+        picked = isPicked(id) ? picked.filter(x => x !== id) : picked.concat([id]);
+    }
+    // While a picked widget is dragged: how far it has moved ({ x, y }), so
+    // the other picked ones follow it live.
+    property var groupDelta: null
+    function movePicked(dx: real, dy: real, except: string): void {
+        save(items.map(i => isPicked(i.id) && i.id !== except && !i.attachedTo
+            ? Object.assign({}, i, { x: Math.round(i.x + dx), y: Math.round(i.y + dy) }) : i));
+    }
+    function removePicked(): void {
+        // Widgets attached to a removed one come loose and stay.
+        const gone = new Set(picked);
+        save(items.filter(i => !gone.has(i.id)).map(i => gone.has(i.attachedTo)
+            ? Object.assign({}, i, { attachedTo: "", attachSide: "bottom" }) : i));
+        picked = [];
+    }
+    function clearAll(): void {
+        save([]);
+        picked = [];
+    }
+
+    // Undo: the layouts before the last changes (this session, up to 30).
+    // Consecutive saves within 600 ms (one drag: detach + drop) count as one.
+    property var history: []
+    property real lastSave: 0
+    readonly property bool canUndo: history.length > 0
+    property bool undoing: false
+    function undo(): void {
+        if (history.length === 0)
+            return;
+        const prev = history[history.length - 1];
+        history = history.slice(0, -1);
+        undoing = true;
+        Config.widgets.items = prev;
+        undoing = false;
+        selected = "";
+    }
     // In edit mode: the widget whose toolbar is shown (last clicked or added).
     property string selected: ""
     // While dragging into a magnet slot: the widget it would attach to, and
@@ -172,6 +224,10 @@ Singleton {
 
     // Replaced as a whole so JsonAdapter notices and saves it.
     function save(list: var): void {
+        const now = Date.now();
+        if (!undoing && now - lastSave > 600)
+            history = history.concat([JSON.parse(JSON.stringify(items))]).slice(-30);
+        lastSave = now;
         Config.widgets.items = list;
     }
 }

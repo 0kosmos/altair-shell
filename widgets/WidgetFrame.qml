@@ -269,12 +269,15 @@ Item {
                              Snap.obstacles(mon.name, mon.w, mon.h), { x: 0, y: 0, w: mon.w, h: mon.h });
         return Qt.point(x + d.x, y + d.y);
     }
+    // Picked (edit mode > Select) while another picked widget is dragged:
+    // follow it.
+    readonly property bool following: Widgets.groupDelta !== null && !owning && !attached && Widgets.isPicked(itemId)
     x: owning && Snap.rect ? Snap.rect.x - mon.x
         : attached ? slotPos(parentFrame, side, width, height).x
-        : restPos.x
+        : restPos.x + (following ? Widgets.groupDelta.x : 0)
     y: owning && Snap.rect ? Snap.rect.y - mon.y
         : attached ? slotPos(parentFrame, side, width, height).y
-        : restPos.y
+        : restPos.y + (following ? Widgets.groupDelta.y : 0)
     readonly property bool glide: !owning && !attached && !Snap.moving && settledIn
     Behavior on x {
         enabled: frame.glide
@@ -385,8 +388,33 @@ Item {
         visible: frame.editing
         radius: frame.radius + 2
         color: "transparent"
-        border.width: 2
-        border.color: move.containsMouse || move.pressed || corner.pressed ? Theme.accent : Qt.alpha(Theme.fg, 0.35)
+        readonly property bool picked: Widgets.selecting && Widgets.isPicked(frame.itemId)
+        border.width: picked ? 3 : 2
+        border.color: picked || move.containsMouse || move.pressed || corner.pressed ? Theme.accent : Qt.alpha(Theme.fg, 0.35)
+
+        // Select mode: a check badge on picked widgets, an empty ring on others.
+        Rectangle {
+            visible: Widgets.selecting
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.margins: 8
+            width: 22
+            height: 22
+            radius: 11
+            color: parent.picked ? Theme.accent : Qt.alpha(Theme.base, 0.6)
+            border.width: parent.picked ? 0 : 2
+            border.color: Qt.alpha(Theme.fg, 0.6)
+            scale: parent.picked ? 1 : 0.9
+            Behavior on scale { NumberAnimation { duration: Theme.anim.fast; easing.type: Easing.OutBack; easing.overshoot: 2.5 } }
+            Behavior on color { ColorAnimation { duration: Theme.anim.fast } }
+            Icon {
+                anchors.centerIn: parent
+                visible: parent.parent.picked
+                name: "check"
+                size: 16
+                color: Theme.onAccent
+            }
+        }
         Behavior on border.color {
             ColorAnimation { duration: Theme.anim.fast }
         }
@@ -403,6 +431,8 @@ Item {
 
         property point pressAt
         property var start: null
+        property bool group: false
+        property point groupStart
 
         onPressed: mouse => {
             // Grabbed while still settling from the last drag: start fresh.
@@ -412,7 +442,8 @@ Item {
             }
             pressAt = mapToItem(null, mouse.x, mouse.y);
             start = null;
-            Widgets.selected = frame.itemId;
+            if (!Widgets.selecting)
+                Widgets.selected = frame.itemId;
         }
         onPositionChanged: mouse => {
             if (!pressed)
@@ -433,11 +464,27 @@ Item {
                     Widgets.attachChild = frame.itemId;
                     Widgets.update(frame.itemId, { attachedTo: "", attachSide: "bottom", x: frame.x, y: frame.y, scale: Math.round(frame.s * 100) / 100 });
                 }
-                const mine = frame.subtree();
+                // Several picked (Select): they all move; the whole set is
+                // kept on screen, none of them is a snap target.
+                group = Widgets.selecting && Widgets.isPicked(frame.itemId) && Widgets.picked.length > 1;
+                let mine = frame.subtree();
+                let ext = frame.ext;
+                if (group) {
+                    const roots = frame.siblings.filter(f => f && f !== frame && !f.attached && Widgets.isPicked(f.itemId));
+                    for (const f of roots)
+                        mine = mine.concat(f.subtree());
+                    let x0 = frame.x - ext.l, y0 = frame.y - ext.t, x1 = frame.x + frame.width + ext.r, y1 = frame.y + frame.height + ext.b;
+                    for (const f of roots) {
+                        x0 = Math.min(x0, f.x - f.ext.l); y0 = Math.min(y0, f.y - f.ext.t);
+                        x1 = Math.max(x1, f.x + f.width + f.ext.r); y1 = Math.max(y1, f.y + f.height + f.ext.b);
+                    }
+                    ext = { l: frame.x - x0, t: frame.y - y0, r: x1 - frame.x - frame.width, b: y1 - frame.y - frame.height };
+                    groupStart = Qt.point(frame.x, frame.y);
+                }
                 const others = frame.siblings.filter(f => f && mine.indexOf(f) === -1 && f.visible)
                     .map(f => ({ x: frame.mon.x + f.x, y: frame.mon.y + f.y, w: f.width, h: f.height }));
                 Snap.begin(frame.mon, frame.radius, { x: start.x, y: start.y, w: frame.width, h: frame.height },
-                           { targets: others, dim: false, extent: frame.ext, avoid: true });
+                           { targets: others, dim: false, extent: ext, avoid: true });
                 frame.owning = true;
             }
             const free = (mouse.modifiers & Qt.ShiftModifier) !== 0;
@@ -448,7 +495,7 @@ Item {
             // Magnet: near a free slot, preview the attached result at once
             // (pulled into the slot, at the group's width or height).
             const keep = frame.previewParent ? { frame: frame.previewParent, side: frame.previewSide } : null;
-            const t = free ? null : frame.attachTarget({ x: raw.x - frame.mon.x, y: raw.y - frame.mon.y, w: rw, h: rh }, keep);
+            const t = free || group ? null : frame.attachTarget({ x: raw.x - frame.mon.x, y: raw.y - frame.mon.y, w: rw, h: rh }, keep);
             if ((t?.frame ?? null) !== frame.previewParent || (t && t.side !== frame.previewSide)) {
                 frame.animateScale = true;
                 frame.previewParent = t ? t.frame : null;
@@ -466,8 +513,15 @@ Item {
                 Snap.pin = null;
             }
             Snap.update(raw, free);
+            if (group && Snap.rect)
+                Widgets.groupDelta = { x: Snap.rect.x - frame.mon.x - groupStart.x, y: Snap.rect.y - frame.mon.y - groupStart.y };
         }
-        onReleased: if (start) Snap.end()
+        onReleased: {
+            if (start)
+                Snap.end();
+            else if (Widgets.selecting)
+                Widgets.togglePick(frame.itemId);   // a click in Select mode
+        }
         onCanceled: if (start) Snap.end()
     }
 
@@ -477,6 +531,14 @@ Item {
         function onSettled(rect) {
             const t = frame.previewParent;
             const r = { x: rect.x - frame.mon.x, y: rect.y - frame.mon.y };
+            if (move.group) {
+                // The others move by the same amount (one save with ours).
+                move.group = false;
+                const dx = r.x - move.groupStart.x, dy = r.y - move.groupStart.y;
+                Widgets.groupDelta = null;
+                Widgets.save(Widgets.items.map(i => i.id === frame.itemId ? Object.assign({}, i, { x: r.x, y: r.y })
+                    : Widgets.isPicked(i.id) && !i.attachedTo ? Object.assign({}, i, { x: Math.round(i.x + dx), y: Math.round(i.y + dy) }) : i));
+            } else
             Widgets.update(frame.itemId, t ? { x: r.x, y: r.y, attachedTo: t.itemId, attachSide: frame.previewSide } : { x: r.x, y: r.y });
             frame.previewParent = null;
             Widgets.attachHint = "";
