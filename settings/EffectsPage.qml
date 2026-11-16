@@ -67,13 +67,16 @@ Page {
 
     SettingRow {
         title: "Panel backgrounds"
-        description: "A touch of colour on panels, menus, Settings, the bar and the dock, from your accent colour. Drawn once, so it costs nothing while idle."
-        Segmented {
-            options: [{ label: "None", value: "none" }, { label: "Glow", value: "glow" },
-                      { label: "Aurora", value: "aurora" }, { label: "Grain", value: "grain" }]
-            current: ["glow", "aurora", "grain"].indexOf(Config.effects.panelStyle) !== -1 ? Config.effects.panelStyle : "none"
-            onSelected: value => Config.effects.panelStyle = value
-        }
+        description: "A touch of colour or texture on panels, menus, Settings, the bar and the dock, from your accent colour. Drawn once, so it costs nothing while idle."
+    }
+    Chips {
+        Layout.bottomMargin: Theme.space.s
+        options: [{ label: "None", value: "none" }, { label: "Glow", value: "glow" }, { label: "Aurora", value: "aurora" },
+                  { label: "Grain", value: "grain" }, { label: "Mesh", value: "mesh" }, { label: "Sheen", value: "sheen" },
+                  { label: "Edge light", value: "edge" }, { label: "Dusk", value: "dusk" }, { label: "Lines", value: "lines" },
+                  { label: "Dots", value: "dots" }]
+        current: Theme.panelStyles.indexOf(Config.effects.panelStyle) > 0 ? Config.effects.panelStyle : "none"
+        onSelected: value => Config.effects.panelStyle = value
     }
 
     SettingRow {

@@ -164,7 +164,7 @@ Singleton {
                 property bool liquidGlass: false
                 // Decoration on panels, menus, Settings, bar and dock:
                 // "none" | "glow" | "aurora" | "grain" (static, no cost).
-                property string panelStyle: "glow"
+                property string panelStyle: "glow"     // see Theme.panelStyles
                 // Launcher: how results move while typing: "off" | "subtle" | "lively".
                 property string searchAnimations: "subtle"
             }

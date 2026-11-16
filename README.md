@@ -149,8 +149,11 @@ frosted glass, smooth motion and close to zero CPU when idle.
 
 *Settings → Effects → Panel backgrounds* adds a touch of colour from your
 accent to panels, menus, Settings, the bar and the dock: **Glow** (soft
-light from a corner, default), **Aurora** (three soft colour clouds) or
-**Grain** (fine frosted texture). It is a static shader, drawn only when a
+light from a corner, default), **Aurora** (three soft colour clouds),
+**Grain** (fine frosted texture), **Mesh** (four colour corners), **Sheen**
+(a glossy light band), **Edge light** (accent light along the top), **Dusk**
+(accent fading into a warmer hue), **Lines** (fine pinstripes) or **Dots**
+(a faint dot grid). It is a static shader, drawn only when a
 panel redraws anyway, so it costs nothing while idle; off in low-power mode.
 
 ### About "liquid glass"

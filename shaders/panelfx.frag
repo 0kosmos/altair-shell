@@ -6,6 +6,12 @@
 //   mode 1  glow    soft accent light from the top-left corner
 //   mode 2  aurora  three soft colour clouds from the accent (hue-shifted)
 //   mode 3  grain   fine static film grain, like frosted glass
+//   mode 4  mesh    four soft colour corners (accent and its neighbours)
+//   mode 5  sheen   a glossy diagonal light band, like polished glass
+//   mode 6  edge    accent light along the top edge, fading down
+//   mode 7  dusk    vertical blend from the accent to a warmer hue
+//   mode 8  lines   fine diagonal pinstripes
+//   mode 9  dots    a faint dot grid
 // Static: nothing depends on time, it is only drawn when the panel itself
 // redraws. Clipped to the panel's rounded corners.
 //
@@ -68,10 +74,49 @@ void main() {
         float sum = b1 + b2 + b3 + 1e-4;
         col = (c1 * b1 + c2 * b2 + c3 * b3) / sum;
         a = clamp(sum, 0.0, 1.0) * 0.20 * strength;
-    } else {
+    } else if (mode < 3.5) {
         float n = hash(floor(px)) - 0.5;
         col = n > 0.0 ? vec3(1.0) : vec3(0.0);
         a = abs(n) * 0.10 * strength;
+    } else if (mode < 4.5) {
+        // Mesh: bilinear blend of four colours, one per corner.
+        vec2 uv = px / size;
+        vec3 c00 = accent.rgb;
+        vec3 c10 = clamp(hueShift(accent.rgb, 1.2), 0.0, 1.0);
+        vec3 c01 = clamp(hueShift(accent.rgb, -1.0), 0.0, 1.0);
+        vec3 c11 = clamp(hueShift(accent.rgb, 2.4), 0.0, 1.0);
+        col = mix(mix(c00, c10, uv.x), mix(c01, c11, uv.x), uv.y);
+        a = 0.22 * strength;
+    } else if (mode < 5.5) {
+        // Sheen: a soft bright band across, top-left to bottom-right.
+        vec2 uv = px / m;
+        float d = (uv.x + uv.y * 0.6) - 0.35;
+        float band = exp(-d * d * 40.0) + 0.45 * exp(-(d - 0.12) * (d - 0.12) * 260.0);
+        col = vec3(1.0);
+        a = band * 0.09 * strength;
+    } else if (mode < 6.5) {
+        // Edge light: strong at the top, a little at the sides.
+        float top = exp(-px.y / 14.0);
+        float sides = exp(-min(px.x, size.x - px.x) / 10.0) * exp(-px.y / (size.y * 0.5)) * 0.5;
+        col = accent.rgb;
+        a = clamp(top + sides, 0.0, 1.0) * 0.45 * strength;
+    } else if (mode < 7.5) {
+        // Dusk: accent at the top into a warmer neighbour at the bottom.
+        float t = px.y / size.y;
+        col = mix(accent.rgb, clamp(hueShift(accent.rgb, -1.4), 0.0, 1.0), t);
+        a = (0.10 + 0.10 * t) * strength;
+    } else if (mode < 8.5) {
+        // Lines: 1 px diagonal stripes every 7 px, antialiased.
+        float s = mod(px.x + px.y, 7.0);
+        float l = clamp(1.0 - abs(s - 0.5) * 1.2, 0.0, 1.0);
+        col = vec3(1.0);
+        a = l * 0.045 * strength;
+    } else {
+        // Dots: a 12 px grid of soft dots.
+        vec2 c = mod(px, 12.0) - 6.0;
+        float d = clamp(1.6 - length(c), 0.0, 1.0);
+        col = vec3(1.0);
+        a = d * 0.09 * strength;
     }
 
     float k = roundedMask(px) * qt_Opacity;
