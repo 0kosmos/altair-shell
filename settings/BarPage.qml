@@ -137,4 +137,15 @@ Page {
             onToggled: value => Config.bar.clockSeconds = value
         }
     }
+
+    Section { text: "Buttons" }
+
+    SettingRow {
+        title: "Bluetooth"
+        description: Bt.available ? "The Bluetooth button and menu." : "No Bluetooth adapter found (or the bluetooth service is not running), so the button is hidden anyway."
+        Toggle {
+            checked: Config.bar.bluetooth
+            onToggled: value => Config.bar.bluetooth = value
+        }
+    }
 }

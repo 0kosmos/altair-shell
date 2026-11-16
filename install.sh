@@ -36,7 +36,8 @@ REQUIRED=(
     xdg-utils                      # "Open folder" fallback
 )
 OPTIONAL=(
-    networkmanager                 # network status in the bar
+    networkmanager                 # network status and menu in the bar
+    bluez                          # Bluetooth menu (enable bluetooth.service yourself)
     upower                         # battery in the bar (laptops)
     libnotify                      # "Send test" notification button
     cava                           # music visualizer (Music widget)

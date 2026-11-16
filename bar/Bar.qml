@@ -194,6 +194,7 @@ Variants {
             Tray {}
             Volume {}
             NetworkStatus {}
+            BluetoothButton {}
             BatteryStatus {}
             RecordButton {}
             NotificationButton {}

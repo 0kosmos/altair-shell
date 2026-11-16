@@ -6,6 +6,7 @@ import qs.alttab
 import qs.bar
 import qs.calendar
 import qs.components
+import qs.connections
 import qs.core
 import qs.dock
 import qs.launcher
@@ -25,6 +26,8 @@ ShellRoot {
     NotificationPopups {}
     NotificationCenter {}
     CalendarPopup {}
+    NetworkPanel {}
+    BluetoothPanel {}
     AltTab {}
     DragOverlay {}
     WidgetLayer {}

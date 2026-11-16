@@ -22,9 +22,15 @@ frosted glass, smooth motion and close to zero CPU when idle.
 ## Features
 
 - **Bar**: workspaces (sliding indicator), clock, system tray with themed
-  menus, volume, network, battery (laptops), notifications and settings.
-  Top, bottom, left or right (a side bar stacks everything; the clock reads
-  hours over minutes). Drag the bar by an empty spot to another edge.
+  menus, volume, network, Bluetooth, battery (laptops), notifications and
+  settings. Top, bottom, left or right (a side bar stacks everything; the
+  clock reads hours over minutes). Drag the bar by an empty spot to another
+  edge. The clock can sit in the middle or at either end (Settings > Bar).
+- **Network menu** (click the network icon): the current connection with
+  IP, gateway, DNS and MAC (click to copy), Wi-Fi on/off, nearby networks,
+  connect with a password, disconnect, forget. Scans only while open.
+- **Bluetooth menu** (shown when there is an adapter): on/off, your devices
+  with battery level, connect/disconnect/forget, pair new devices nearby.
 - **Dock** (optional, off by default): pinned apps and open windows at the
   bottom, left or right edge. Click to open or switch (again: next window),
   middle-click for a new window, right-click for the app's windows, its own
@@ -168,7 +174,8 @@ Installed by `install.sh` (all from the official repositories):
 | `sound-theme-freedesktop` | notification sound |
 | `xdg-utils` | opening folders (fallback) |
 
-Optional: `networkmanager` (network status), `upower` (battery),
+Optional: `networkmanager` (network status and menu), `bluez` (Bluetooth
+menu; enable it with `sudo systemctl enable --now bluetooth`), `upower` (battery),
 `libnotify` ("Send test" notification button), `gpu-screen-recorder` (screen recorder), `libpulse` (`pactl`, routes
 the music player into the equalizer), `cava` (music visualizer
 and Visualizer widget), `nvidia-utils` (GPU
