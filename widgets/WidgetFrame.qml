@@ -147,22 +147,25 @@ Item {
     // bottom (Visualizer/Equalizer/Lyrics only attach to Music; widgets that
     // only hang on Music never take others), and left/right when it is wide
     // (2:1 or more) or this widget would not grow much there. An attached
-    // widget offers only its own side, further out. A slot is skipped if
-    // this widget would get too small or too big there.
+    // widget offers the same, except the side facing the widget it hangs on
+    // (e.g. a Clock beside a System widget that sits on a Weather widget).
+    // A slot is skipped if this widget would get too small or too big there.
     function slotsOf(f: var): var {
-        let sides;
+        let sides = ["top", "bottom", "left", "right"];
         if (f.attached) {
-            sides = [f.side];
-        } else {
-            if (f.attachTo === "music" || (attachTo === "music" && f.item?.type !== "music"))
-                return [];
-            sides = ["top", "bottom", "left", "right"];
+            const facing = { top: "bottom", bottom: "top", left: "right", right: "left" }[f.side];
+            sides = sides.filter(sd => sd !== facing);
+        } else if (f.attachTo === "music" || (attachTo === "music" && f.item?.type !== "music")) {
+            return [];
         }
         return sides.filter(sd => {
             const sc = scaleIn(f, sd);
             if (sc < 0.45 || sc > 2.5)
                 return false;
-            if ((sd === "left" || sd === "right") && !f.attached && f.width < f.height * 2 && sc > 1.3)
+            // Further out on its own side: always fine (a chain).
+            if (f.attached && sd === f.side)
+                return true;
+            if ((sd === "left" || sd === "right") && f.width < f.height * 2 && sc > 1.3)
                 return false;
             return true;
         });
