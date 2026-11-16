@@ -131,8 +131,8 @@ Singleton {
           styles: [{ id: "classic", name: "Classic" }, { id: "minimal", name: "Minimal" }, { id: "numbers", name: "Numbers" }, { id: "dots", name: "Dots" }] },
         { type: "music", name: "Music", icon: "music_note", w: 360, h: 120,
           // `vis`: the built-in visualizer modes this style offers (item.vis).
-          styles: [{ id: "card", name: "Card", w: 380, h: 136, vis: ["off", "ring", "glow", "bars", "wave", "mirror"] },
-                   { id: "disc", name: "Disc", w: 420, h: 156, vis: ["off", "ring", "glow", "bars", "wave"] },
+          styles: [{ id: "card", name: "Card", w: 400, h: 136, vis: ["off", "ring", "glow", "bars", "wave", "mirror"] },
+                   { id: "disc", name: "Disc", w: 440, h: 156, vis: ["off", "ring", "glow", "bars", "wave"] },
                    { id: "cover", name: "Cover", w: 236, h: 324, vis: ["off", "glow", "bars", "wave", "mirror"] },
                    { id: "minimal", name: "Minimal", w: 320, h: 84, vis: ["off", "bars", "wave"] }] },
         { type: "weather", name: "Weather", icon: "partly_cloudy_day", w: 300, h: 130, attach: "any",

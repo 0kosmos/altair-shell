@@ -70,24 +70,27 @@ Item {
     }
 
     // The album art with the built-in ring or glow around it. `size` = the
-    // art's normal size; with the ring the art turns round and shrinks a
-    // little so the bars fit in the same space plus `ringRoom`.
+    // art's normal size, `room` the most art + effect (`outer`) may take; with
+    // an effect the art shrinks so it fits and stays clear of the edges.
     component AlbumSpot: Item {
         id: spot
         property real size: 96
-        property real ringRoom: 14
         property real radius: Theme.radius.m
-        property real glowScale: 1.6     // glow size relative to the art
+        property real room: size
+        property real glowScale: 1.4     // glow diameter relative to the art
         readonly property bool ring: root.vis === "ring"
-        readonly property real art: ring ? size - 14 : size
-        readonly property real len: Math.round(size * 0.17)
-        implicitWidth: ring ? art + 2 * (len + 4) - ringRoom : size
+        readonly property bool glow: root.vis === "glow"
+        readonly property real len: Math.round(size * 0.15)
+        readonly property real art: ring ? Math.min(size - 24, room - 2 * (len + 4))
+            : glow ? Math.min(size, Math.round(room / glowScale)) : size
+        readonly property real outer: ring ? art + 2 * (len + 4) : glow ? Math.round(art * glowScale) : size
+        implicitWidth: Math.max(size, outer)
         implicitHeight: implicitWidth
 
         Loader {
-            active: root.visOn && (spot.ring || root.vis === "glow")
+            active: root.visOn && (spot.ring || spot.glow)
             anchors.centerIn: parent
-            width: spot.ring ? spot.art + 2 * (spot.len + 4) : spot.size * spot.glowScale
+            width: spot.outer
             height: width
             sourceComponent: Visualizer {
                 style: spot.ring ? "circle" : "glow"
@@ -101,6 +104,7 @@ Item {
             width: spot.art
             height: width
             r: spot.ring ? width / 2 : spot.radius
+            Behavior on width { NumberAnimation { duration: Theme.anim.normal; easing.type: Theme.anim.easing } }
         }
     }
 
@@ -383,10 +387,11 @@ Item {
         RowLayout {
             spacing: 14
             AlbumSpot {
-                Layout.leftMargin: ring ? 2 : 12
+                Layout.leftMargin: 14
                 Layout.preferredWidth: implicitWidth
                 Layout.preferredHeight: implicitHeight
                 size: 96
+                room: 118
             }
             ColumnLayout {
                 Layout.fillWidth: true
@@ -419,17 +424,20 @@ Item {
             Item {
                 id: deck
                 readonly property bool ring: root.vis === "ring"
-                readonly property real recordSize: ring ? 112 : 130
-                readonly property real len: 15
-                Layout.leftMargin: ring ? 0 : 10
-                Layout.preferredWidth: ring ? recordSize + 2 * (len + 4) : 130
-                Layout.preferredHeight: Layout.preferredWidth
+                readonly property bool glow: root.vis === "glow"
+                // Record shrinks with an effect so record + effect fit the
+                // same 130 px and stay clear of the widget's edges.
+                readonly property real recordSize: ring ? 96 : glow ? 102 : 130
+                readonly property real len: 13
+                Layout.leftMargin: 14
+                Layout.preferredWidth: 130
+                Layout.preferredHeight: 130
 
                 // Ring or glow around the record.
                 Loader {
-                    active: root.visOn && (deck.ring || root.vis === "glow")
+                    active: root.visOn && (deck.ring || deck.glow)
                     anchors.centerIn: parent
-                    width: deck.ring ? parent.width : deck.recordSize * 1.6
+                    width: deck.ring ? deck.recordSize + 2 * (deck.len + 4) : 130
                     height: width
                     sourceComponent: Visualizer {
                         style: deck.ring ? "circle" : "glow"
@@ -566,7 +574,8 @@ Item {
                     Layout.preferredWidth: 184
                     Layout.preferredHeight: 184
                     size: 184
-                    glowScale: 1.2
+                    room: 200
+                    glowScale: 1.18
                 }
                 VolumeBar {
                     Layout.preferredHeight: 184

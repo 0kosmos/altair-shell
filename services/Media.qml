@@ -7,7 +7,8 @@ import Quickshell.Services.Mpris
 import Quickshell.Services.Pipewire
 
 // The media player to show (MPRIS, event-driven, no polling): the one that
-// is playing; else the one that played last; else the first one.
+// is playing; else the one that played last; else one with a track; else
+// the first one.
 // Also: where it plays ("Spotify", "SoundCloud · Chrome") and the player's
 // own volume (not the system's).
 Singleton {
@@ -17,6 +18,9 @@ Singleton {
     property var lastActive: null
     readonly property var player: players.find(p => p.isPlaying)
         ?? (players.indexOf(lastActive) !== -1 ? lastActive : null)
+        // One with a track before an empty one (a browser tab registers a
+        // player without anything loaded).
+        ?? players.find(p => (p.trackTitle ?? "") !== "")
         ?? players[0] ?? null
     onPlayerChanged: if (player?.isPlaying) lastActive = player
 
