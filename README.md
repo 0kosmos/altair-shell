@@ -53,6 +53,13 @@ frosted glass, smooth motion and close to zero CPU when idle.
   (e.g. "New private window"), new window, pin to dock, copy its command.
 - **Notifications**: popups with actions and images, a notification centre
   with history (`SUPER + N`), Do not disturb, optional sound.
+- **UI sounds** (*Settings → Sounds*): short, soft sounds for notifications,
+  opening/closing panels, clicks, switches, slider drags (the tick rises with
+  the value), typing in the launcher, volume changes, widget edit mode and
+  snapping. Six built-in families (Glass, Soft, Minimal, Bubble, Wood, Pulse)
+  or your own file per event, a preview button for each, one master volume. Only
+  notifications are on by default; low-power mode silences everything.
+  Played by `pw-play`, so they cost nothing while quiet.
 - **Alt+Tab** window switcher: most recently used first, still previews (or
   app icons), switches workspace when needed. A quick tap jumps straight to
   the previous window without showing anything.
@@ -155,7 +162,7 @@ Installed by `install.sh` (all from the official repositories):
 | `qt6-multimedia`, `qt6-multimedia-ffmpeg` | live (video) wallpapers |
 | `inter-font` | UI font |
 | `ttf-material-symbols-variable` | icons |
-| `pipewire`, `wireplumber` | volume |
+| `pipewire`, `wireplumber` | volume, UI sounds (`pw-play`) |
 | `libvips` | wallpaper thumbnails |
 | `ffmpeg` | thumbnails and still frames of video wallpapers |
 | `sound-theme-freedesktop` | notification sound |

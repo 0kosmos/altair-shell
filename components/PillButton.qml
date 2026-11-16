@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import QtQuick
+import qs.services
 import qs.theme
 
 // A small rounded text button (notification actions, "Clear all", ...).
@@ -11,6 +12,7 @@ MouseArea {
     implicitWidth: label.implicitWidth + Theme.space.m * 2
     implicitHeight: 28
     hoverEnabled: true
+    onClicked: Sounds.click()   // runs as well as the user's onClicked
     cursorShape: Qt.PointingHandCursor
 
     // Press feedback: shrink slightly, spring back on release.

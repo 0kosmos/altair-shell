@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import QtQuick
+import qs.services
 import qs.theme
 
 // Horizontal slider with steps. Like Toggle, it reports changes (`moved`)
@@ -38,8 +39,10 @@ Item {
         return snap(from + Math.max(0, Math.min(1, x / travel)) * (to - from));
     }
     function report(v: real): void {
-        if (v !== value)
+        if (v !== value) {
+            Sounds.slide((v - from) / (to - from));   // a tick per step, pitch follows the value
             moved(v);
+        }
     }
 
     Keys.onLeftPressed: report(snap(value - stepSize))

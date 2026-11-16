@@ -185,12 +185,22 @@ Item {
                         hoverEnabled: true
                         preventStealing: true
                         cursorShape: Qt.SizeVerCursor
-                        function set(y: real): void {
-                            const r = 1 - (y - bands.trackTop) / (bands.trackBottom - bands.trackTop);
-                            Equalizer.setBand(col.index, r * Equalizer.maxGain * 2 - Equalizer.maxGain);
+                        function ratio(y: real): real {
+                            return 1 - (y - bands.trackTop) / (bands.trackBottom - bands.trackTop);
                         }
-                        onPressed: mouse => set(mouse.y)
-                        onPositionChanged: mouse => { if (pressed) set(mouse.y); }
+                        function set(y: real): void {
+                            Equalizer.setBand(col.index, ratio(y) * Equalizer.maxGain * 2 - Equalizer.maxGain);
+                        }
+                        onPressed: mouse => {
+                            set(mouse.y);
+                            Sounds.slideBegin(ratio(mouse.y), Equalizer.maxGain * 2);
+                        }
+                        onPositionChanged: mouse => {
+                            if (pressed) {
+                                set(mouse.y);
+                                Sounds.slideTo(ratio(mouse.y), Equalizer.maxGain * 2);
+                            }
+                        }
                         onWheel: wheel => Equalizer.setBand(col.index, col.db + (wheel.angleDelta.y > 0 ? 0.5 : -0.5))
                         onDoubleClicked: Equalizer.setBand(col.index, 0)
                     }

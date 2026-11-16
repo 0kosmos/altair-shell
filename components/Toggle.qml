@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import QtQuick
+import qs.services
 import qs.theme
 
 // On/off switch. Doesn't change `checked` itself: bind `checked` to the setting
@@ -16,7 +17,10 @@ MouseArea {
     hoverEnabled: true
     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
     opacity: enabled ? 1 : 0.4
-    onClicked: toggled(!checked)
+    onClicked: {
+        Sounds.toggled(!checked);
+        toggled(!checked);
+    }
 
     Rectangle {
         anchors.fill: parent

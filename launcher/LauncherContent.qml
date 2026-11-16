@@ -88,6 +88,7 @@ FocusScope {
 
         TextInput {
             id: search
+            onTextEdited: Sounds.typing()   // user edits only
             anchors.left: searchIcon.right
             anchors.leftMargin: Theme.space.m
             anchors.right: parent.right

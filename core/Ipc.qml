@@ -80,6 +80,10 @@ Scope {
     IpcHandler {
         target: "settings"
 
+        // Open Settings on a page, e.g. `ipc call settings open sounds`.
+        function open(page: string): void {
+            ShellState.openSettings(page);
+        }
         // Settings window back to its default size, centred.
         function recenter(): void {
             Hypr.resetWindowByTitle("Altair Settings", 1120, 700);
@@ -175,6 +179,32 @@ Scope {
         // Open the desktop's right-click menu in the middle of the focused monitor.
         function menu(): void {
             ShellState.desktopMenuRequested(Hyprland.focusedMonitor?.name ?? "", -1, -1);
+        }
+    }
+
+    IpcHandler {
+        target: "sounds"
+
+        // Play an event's sound (even if that event is switched off), e.g.
+        //   qs -c altair ipc call sounds play notification
+        // Events: notification open close click toggle slide typing volume edit snap
+        function play(event: string): string {
+            if (Sounds.events.indexOf(event) === -1)
+                return "unknown event. Known: " + Sounds.events.join(" ");
+            Sounds.preview(event);
+            return "";
+        }
+        // Every event to one built-in style, e.g. `ipc call sounds style soft`.
+        function style(name: string): string {
+            if (Sounds.builtIn.indexOf(name) === -1)
+                return "unknown style. Known: " + Sounds.builtIn.join(" ");
+            Sounds.setStyleAll(name);
+            return "";
+        }
+        // Each event with on/off and its sound.
+        function list(): string {
+            return Sounds.events.map(e => e + " " + (Sounds.isOn(e) ? "on " : "off ") + Sounds.styleOf(e)).join("\n")
+                + "\nall: " + (Sounds.commonStyle() || "mixed");
         }
     }
 }

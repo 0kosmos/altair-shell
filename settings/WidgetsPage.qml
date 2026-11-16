@@ -141,6 +141,7 @@ Page {
 
             TextInput {
                 id: cityInput
+                onTextEdited: Sounds.typing()   // user edits only
                 anchors.fill: parent
                 anchors.leftMargin: Theme.space.s
                 anchors.rightMargin: Theme.space.s

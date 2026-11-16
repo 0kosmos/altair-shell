@@ -1,8 +1,9 @@
 # Credits
 
 Altair is built on the work of others. Nothing below is bundled in this
-repository: fonts, sounds and libraries are installed from your
-distribution's packages.
+repository (except Altair's own UI sounds, see below): fonts, the system
+notification sound and libraries are installed from your distribution's
+packages.
 
 | Project | Used for | Licence |
 |---|---|---|
@@ -17,6 +18,10 @@ distribution's packages.
 | [PipeWire](https://pipewire.org) | audio | MIT / LGPL-2.1+ |
 
 Colour palettes in `theme/palettes.js` are original to Altair.
+
+The UI sounds in `assets/sounds/` are original to Altair: synthesised from
+scratch by `scripts/gen-sounds.py` (no samples). They are released under
+CC0-1.0 (public domain), so you can reuse them anywhere.
 
 ### Screenshots (`docs/screenshots/`)
 

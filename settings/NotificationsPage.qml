@@ -21,7 +21,7 @@ Page {
 
     SettingRow {
         title: "Sound"
-        description: "A short sound for each new notification (not while Do not disturb is on, except for critical ones)."
+        description: "A short sound for each new notification (not while Do not disturb is on, except for critical ones). Choose the sound under Sounds."
         Toggle {
             checked: Config.notifications.sound
             onToggled: value => Config.notifications.sound = value

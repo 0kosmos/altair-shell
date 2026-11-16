@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import QtQuick
 import QtQuick.Layouts
+import qs.services
 import qs.theme
 
 // Visual colour picker: a saturation/brightness field, a hue bar, a preview
@@ -156,8 +157,14 @@ ColumnLayout {
                 root.hue = Math.max(0, Math.min(0.999, (mouse.x - 4) / hueBar.width));
                 root.changed(root.color, false);
             }
-            onPressed: mouse => set(mouse)
-            onPositionChanged: mouse => set(mouse)
+            onPressed: mouse => {
+                set(mouse);
+                Sounds.slideBegin(root.hue, 24);
+            }
+            onPositionChanged: mouse => {
+                set(mouse);
+                Sounds.slideTo(root.hue, 24);
+            }
             onReleased: root.changed(root.color, true)
         }
     }

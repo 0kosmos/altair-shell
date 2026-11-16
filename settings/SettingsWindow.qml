@@ -76,6 +76,10 @@ Scope {
             // applies here too); the window itself is transparent.
             color: "transparent"
 
+            // A page asked for before the window existed (openSettings() on a
+            // closed window) is waiting in ShellState.requestedPage.
+            // A page asked for before this window existed waits in
+            // ShellState.requestedPage (taken in Component.onCompleted below).
             property string page: "appearance"
             Connections {
                 target: ShellState
@@ -93,6 +97,7 @@ Scope {
                 { id: "widgets", label: "Widgets", icon: "widgets", group: "Desktop" },
                 { id: "effects", label: "Effects", icon: "auto_awesome", group: "Desktop" },
                 { id: "notifications", label: "Notifications", icon: "notifications", group: "System" },
+                { id: "sounds", label: "Sounds", icon: "volume_up", group: "System" },
                 { id: "performance", label: "Performance", icon: "speed", group: "System" },
                 { id: "about", label: "About", icon: "info", group: "System" },
             ]
@@ -382,9 +387,16 @@ Scope {
             // Compile every page in the background when Settings opens, so
             // switching to one later doesn't stall (Qt caches the types).
             property var precompiled: []
-            Component.onCompleted: Qt.callLater(() => {
-                win.precompiled = pages.map(p => Qt.createComponent(win.pageSource(p.id), Component.Asynchronous));
-            })
+            Component.onCompleted: {
+                if (ShellState.requestedPage !== "") {
+                    page = ShellState.requestedPage;
+                    shownPage = page;
+                    ShellState.requestedPage = "";
+                }
+                Qt.callLater(() => {
+                    win.precompiled = pages.map(p => Qt.createComponent(win.pageSource(p.id), Component.Asynchronous));
+                });
+            }
             onPageChanged: {
                 if (Theme.anim.fast === 0) {
                     shownPage = page;
@@ -563,6 +575,7 @@ Scope {
                 case "widgets": return "WidgetsPage.qml";
                 case "effects": return "EffectsPage.qml";
                 case "notifications": return "NotificationsPage.qml";
+                case "sounds": return "SoundsPage.qml";
                 case "performance": return "PerformancePage.qml";
                 case "about": return "AboutPage.qml";
                 default: return "AppearancePage.qml";

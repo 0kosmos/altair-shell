@@ -28,7 +28,9 @@ Singleton {
 
     // Open Settings on a page ("widgets", "dock", ...).
     signal settingsPageRequested(string page)
+    property string requestedPage: ""   // for a window that is still being created
     function openSettings(page: string): void {
+        requestedPage = page;
         settingsOpen = true;
         settingsPageRequested(page);
     }

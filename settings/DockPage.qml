@@ -189,6 +189,7 @@ Page {
 
             TextInput {
                 id: search
+                onTextEdited: Sounds.typing()   // user edits only
                 anchors.fill: parent
                 anchors.leftMargin: Theme.space.s
                 anchors.rightMargin: Theme.space.s

@@ -29,7 +29,7 @@ REQUIRED=(
     qt6-multimedia-ffmpeg          # live (video) wallpapers: decoder
     inter-font                     # UI font
     ttf-material-symbols-variable  # icons
-    pipewire wireplumber           # volume
+    pipewire wireplumber           # volume, UI sounds (pw-play)
     libvips                        # wallpaper thumbnails
     ffmpeg                         # video wallpaper thumbnails and still frames
     sound-theme-freedesktop        # notification sound

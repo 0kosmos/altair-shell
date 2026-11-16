@@ -41,6 +41,7 @@ Singleton {
     readonly property alias recorder: adapter.recorder
     readonly property alias dock: adapter.dock
     readonly property alias desktop: adapter.desktop
+    readonly property alias sounds: adapter.sounds
 
     function reload(): void {
         file.reload();
@@ -53,6 +54,17 @@ Singleton {
         onTriggered: file.reload()
     }
 
+    // Coalesces saves: one write per burst of changes.
+    property real lastSave: 0
+    Timer {
+        id: save
+        interval: 30
+        onTriggered: {
+            root.lastSave = Date.now();
+            file.writeAdapter();
+        }
+    }
+
     FileView {
         id: file
 
@@ -61,15 +73,24 @@ Singleton {
         // Wait a moment before re-reading: some editors (and scripts) empty the
         // file first and then write it, and reading in between would see a
         // half-written file.
-        onFileChanged: settle.restart()
+        // Our own saves also fire this; re-reading then could undo changes
+        // made in between (see save below), so those are skipped.
+        onFileChanged: {
+            if (!save.running && Date.now() - root.lastSave > 1000)
+                settle.restart();
+        }
+        // Small file: write synchronously, so saves can't finish out of order.
+        blockWrites: true
 
         // Set while the default file is being created (see onLoadFailed / onSaved).
         property bool creating: false
 
         // Any change made from QML (e.g. the Settings app) is saved immediately.
+        // Changes made together (e.g. "set every sound to Soft", one property
+        // per event) are written once, after the batch.
         onAdapterUpdated: {
             if (root.valid)
-                writeAdapter();
+                save.restart();
             else
                 console.warn("altair: not saving settings, " + root.path + " contains invalid JSON. Fix or delete it.");
         }
@@ -308,6 +329,43 @@ Singleton {
                 // "compact" (now only) | "off". Needs a place (Settings > Widgets).
                 property string popupWeather: "strip"
                 property bool clockSeconds: true       // its seconds hand (ticks once a second while open)
+            }
+
+            // UI sounds (services/Sounds.qml). The notification sound's on/off
+            // is notifications.sound (older setting, kept).
+            property JsonObject sounds: JsonObject {
+                property bool enabled: true
+                property real volume: 0.6              // 0–1, on top of the system volume
+                // Per event: on/off ...
+                property JsonObject on: JsonObject {
+                    property bool open: false
+                    property bool close: false
+                    property bool click: false
+                    property bool toggle: false
+                    property bool slide: false
+                    property bool typing: false
+                    property bool volume: false
+                    property bool edit: false
+                    property bool snap: false
+                }
+                // ... and which sound: "glass" | "soft" | "minimal" | "bubble" | "wood" | "pulse" | "custom"
+                // (the file in `custom` below), for notifications also
+                // "system" (the freedesktop sound theme).
+                property JsonObject style: JsonObject {
+                    property string notification: "system"
+                    property string open: "glass"
+                    property string close: "glass"
+                    property string click: "glass"
+                    property string toggle: "glass"
+                    property string slide: "glass"
+                    property string typing: "glass"
+                    property string volume: "glass"
+                    property string edit: "glass"
+                    property string snap: "glass"
+                }
+                // Custom sound files (absolute paths: wav, ogg, oga, flac, mp3),
+                // e.g. { "notification": "/home/me/ding.ogg" }.
+                property var custom: ({})
             }
 
             property JsonObject performance: JsonObject {

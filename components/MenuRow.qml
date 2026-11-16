@@ -2,6 +2,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Widgets
+import qs.services
 import qs.theme
 
 // One row of an Altair menu (tray menus, the dock's app menu): optional
@@ -19,6 +20,7 @@ MouseArea {
     Layout.fillWidth: true
     implicitHeight: 32
     hoverEnabled: true
+    onClicked: Sounds.click()   // runs as well as the user's onClicked
     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
 
     Rectangle {

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import QtQuick
+import qs.services
 import qs.theme
 
 // Segmented control: pick one of a few options, e.g. Dark | Light.
@@ -81,7 +82,10 @@ Item {
                 height: root.height - 4
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: root.selected(modelData.value)
+                onClicked: {
+                    Sounds.click();
+                    root.selected(modelData.value);
+                }
 
                 StyledText {
                     anchors.centerIn: parent

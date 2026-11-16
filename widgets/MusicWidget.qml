@@ -135,8 +135,16 @@ Item {
             function ratio(x: real): real {
                 return Math.max(0, Math.min(1, x / width));
             }
-            onPressed: mouse => prog.dragRatio = ratio(mouse.x)
-            onPositionChanged: mouse => { if (pressed) prog.dragRatio = ratio(mouse.x); }
+            onPressed: mouse => {
+                prog.dragRatio = ratio(mouse.x);
+                Sounds.slideBegin(prog.dragRatio, 20);
+            }
+            onPositionChanged: mouse => {
+                if (pressed) {
+                    prog.dragRatio = ratio(mouse.x);
+                    Sounds.slideTo(prog.dragRatio, 20);
+                }
+            }
             onReleased: {
                 if (root.player && prog.dragRatio >= 0) {
                     root.player.position = prog.dragRatio * root.player.length;
@@ -228,11 +236,19 @@ Item {
                 hoverEnabled: true
                 preventStealing: true
                 cursorShape: Qt.PointingHandCursor
-                function set(y: real): void {
-                    Media.setVolume(1 - (y - 6) / volTrack.height);
+                function ratio(y: real): real {
+                    return 1 - (y - 6) / volTrack.height;
                 }
-                onPressed: mouse => set(mouse.y)
-                onPositionChanged: mouse => { if (pressed) set(mouse.y); }
+                onPressed: mouse => {
+                    Media.setVolume(ratio(mouse.y));
+                    Sounds.slideBegin(ratio(mouse.y), 20);
+                }
+                onPositionChanged: mouse => {
+                    if (pressed) {
+                        Media.setVolume(ratio(mouse.y));
+                        Sounds.slideTo(ratio(mouse.y), 20);
+                    }
+                }
                 onWheel: wheel => Media.setVolume(Media.volume + (wheel.angleDelta.y > 0 ? 0.05 : -0.05))
             }
         }

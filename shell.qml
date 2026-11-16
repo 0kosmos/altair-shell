@@ -45,6 +45,7 @@ ShellRoot {
         void Placement.get;       // load saved positions now (Settings opens at its spot)
         void Equalizer.enabled;   // restore the music equalizer (and clean up a leftover)
         void WallpaperTheme.mode; // themes that follow the wallpaper
+        void Sounds.enabled;      // listen for panel/volume/edit-mode events
     }
 
     Connections {
