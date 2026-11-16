@@ -77,6 +77,16 @@ Page {
     }
 
     SettingRow {
+        title: "Search animations"
+        description: "How the launcher's results move while you type: new matches slide in, others fade out and the list glides into place. Lively staggers them a little."
+        Segmented {
+            options: [{ label: "Off", value: "off" }, { label: "Subtle", value: "subtle" }, { label: "Lively", value: "lively" }]
+            current: Theme.searchAnim === "off" && !Theme.lowPower ? "off" : Config.effects.searchAnimations
+            onSelected: value => Config.effects.searchAnimations = value
+        }
+    }
+
+    SettingRow {
         title: "Animations"
         description: "Fades and slides when things open, close or change."
         Toggle {

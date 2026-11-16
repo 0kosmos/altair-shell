@@ -32,6 +32,13 @@ FocusScope {
 
     // Re-ranked on every keystroke (~1.4 ms for ~50 apps).
     readonly property var results: Fuzzy.rank(search.text, Apps.list, Apps.launches)
+    // A new search: the best match is selected and the list starts at the
+    // top. (The view would otherwise keep following the previously selected
+    // app to its new row and scroll there.)
+    onResultsChanged: Qt.callLater(() => {
+        list.currentIndex = 0;
+        list.positionViewAtBeginning();
+    })
 
     // Last pointer position (screen coordinates) seen over the list; null until
     // the first hover event. Hovering only changes the selection when the
@@ -90,6 +97,31 @@ FocusScope {
             color: Theme.fg
             selectionColor: Theme.accent
             selectedTextColor: Theme.onAccent
+            // Caret: solid while typing, then a soft fading blink for a few
+            // seconds, then solid again (each fade redraws the launcher, so
+            // it doesn't blink forever while the launcher sits open).
+            cursorDelegate: Rectangle {
+                id: caret
+                width: 2
+                radius: 1
+                color: Theme.accent
+                visible: search.activeFocus
+                property bool typing: true
+                Connections {
+                    target: search
+                    function onTextChanged() { caret.typing = true; caret.opacity = 1; idle.restart(); }
+                    function onCursorPositionChanged() { caret.typing = true; caret.opacity = 1; idle.restart(); }
+                }
+                Timer { id: idle; interval: 700; running: true; onTriggered: caret.typing = false }
+                SequentialAnimation on opacity {
+                    running: !caret.typing && search.activeFocus && Theme.animations
+                    loops: 4
+                    PauseAnimation { duration: 450 }
+                    NumberAnimation { to: 0; duration: 160; easing.type: Easing.InOutSine }
+                    PauseAnimation { duration: 300 }
+                    NumberAnimation { to: 1; duration: 160; easing.type: Easing.InOutSine }
+                }
+            }
             font.family: Theme.font.family
             font.pixelSize: Theme.font.title
             clip: true
@@ -158,7 +190,49 @@ FocusScope {
         anchors.bottom: parent.bottom
         anchors.margins: Theme.space.s
         clip: true
-        model: root.results
+        // ScriptModel diffs each new result list against the last (by desktop
+        // id), so rows that stay keep their delegate and can glide; rows
+        // that come or go get the add/remove transitions below.
+        model: ScriptModel {
+            values: root.results
+            objectProp: "id"
+        }
+
+        // Search animations (Settings > Effects): "off" | "subtle" | "lively".
+        readonly property string anim: Theme.animations ? Theme.searchAnim : "off"
+        readonly property bool animOn: anim !== "off"
+        readonly property bool lively: anim === "lively"
+        add: Transition {
+            enabled: list.animOn
+            SequentialAnimation {
+                // Start after the leaving rows have faded (no overlap);
+                // Lively: new rows arrive one after another.
+                PropertyAction { property: "opacity"; value: 0 }
+                PauseAnimation { duration: 70 + (list.lively ? Math.min(6, ViewTransition.index) * 18 : 0) }
+                ParallelAnimation {
+                    NumberAnimation { property: "opacity"; from: 0; to: 1; duration: list.lively ? 260 : 180; easing.type: Easing.OutCubic }
+                    NumberAnimation { property: "x"; from: list.lively ? 14 : 6; to: 0; duration: list.lively ? 320 : 220; easing.type: Easing.OutQuint }
+                }
+            }
+        }
+        remove: Transition {
+            enabled: list.animOn
+            ParallelAnimation {
+                NumberAnimation { property: "opacity"; to: 0; duration: 70; easing.type: Easing.InQuad }
+                NumberAnimation { property: "x"; to: list.lively ? -10 : 0; duration: 70; easing.type: Easing.InQuad }
+            }
+        }
+        displaced: Transition {
+            enabled: list.animOn
+            NumberAnimation { property: "y"; duration: list.lively ? 300 : 220; easing.type: Easing.OutQuint }
+            // A row interrupted mid-fade must end fully visible.
+            NumberAnimation { property: "opacity"; to: 1; duration: 120 }
+            NumberAnimation { property: "x"; to: 0; duration: 120 }
+        }
+        move: Transition {
+            enabled: list.animOn
+            NumberAnimation { property: "y"; duration: list.lively ? 300 : 220; easing.type: Easing.OutQuint }
+        }
         boundsBehavior: Flickable.StopAtBounds
         // Keep the highlight in view when moving with the keyboard.
         highlightFollowsCurrentItem: true

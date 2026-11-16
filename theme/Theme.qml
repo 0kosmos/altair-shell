@@ -103,6 +103,8 @@ Singleton {
     }
 
     // ---- Typography -----------------------------------------------------------
+    // Launcher search animations: "off" | "subtle" | "lively".
+    readonly property string searchAnim: lowPower ? "off" : (["off", "lively"].indexOf(Config.effects.searchAnimations) !== -1 ? Config.effects.searchAnimations : "subtle")
     // Desktop widgets' font ("" = the UI font).
     readonly property string widgetFont: Config.appearance.widgetFont || ""
     readonly property QtObject font: QtObject {

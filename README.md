@@ -48,7 +48,8 @@ frosted glass, smooth motion and close to zero CPU when idle.
   Left/Right change the month; click the month name or press Home for today.
 - **App launcher** (`SUPER + Space`): fuzzy search over names, descriptions
   and keywords; apps you use often rise to the top. The panel shrinks to the
-  matches. Right-click an app (or press Menu / Shift+F10) for its actions
+  matches, which slide in and glide into place as you type (Search
+  animations: Off / Subtle / Lively in *Settings → Effects*). Right-click an app (or press Menu / Shift+F10) for its actions
   (e.g. "New private window"), new window, pin to dock, copy its command.
 - **Notifications**: popups with actions and images, a notification centre
   with history (`SUPER + N`), Do not disturb, optional sound.

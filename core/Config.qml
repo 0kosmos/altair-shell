@@ -141,6 +141,8 @@ Singleton {
                 // Decoration on panels, menus, Settings, bar and dock:
                 // "none" | "glow" | "aurora" | "grain" (static, no cost).
                 property string panelStyle: "glow"
+                // Launcher: how results move while typing: "off" | "subtle" | "lively".
+                property string searchAnimations: "subtle"
             }
 
             property JsonObject apps: JsonObject {
