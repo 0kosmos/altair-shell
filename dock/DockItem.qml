@@ -45,7 +45,8 @@ Item {
 
     // ---- Icon ----------------------------------------------------------------
     // Rendered at the zoomed size and scaled down at rest, so it stays sharp
-    // when it grows. Grows from the edge side (transformOrigin).
+    // when it grows. At rest it is centred in its cell; zoomed it grows from
+    // its edge side (the extra size goes toward the screen's centre).
     IconImage {
         id: icon
         anchors.centerIn: parent
@@ -54,19 +55,23 @@ Item {
         mipmap: true
         asynchronous: true
         opacity: root.dragging ? 0.85 : 1
+        Behavior on opacity { NumberAnimation { duration: Theme.anim.fast } }
 
         readonly property bool big: (mouse.containsMouse && !root.busy) || root.dragging
-        scale: (big ? 1 : 1 / root.zoom) * (mouse.pressed && !root.dragging ? Theme.anim.pressScale : 1) * bounce.factor
-        transformOrigin: root.position === "left" ? Item.Left : root.position === "right" ? Item.Right : Item.Bottom
-        Behavior on scale {
-            NumberAnimation { duration: Theme.anim.fast; easing.type: Theme.anim.easing }
+        // 0 = rest, 1 = zoomed; one animated value drives scale and lift.
+        property real grow: big ? 1 : 0
+        Behavior on grow {
+            NumberAnimation { duration: Theme.anim.normal; easing.type: Easing.OutBack; easing.overshoot: 1.3 }
         }
-        // Small nudge toward the centre while zoomed.
+        readonly property real lift: grow * (root.iconSize * (root.zoom - 1) / 2 + 3)
+        property real press: mouse.pressed && !root.dragging ? Theme.anim.pressScale : 1
+        Behavior on press {
+            NumberAnimation { duration: Theme.anim.fast; easing.type: Easing.OutBack; easing.overshoot: 2.5 }
+        }
+        scale: (1 + grow * (root.zoom - 1)) / root.zoom * press * bounce.factor
         transform: Translate {
-            x: icon.big ? root.inX * 3 : 0
-            y: icon.big ? root.inY * 3 : 0
-            Behavior on x { NumberAnimation { duration: Theme.anim.fast; easing.type: Theme.anim.easing } }
-            Behavior on y { NumberAnimation { duration: Theme.anim.fast; easing.type: Theme.anim.easing } }
+            x: root.inX * icon.lift
+            y: root.inY * icon.lift
         }
     }
 
@@ -93,7 +98,7 @@ Item {
         visible: root.windowCount > 0
         spacing: 3
         rotation: root.vertical ? 90 : 0
-        readonly property real edgeOffset: root.iconSize / 2 + 4
+        readonly property real edgeOffset: root.iconSize / 2 + 5
         x: (root.width - width) / 2 + (root.position === "left" ? -edgeOffset : root.position === "right" ? edgeOffset : 0)
         y: (root.height - height) / 2 + (root.vertical ? 0 : edgeOffset)
 
@@ -116,7 +121,14 @@ Item {
         readonly property bool show: mouse.containsMouse && !root.busy && !mouse.pressed
         opacity: show ? 1 : 0
         visible: opacity > 0
-        Behavior on opacity { NumberAnimation { duration: Theme.anim.fast; easing.type: Theme.anim.easing } }
+        Behavior on opacity { NumberAnimation { duration: Theme.anim.normal; easing.type: Easing.OutCubic } }
+        // Rises out of the icon while fading in.
+        transform: Translate {
+            x: tip.show ? 0 : -root.inX * 6
+            y: tip.show ? 0 : -root.inY * 6
+            Behavior on x { NumberAnimation { duration: Theme.anim.normal; easing.type: Easing.OutQuint } }
+            Behavior on y { NumberAnimation { duration: Theme.anim.normal; easing.type: Easing.OutQuint } }
+        }
 
         width: tipText.implicitWidth + Theme.space.m * 2
         height: tipText.implicitHeight + Theme.space.xs * 2

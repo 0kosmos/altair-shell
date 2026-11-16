@@ -4,6 +4,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Io
 import qs.core
 
 // What the dock shows: pinned apps (Config.dock.pinned, in order), then
@@ -80,9 +81,96 @@ Singleton {
         for (const key of order)
             if (groups[key])
                 result.push(groups[key]);
+        // Recent / most used apps that are neither pinned nor running.
+        if (showRecent) {
+            const taken = new Set(result.map(i => i.key));
+            let n = 0;
+            for (const id of recentCandidates) {
+                if (n >= recentCount)
+                    break;
+                if (taken.has(id))
+                    continue;
+                const entry = DesktopEntries.byId(id);
+                if (!entry || entry.noDisplay)
+                    continue;
+                result.push({ key: id, entry, appId: "", windows: [], pinned: false, recent: true });
+                taken.add(id);
+                n++;
+            }
+        }
         return result;
     }
     readonly property int pinnedCount: items.filter(i => i.pinned).length
+    readonly property int recentShown: items.filter(i => i.recent).length
+    readonly property int runningCount: items.length - pinnedCount - recentShown
+
+    // ---- Recent and most used apps ----------------------------------------------
+    // "Recent" = apps you focused or started lately (most recent first), then
+    // the launcher's most launched apps fill up the remaining places.
+    readonly property bool showRecent: Config.ready && Config.dock.recentApps
+    readonly property int recentCount: Math.max(1, Math.min(6, Config.dock.recentCount || 3))
+    readonly property var recentCandidates: {
+        const seen = new Set();
+        const out = [];
+        for (const id of Array.from(state.recent ?? []))
+            if (typeof id === "string" && !seen.has(id)) {
+                seen.add(id);
+                out.push(id);
+            }
+        const l = Apps.launches;
+        for (const id of Object.keys(l).sort((a, b) => l[b] - l[a]))
+            if (!seen.has(id)) {
+                seen.add(id);
+                out.push(id);
+            }
+        return out;
+    }
+
+    function touch(id: string): void {
+        if (!id || id.startsWith("app:"))
+            return;
+        const cur = Array.from(state.recent ?? []);
+        if (cur[0] === id)
+            return;
+        state.recent = [id].concat(cur.filter(x => x !== id)).slice(0, 20);
+    }
+
+    // Focus changes are events anyway; recording them costs nothing.
+    Connections {
+        target: Hyprland
+        enabled: root.enabled && root.showRecent
+        function onActiveToplevelChanged() {
+            const e = root.entryFor(root.appIdOf(Hyprland.activeToplevel));
+            if (e)
+                root.touch(e.id);
+        }
+    }
+
+    function clearRecent(): void {
+        state.recent = [];
+    }
+
+    FileView {
+        path: Apps.stateDir + "/dock.json"
+        onAdapterUpdated: writeAdapter()
+        printErrors: false   // missing on first run
+        JsonAdapter {
+            id: state
+            property var recent: []
+        }
+    }
+
+    // Show an auto-hidden dock for a moment (IPC "dock peek", keybinds).
+    property bool peeking: false
+    function peek(): void {
+        peeking = true;
+        peekTimer.restart();
+    }
+    Timer {
+        id: peekTimer
+        interval: 2000
+        onTriggered: root.peeking = false
+    }
 
     // ---- Actions ------------------------------------------------------------
 
@@ -108,8 +196,10 @@ Singleton {
     }
 
     function launch(item: var): void {
-        if (item.entry)
+        if (item.entry) {
             Apps.launch(item.entry);
+            touch(item.entry.id);
+        }
     }
 
     function close(t: var): void {

@@ -85,6 +85,42 @@ Page {
         }
     }
 
+    SettingRow {
+        title: "Recent apps"
+        description: "Also show apps you used lately (or launch most often) that aren't pinned or open, after a thin line."
+        enabled: Config.dock.enabled
+        Toggle {
+            checked: Config.dock.recentApps
+            onToggled: value => Config.dock.recentApps = value
+        }
+    }
+
+    SettingRow {
+        title: "How many"
+        enabled: Config.dock.enabled && Config.dock.recentApps
+        RowLayout {
+            spacing: Theme.space.m
+            PillButton {
+                text: "Forget"
+                onClicked: DockApps.clearRecent()
+            }
+            Slider {
+                implicitWidth: 120
+                from: 1
+                to: 6
+                value: Config.dock.recentCount
+                onMoved: value => Config.dock.recentCount = value
+            }
+            StyledText {
+                Layout.preferredWidth: 16
+                text: Config.dock.recentCount
+                color: Theme.fgMuted
+                font.pixelSize: Theme.font.small
+                tabular: true
+            }
+        }
+    }
+
     Section { text: "Pinned apps" }
 
     StyledText {
@@ -134,6 +170,80 @@ Page {
             IconButton {
                 icon: "close"
                 onClicked: DockApps.unpin(row.modelData)
+            }
+        }
+    }
+
+    // ---- Add apps ------------------------------------------------------------
+    SettingRow {
+        title: "Add an app"
+        description: "Type to search your installed apps, then click + to pin one."
+        Rectangle {
+            implicitWidth: 240
+            implicitHeight: 32
+            radius: Theme.radius.s
+            color: Theme.pressed
+            border.width: 1
+            border.color: search.activeFocus ? Theme.accent : Theme.border
+            Behavior on border.color { ColorAnimation { duration: Theme.anim.fast } }
+
+            TextInput {
+                id: search
+                anchors.fill: parent
+                anchors.leftMargin: Theme.space.s
+                anchors.rightMargin: Theme.space.s
+                verticalAlignment: TextInput.AlignVCenter
+                color: Theme.fg
+                font.family: Theme.font.family
+                font.pixelSize: Theme.font.small + 1
+                clip: true
+                selectByMouse: true
+
+                StyledText {
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: !search.text && !search.activeFocus
+                    text: "e.g. Firefox"
+                    color: Theme.fgDisabled
+                    font.pixelSize: Theme.font.small + 1
+                }
+            }
+        }
+    }
+
+    // Matches (names first), at most 8, without already pinned apps.
+    Repeater {
+        model: {
+            const q = search.text.trim().toLowerCase();
+            if (!q)
+                return [];
+            const pinned = new Set(DockApps.pinned);
+            const score = a => {
+                const n = a.name.toLowerCase();
+                return n.startsWith(q) ? 0 : n.includes(q) ? 1 : (a.genericName + " " + a.keywords.join(" ")).toLowerCase().includes(q) ? 2 : 9;
+            };
+            return Apps.list.filter(a => !pinned.has(a.id) && score(a) < 9)
+                .sort((a, b) => score(a) - score(b))
+                .slice(0, 8);
+        }
+
+        RowLayout {
+            id: hit
+            required property var modelData
+            Layout.fillWidth: true
+            spacing: Theme.space.m
+
+            IconImage {
+                implicitSize: 24
+                source: Quickshell.iconPath(hit.modelData.icon, "application-x-executable")
+            }
+            StyledText {
+                Layout.fillWidth: true
+                text: hit.modelData.name
+                elide: Text.ElideRight
+            }
+            IconButton {
+                icon: "add"
+                onClicked: DockApps.pin(hit.modelData.id, -1)
             }
         }
     }

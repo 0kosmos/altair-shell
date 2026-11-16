@@ -155,6 +155,10 @@ Scope {
         function unpin(id: string): void {
             DockApps.unpin(id);
         }
+        // Show an auto-hidden dock for two seconds.
+        function peek(): void {
+            DockApps.peek();
+        }
         // Apps in the dock, one per line: key, pinned, window count, focused.
         function list(): string {
             return DockApps.items.map(i => i.key + (i.pinned ? " pinned" : "") + " " + i.windows.length + (i.windows.indexOf(Hyprland.activeToplevel) !== -1 ? " focused" : "")).join("\n") + "\nactive: " + (Hyprland.activeToplevel?.address ?? "none");

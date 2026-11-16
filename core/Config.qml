@@ -257,6 +257,10 @@ Singleton {
                 property bool launcherButton: true
                 // Pinned apps, as desktop entry ids (e.g. "firefox"), in order.
                 property var pinned: []
+                // Also show recently used / most launched apps (not pinned,
+                // not running), after a separator.
+                property bool recentApps: true
+                property int recentCount: 3            // 1–6
             }
 
             property JsonObject alttab: JsonObject {
