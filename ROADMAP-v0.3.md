@@ -108,7 +108,7 @@ polish pass on the Settings UI.
 - [x] 6. Recorder menu
 - [x] 7. Corner radius
 - [x] 8. Livelier panel backgrounds
-- [ ] 9. Settings layouts
+- [ ] 9. Settings layouts (built, then removed at the user's request)
 - [ ] Release v0.3.0
 
 ## Notes

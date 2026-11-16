@@ -168,7 +168,7 @@ Scope {
                     p = Qt.binding(() => shown ? 1 : 0);
                 }
                 // Closed and faded: the window goes.
-                onOpacityChanged: if (opacity === 0 && !shown) settings.loaded = false
+                onOpacityChanged: if (opacity === 0 && !shown) Qt.callLater(() => { if (!body.shown) settings.loaded = false; })
 
                 Connections {
                     target: ShellState
