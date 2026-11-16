@@ -16,8 +16,7 @@ Page {
                                      { label: "Minimal", value: "minimal" }, { label: "Bubble", value: "bubble" },
                                      { label: "Wood", value: "wood" }, { label: "Pulse", value: "pulse" },
                                      { label: "Retro", value: "retro" }, { label: "Bell", value: "bell" },
-                                     { label: "Mechanical", value: "mechanical" }, { label: "Sci-fi", value: "scifi" },
-                                     { label: "Air", value: "air" }]
+                                     { label: "Mechanical", value: "mechanical" }, { label: "Sci-fi", value: "scifi" }]
     readonly property var styles: builtIns.concat([{ label: "File", value: "custom" }])
 
     SettingRow {
@@ -58,7 +57,7 @@ Page {
 
     SettingRow {
         title: "Style for everything"
-        description: "Sets every event below to the same sound family. Glass: light crystal chimes. Soft: warm, rounded tones. Minimal: tiny ticks and blips. Bubble: water drops. Wood: a soft marimba. Pulse: gentle synth blips. Retro: 8-bit console beeps. Bell: bright chimes that ring out. Mechanical: keyboard-switch clicks, no melody. Sci-fi: sweeps and zaps. Air: soft whooshes."
+        description: "Sets every event below to the same sound family. Glass: light crystal chimes. Soft: warm, rounded tones. Minimal: tiny ticks and blips. Bubble: water drops. Wood: a soft marimba. Pulse: gentle synth blips. Retro: 8-bit console beeps. Bell: bright chimes that ring out. Mechanical: keyboard-switch clicks, no melody. Sci-fi: sweeps and zaps."
         enabled: Config.sounds.enabled
         opacity: enabled ? 1 : 0.4
     }

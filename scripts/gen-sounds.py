@@ -226,24 +226,6 @@ def zap(f, dur=0.05, decay=0.015, glide=-14):
     return lowpass(tone(f, dur, ((1, 1.0, 1.0), (3, 0.25, 0.5)), attack=0.001, decay=decay, glide=glide), 8000)
 
 
-def whoosh(dur=0.16, lo=400, hi=3000, up=True, decay=0.08):
-    """Air: filtered noise whose brightness rises (up) or falls."""
-    n = int(dur * RATE)
-    out = []
-    lp1 = lp2 = 0.0
-    for i in range(n):
-        t = i / n
-        fc = lo * (hi / lo) ** (t if up else 1 - t)
-        a = math.exp(-2 * math.pi * fc / RATE)
-        x = random.uniform(-1, 1)
-        lp1 = (1 - a) * x + a * lp1
-        lp2 = (1 - a) * lp1 + a * lp2
-        # Swell in, then fade: a breath, not a click.
-        e = math.sin(math.pi * min(1.0, t * 1.6)) if t < 0.31 else math.exp(-(t - 0.31) * dur / decay)
-        out.append((lp1 - lp2) * e)
-    return fade_tail(out)
-
-
 def steps(fn, lo, hi, n):
     """n variants rising from lo to hi Hz (slider ticks: pitch follows the value)."""
     return tuple(fn(lo * (hi / lo) ** (k / (n - 1))) for k in range(n))
@@ -391,20 +373,6 @@ styles = {
         "edit-exit": mix((0, sweep(5000, 200, 0.25, 0.96, 0.09)), (0.1, zap(note("G5"), 0.08, 0.025, -12))),
         "snap": zap(note("E7"), 0.025, 0.006, -8),
         "slide": steps(lambda f: zap(f, 0.02, 0.005, -4), 700, 2400, SLIDE_STEPS),
-    },
-    "air": {
-        "notification": mix((0, whoosh(0.3, 300, 2500, True, 0.12)), (0.12, soft(note("A5"), 0.3, 0.1))),
-        "open": whoosh(0.16, 350, 3200, True, 0.06),
-        "close": whoosh(0.16, 350, 3200, False, 0.06),
-        "click": whoosh(0.035, 2000, 7000, True, 0.01),
-        "toggle-on": whoosh(0.09, 600, 4000, True, 0.03),
-        "toggle-off": whoosh(0.09, 600, 4000, False, 0.03),
-        "typing": tuple(whoosh(0.025, 2500 + 400 * k, 8000, True, 0.006) for k in range(3)),
-        "volume": whoosh(0.06, 900, 3500, True, 0.02),
-        "edit-enter": whoosh(0.3, 200, 5000, True, 0.12),
-        "edit-exit": whoosh(0.3, 200, 5000, False, 0.12),
-        "snap": whoosh(0.03, 3000, 9000, True, 0.008),
-        "slide": tuple(whoosh(0.025, 800 * (2.4 ** (k / 7)), 9000, True, 0.006) for k in range(SLIDE_STEPS)),
     },
 }
 

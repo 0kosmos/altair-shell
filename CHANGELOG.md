@@ -32,9 +32,9 @@ All notable changes to Altair. Versions follow [semantic versioning](https://sem
   optionally Hyprland's window corners too (your rounding × the setting).
 
 ### Sounds
-- Five new, clearly different UI sound families: **Retro** (8-bit
-  beeps), **Bell** (chimes), **Mechanical** (keyboard-switch clicks),
-  **Sci-fi** (sweeps and zaps) and **Air** (soft whooshes).
+- Four new, clearly different UI sound families: **Retro** (8-bit
+  beeps), **Bell** (chimes), **Mechanical** (keyboard-switch clicks) and
+  **Sci-fi** (sweeps and zaps).
 
 ### Workspaces
 - Four more switching animations: Slide + fade, Vertical + fade, Bouncy
