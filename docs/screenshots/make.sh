@@ -4,8 +4,8 @@
 #
 #   docs/screenshots/make.sh <dir with raw PNGs>
 #
-# Expects desktop.png, calendar.png, settings.png, wallpapers.png, launcher.png
-# and layout.png in that
+# Expects desktop.png, calendar.png, settings.png, wallpapers.png, launcher.png,
+# layout.png, glass-off.png and blur-off.png in that
 # directory (take them with `grim` on an empty workspace, with a wallpaper
 # you may publish). Writes docs/screenshots/<name>.png.
 # Needs: vips (libvips), python3, qml (qt6-declarative); Inter font.
@@ -32,6 +32,8 @@ SHOTS=(
     "wallpapers|Pictures and live wallpapers, with colour themes to match|#d0662f|#8c2f4a"
     "launcher|An app launcher that learns what you use|#3b6fd6|#1aa3c8"
     "layout|Bar and dock on any edge, widgets that snap together|#5b3fd0|#1a8fc8"
+    "glass-off|Liquid glass off, Amber palette|#c27a2a|#6b3f1a"
+    "blur-off|Blur off: solid panels, Ocean palette|#2a6fb8|#1a3f6b"
 )
 
 # Background: a dark base with two soft glows, rendered small and upscaled.

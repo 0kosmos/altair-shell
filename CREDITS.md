@@ -36,7 +36,7 @@ in this repository; they belong to their owners and were downloaded from
 
 - "City at Night" (desktop, calendar) and "Lucyna Space Station" (wallpaper picker):
   art from *Cyberpunk 2077* / *Cyberpunk: Edgerunners*, © CD PROJEKT RED.
-- "Forest Pines" (Settings).
+- "Forest Pines" (Settings, liquid glass off) and "Snowy Forest" (blur off).
 - The other thumbnails in the wallpaper picker are from the developer's own
   wallpaper folder.
 - The launcher and layout screenshots use Altair's own "Aurora" wallpaper.

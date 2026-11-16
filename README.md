@@ -22,6 +22,10 @@ frosted glass, smooth motion and close to zero CPU when idle.
 
 ![Bar at the bottom, dock on the right](docs/screenshots/layout.png)
 
+![Liquid glass off, Amber palette](docs/screenshots/glass-off.png)
+
+![Blur off, Ocean palette](docs/screenshots/blur-off.png)
+
 <sub>Regenerate with `docs/screenshots/make.sh` from raw 1920x1080 screenshots.</sub>
 
 ## Features
