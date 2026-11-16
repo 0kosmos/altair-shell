@@ -53,21 +53,26 @@ Singleton {
     // MPRIS volume when the player supports it (Spotify does); else the
     // volume of the app's audio stream in PipeWire (e.g. some browsers).
     readonly property bool mprisVolume: (player?.volumeSupported ?? false) && (player?.canControl ?? false)
-    readonly property var stream: {
-        if (!player || mprisVolume)
-            return null;
-        const names = [player.identity, player.desktopEntry, appName].filter(n => n).map(n => String(n).toLowerCase());
-        return Pipewire.nodes.values.find(n => {
-            if (!n.isStream || n.isSink)
-                return false;
-            const p = n.properties ?? {};
-            const app = String(p["application.name"] ?? "").toLowerCase();
-            const bin = String(p["application.process.binary"] ?? "").toLowerCase();
-            return names.some(x => x && (app === x || bin === x || app.includes(x) || x.includes(app) && app.length > 2));
-        }) ?? null;
-    }
+    readonly property var stream: mprisVolume ? null : (playerNodes[0] ?? null)
+
+    // The player's audio streams in PipeWire (also used by the visualizer).
+    // Quickshell calls playback streams "sinks" (isSink: they play into one),
+    // and fills `properties` only for tracked nodes, so all playback streams
+    // are tracked (a handful) and matched by node name or app name/binary.
+    readonly property var playbackNodes: (Pipewire.nodes?.values ?? []).filter(n => n.isStream && n.isSink)
     PwObjectTracker {
-        objects: root.stream ? [root.stream] : []
+        objects: root.playbackNodes
+    }
+    readonly property var playerNodes: {
+        if (!player)
+            return [];
+        const names = [player.identity, player.desktopEntry, appName].filter(n => n).map(n => String(n).toLowerCase());
+        const like = s => s.length > 2 && names.some(x => s === x || s.includes(x) || x.includes(s));
+        return playbackNodes.filter(n => {
+            const p = n.properties ?? {};
+            return like(String(n.name ?? "").toLowerCase()) || like(String(p["application.name"] ?? "").toLowerCase())
+                || like(String(p["application.process.binary"] ?? "").toLowerCase());
+        });
     }
     readonly property bool hasVolume: mprisVolume || (stream?.audio ?? null) !== null
     readonly property real volume: mprisVolume ? (player?.volume ?? 0) : (stream?.audio?.volume ?? 0)

@@ -48,24 +48,10 @@ Singleton {
     readonly property bool wanted: users > 0 && enabled && Media.playing && !paused
     onWantedChanged: update()
 
-    // The player's audio streams in PipeWire (node names), matched like the
-    // player volume in Media.qml. Links follow when they change; another
+    // The player's audio streams in PipeWire (node names, Media.playerNodes).
+    // Links follow when they change; another
     // player means a fresh cava (its old links go with it).
-    readonly property var playerStreams: {
-        const p = Media.player;
-        if (!p)
-            return [];
-        const names = [p.identity, p.desktopEntry, Media.appName].filter(n => n).map(n => String(n).toLowerCase());
-        const nodes = (Pipewire.nodes?.values ?? []).filter(n => {
-            if (!n.isStream || n.isSink)
-                return false;
-            const pr = n.properties ?? {};
-            const app = String(pr["application.name"] ?? "").toLowerCase();
-            const bin = String(pr["application.process.binary"] ?? "").toLowerCase();
-            return names.some(x => x && (app === x || bin === x || app.includes(x) || (x.includes(app) && app.length > 2)));
-        });
-        return [...new Set(nodes.map(n => n.name).filter(n => n))].sort();
-    }
+    readonly property var playerStreams: [...new Set(Media.playerNodes.map(n => n.name).filter(n => n && n !== "altair-cava"))].sort()
     readonly property string streamKey: playerStreams.join(",")
     onStreamKeyChanged: if (proc.running) linkTimer.restart()
     property var startedFor: null
