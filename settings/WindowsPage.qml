@@ -82,12 +82,15 @@ Page {
         description: Hypr.workspaceStyle === "hyprland" ? "The animation from your Hyprland config."
             : Hypr.workspaceStyle === "off" ? "Workspaces change instantly."
             : "How the screen moves when you change workspace. The bar's workspace indicator moves along with it."
-        Segmented {
-            options: [{ label: "Slide", value: "slide" }, { label: "Vertical", value: "slidevert" }, { label: "Fade", value: "fade" },
-                { label: "Off", value: "off" }, { label: "Hyprland", value: "hyprland" }]
-            current: Hypr.workspaceStyle
-            onSelected: value => Config.windows.workspaceAnim = value
-        }
+    }
+    Chips {
+        Layout.bottomMargin: Theme.space.s
+        options: [{ label: "Slide", value: "slide" }, { label: "Vertical", value: "slidevert" }, { label: "Fade", value: "fade" },
+            { label: "Slide + fade", value: "slidefade" }, { label: "Vertical + fade", value: "slidefadevert" },
+            { label: "Bouncy", value: "bounce" }, { label: "Smooth", value: "smooth" },
+            { label: "Off", value: "off" }, { label: "Hyprland", value: "hyprland" }]
+        current: Hypr.workspaceStyle
+        onSelected: value => Config.windows.workspaceAnim = value
     }
 
     SettingRow {

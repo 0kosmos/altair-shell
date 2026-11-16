@@ -97,11 +97,22 @@ Singleton {
     }
 
     // ---- Workspace switching animation --------------------------------------------
-    // Style: "slide", "slidevert", "fade", "off", or "hyprland" (your own).
+    // Style: one of workspaceStyles' ids, "off", or "hyprland" (your own).
     // Applied to Hyprland's workspaces / workspacesIn / workspacesOut animations.
+    // Each Altair style = a Hyprland style + a bezier curve (also used by
+    // the bar's workspace pill so both move alike).
+    readonly property var workspaceStyles: ({
+        slide:         { style: "slide",             curve: [0.22, 1, 0.36, 1] },
+        slidevert:     { style: "slidevert",         curve: [0.22, 1, 0.36, 1] },
+        fade:          { style: "fade",              curve: [0.22, 1, 0.36, 1] },
+        slidefade:     { style: "slidefade 30%",     curve: [0.22, 1, 0.36, 1] },
+        slidefadevert: { style: "slidefadevert 30%", curve: [0.22, 1, 0.36, 1] },
+        bounce:        { style: "slide",             curve: [0.34, 1.45, 0.64, 1] },
+        smooth:        { style: "slide",             curve: [0.65, 0, 0.35, 1] }
+    })
     readonly property string workspaceStyle: {
         const v = Config.ready ? Config.windows.workspaceAnim : "hyprland";
-        return ["slide", "slidevert", "fade", "off"].indexOf(v) !== -1 ? v : "hyprland";
+        return v === "off" || workspaceStyles[v] !== undefined ? v : "hyprland";
     }
     // Hyprland speed in tenths of a second.
     readonly property real workspaceSpeed: {
@@ -109,7 +120,7 @@ Singleton {
         return v === "normal" ? 3.5 : v === "fast" ? 2.2 : 5;   // unknown -> calm
     }
     // The bezier we use, also mirrored by the bar's workspace pill.
-    readonly property var workspaceCurve: [0.22, 1, 0.36, 1]
+    readonly property var workspaceCurve: workspaceStyles[workspaceStyle]?.curve ?? [0.22, 1, 0.36, 1]
     // How long a workspace switch takes, in ms, for the bar to follow (0 = instant).
     readonly property int workspaceDuration: workspaceStyle === "off" ? 0
         : workspaceStyle === "hyprland" ? Math.round((original?.wsAnim?.[0]?.speed ?? 2.6) * 100)
@@ -131,9 +142,9 @@ Singleton {
         } else {
             const c = workspaceCurve;
             lua += `hl.curve("altairWorkspace", { type = "bezier", points = { {${c[0]}, ${c[1]}}, {${c[2]}, ${c[3]}} } }) `;
-            // A fade with a slide feels busy; "slidefade" is not used on purpose.
+            const st = workspaceStyles[workspaceStyle].style;
             for (const n of leaves)
-                lua += `hl.animation({ leaf = "${n}", enabled = true, speed = ${workspaceSpeed}, bezier = "altairWorkspace", style = "${workspaceStyle}" }) `;
+                lua += `hl.animation({ leaf = "${n}", enabled = true, speed = ${workspaceSpeed}, bezier = "altairWorkspace", style = "${st}" }) `;
         }
         hyprEval(lua);
     }

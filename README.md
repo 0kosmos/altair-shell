@@ -169,8 +169,9 @@ frosted glass, smooth motion and close to zero CPU when idle.
   - blur and blur strength, *liquid glass*, animations, low-power mode;
   - window borders (accent / Hyprland / none), resize windows by dragging
     their edges, smooth resizing;
-  - workspace switching animation (slide, vertical slide, fade, off or your
-    own) and speed; the bar's workspace indicator moves in sync;
+  - workspace switching animation (slide, vertical slide, fade, slide + fade,
+    vertical + fade, bouncy, smooth, off or your own) and speed; the bar's
+    workspace indicator moves in sync, on the same curve;
   - **snapping**: drag the Settings window by its sidebar or page title and
     it snaps to the screen edges, the centre lines and the bar (hold Shift to
     move freely), with the rest of the screen dimmed and guide lines shown;

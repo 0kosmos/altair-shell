@@ -31,6 +31,10 @@ All notable changes to Altair. Versions follow [semantic versioning](https://sem
   slider) for every panel, menu, card, bar, dock, widget and Settings;
   optionally Hyprland's window corners too (your rounding × the setting).
 
+### Workspaces
+- Four more switching animations: Slide + fade, Vertical + fade, Bouncy
+  and Smooth (the bar's indicator follows the same curve).
+
 ### Recorder
 - **Recorder menu**: right-click the record button (left click still
   records): screen or a dragged region, sound, frame rate, quality, codec
