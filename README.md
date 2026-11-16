@@ -193,14 +193,24 @@ frosted glass, smooth motion and close to zero CPU when idle.
 
 ### Panel backgrounds
 
-*Settings → Effects → Panel backgrounds* adds a touch of colour from your
-accent to panels, menus, Settings, the bar and the dock: **Glow** (soft
-light from a corner, default), **Aurora** (three soft colour clouds),
-**Grain** (fine frosted texture), **Mesh** (four colour corners), **Sheen**
-(a glossy light band), **Edge light** (accent light along the top), **Dusk**
-(accent fading into a warmer hue), **Lines** (fine pinstripes) or **Dots**
-(a faint dot grid). It is a static shader, drawn only when a
-panel redraws anyway, so it costs nothing while idle; off in low-power mode.
+*Settings → Effects → Panel backgrounds* adds colour, texture or motion
+to panels and menus (with a live preview).
+
+Still: **Glow** (soft light from a corner, default), **Aurora** (three soft
+colour clouds), **Grain** (fine frosted texture), **Mesh** (four colour
+corners), **Sheen** (a glossy light band), **Edge light** (accent light along
+the top), **Dusk** (accent fading into a warmer hue), **Lines** (fine
+pinstripes) or **Dots** (a faint dot grid).
+
+Moving: **Flow** (drifting colour clouds), **Nebula** (soft mist),
+**Waves**, **Prism** (an iridescent sweep), **Stars** (twinkling) and
+**Pulse** (breathing edge light). They move only while a panel or menu is
+open (30 fps, about 10 % of one core on an old CPU); the bar, dock and
+Settings show them still, so they cost nothing while idle.
+
+Options: intensity, colours (shades of the accent or your palette's
+colours), animation on/off and speed, and **panel motion** — how panels open
+and close: Glide, Spring, Zoom, Drop or Fade. All off in low-power mode.
 
 ### About "liquid glass"
 

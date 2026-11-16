@@ -152,17 +152,30 @@ Scope {
                 // (small edge panels, e.g. the calendar, do both, growing out
                 // of the bar).
                 readonly property bool edge: root.dock === "top" || root.dock === "bottom"
-                scale: shown || (edge && root.fullWidth) ? 1 : 0.95
+                // Motion style (Settings > Effects > Panel motion).
+                readonly property string motion: Theme.panelMotion
+                readonly property real scaleFrom: motion === "spring" ? 0.88 : motion === "zoom" ? 0.8
+                    : motion === "glide" ? 0.95 : 1
+                readonly property real slide: motion === "spring" ? root.slideDistance * 1.5
+                    : motion === "drop" ? root.slideDistance * 3
+                    : motion === "zoom" || motion === "fade" ? 0 : root.slideDistance
+                readonly property int openEasing: motion === "spring" || motion === "drop" ? Easing.OutBack : Easing.OutQuint
+                readonly property real overshoot: motion === "spring" ? 1.7 : 1.1
+                readonly property int openDuration: motion === "fade" ? Theme.anim.normal
+                    : motion === "spring" || motion === "drop" ? Theme.anim.slow + 80 : Theme.anim.slow
+                scale: shown || (edge && root.fullWidth && motion !== "zoom") ? 1 : scaleFrom
                 transformOrigin: root.dock === "top" ? Item.Top : root.dock === "bottom" ? Item.Bottom
                     : root.dock === "left" ? Item.Left : root.dock === "right" ? Item.Right : Item.Center
                 transform: Translate {
-                    x: body.shown ? 0 : root.dock === "left" ? -root.slideDistance : root.dock === "right" ? root.slideDistance : 0
+                    x: body.shown ? 0 : root.dock === "left" ? -body.slide : root.dock === "right" ? body.slide : 0
                     Behavior on x {
-                        NumberAnimation { duration: body.shown ? Theme.anim.slow : Theme.anim.fast; easing.type: body.shown ? Easing.OutQuint : Easing.InCubic }
+                        NumberAnimation { duration: body.shown ? body.openDuration : Theme.anim.fast; easing.type: body.shown ? body.openEasing : Easing.InCubic; easing.overshoot: body.overshoot }
                     }
-                    y: body.shown ? 0 : root.dock === "bottom" ? root.slideDistance : root.dock === "top" ? -root.slideDistance : 0
+                    // Centred panels (launcher) drop in from a little above.
+                    y: body.shown ? 0 : root.dock === "bottom" ? body.slide : root.dock === "top" ? -body.slide
+                        : root.dock === "" && body.motion === "drop" ? -body.slide : 0
                     Behavior on y {
-                        NumberAnimation { duration: body.shown ? Theme.anim.slow : Theme.anim.fast; easing.type: body.shown ? Easing.OutQuint : Easing.InCubic }
+                        NumberAnimation { duration: body.shown ? body.openDuration : Theme.anim.fast; easing.type: body.shown ? body.openEasing : Easing.InCubic; easing.overshoot: body.overshoot }
                     }
                 }
                 Component.onCompleted: shown = Qt.binding(() => root.open)
@@ -176,8 +189,9 @@ Scope {
                 // Opening: a long, soft ease-out (fast start, gentle landing).
                 Behavior on scale {
                     NumberAnimation {
-                        duration: body.shown ? Theme.anim.slow : Theme.anim.fast
-                        easing.type: body.shown ? Easing.OutQuint : Theme.anim.easingIn
+                        duration: body.shown ? body.openDuration : Theme.anim.fast
+                        easing.type: body.shown ? body.openEasing : Theme.anim.easingIn
+                        easing.overshoot: body.overshoot
                     }
                 }
                 // Unload once fully faded out.
@@ -187,6 +201,7 @@ Scope {
 
                 GlassBackground {
                     id: background
+                    animate: root.open
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.top: parent.top

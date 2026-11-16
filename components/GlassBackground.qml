@@ -35,6 +35,10 @@ Item {
     // Panel decoration (Settings > Effects > Panel backgrounds: glow,
     // aurora, grain). Widgets and joined surfaces leave it off.
     property bool decorated: true
+    // Animated decorations move only where this is true (panels and menus
+    // while open). Elsewhere (bar, dock, Settings) they are a still frame,
+    // so nothing redraws while idle.
+    property bool animate: false
 
     function solid(v: vector4d): vector4d {
         return Qt.vector4d(v.x, v.y, v.z, v.w + (1 - v.w) * solidity);
@@ -82,12 +86,25 @@ Item {
         anchors.fill: parent
         active: root.decorated && !root.anyOpen && Theme.panelFx !== 0
         sourceComponent: ShaderEffect {
+            id: fx
             readonly property size size: Qt.size(width, height)
             readonly property real radius: root.radius
             readonly property real mode: Theme.panelFx
-            readonly property real strength: Theme.dark ? 1.0 : 0.6
+            readonly property real strength: (Theme.dark ? 1.0 : 0.6) * Theme.panelIntensity
+            // A fixed start, so a still frame looks the same everywhere.
+            property real time: 7
             readonly property vector4d accent: Qt.vector4d(Theme.accent.r, Theme.accent.g, Theme.accent.b, 1)
+            readonly property vector4d c2: Theme.panelC2
+            readonly property vector4d c3: Theme.panelC3
             fragmentShader: Qt.resolvedUrl("../shaders/panelfx.frag.qsb")
+
+            // 30 fps is plenty for slow motion, and half the cost of 60.
+            Timer {
+                interval: 33
+                repeat: true
+                running: root.animate && Theme.panelFxAnimated && root.visible
+                onTriggered: fx.time += 0.033 * Theme.panelSpeed
+            }
         }
     }
 }

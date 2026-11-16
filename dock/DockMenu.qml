@@ -58,6 +58,7 @@ PopupWindow {
 
     GlassBackground {
         id: background
+        animate: true
         anchors.fill: parent
         radius: Theme.radius.m
 

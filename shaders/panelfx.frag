@@ -12,8 +12,17 @@
 //   mode 7  dusk    vertical blend from the accent to a warmer hue
 //   mode 8  lines   fine diagonal pinstripes
 //   mode 9  dots    a faint dot grid
-// Static: nothing depends on time, it is only drawn when the panel itself
-// redraws. Clipped to the panel's rounded corners.
+// Animated (only while a panel is open, `time` advanced by the item at
+// 30 fps; anywhere else time stays put and they are a still frame):
+//   mode 10 flow    aurora clouds that drift and swirl
+//   mode 11 nebula  soft value-noise mist drifting sideways
+//   mode 12 waves   slow layered light waves
+//   mode 13 prism   an iridescent band sweeping across
+//   mode 14 stars   faint stars that twinkle
+//   mode 15 pulse   accent light breathing along the edges
+// Static modes ignore `time`. Colours: c2/c3 are a second and third colour
+// (from the palette); with alpha 0 they are derived from the accent.
+// Clipped to the panel's rounded corners.
 //
 // Rebuild after editing:  scripts/build-shaders.sh
 
@@ -26,8 +35,11 @@ layout(std140, binding = 0) uniform buf {
     vec2 size;        // item size in pixels
     float radius;     // corner radius in pixels
     float mode;
-    float strength;   // 0..1, lower on light themes
+    float strength;   // 0..~1.6: theme (lower on light) × intensity setting
+    float time;       // seconds × speed (animated modes)
     vec4 accent;      // straight rgb
+    vec4 c2;          // second colour (a = 0: derive from the accent)
+    vec4 c3;          // third colour
 };
 
 float roundedMask(vec2 px) {
@@ -53,6 +65,26 @@ float hash(vec2 p) {
     return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
+float vnoise(vec2 p) {
+    vec2 i = floor(p), f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x),
+               mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
+}
+
+float fbm(vec2 p) {
+    float v = 0.0, a = 0.5;
+    for (int i = 0; i < 4; i++) {
+        v += a * vnoise(p);
+        p = p * 2.03 + vec2(1.7, 9.2);
+        a *= 0.5;
+    }
+    return v;
+}
+
+vec3 second() { return c2.a > 0.0 ? c2.rgb : clamp(hueShift(accent.rgb, 0.9), 0.0, 1.0); }
+vec3 third() { return c3.a > 0.0 ? c3.rgb : clamp(hueShift(accent.rgb, -0.8), 0.0, 1.0); }
+
 void main() {
     vec2 px = qt_TexCoord0 * size;
     float m = max(size.x, size.y);
@@ -66,13 +98,13 @@ void main() {
         col = accent.rgb;
     } else if (mode < 2.5) {
         vec3 c1 = accent.rgb;
-        vec3 c2 = clamp(hueShift(accent.rgb, 0.9), 0.0, 1.0);
-        vec3 c3 = clamp(hueShift(accent.rgb, -0.8), 0.0, 1.0);
+        vec3 k2 = second();
+        vec3 k3 = third();
         float b1 = blob(px, vec2(size.x * 0.15, size.y * 0.05), m * 0.55);
         float b2 = blob(px, vec2(size.x * 0.85, size.y * 0.35), m * 0.5);
         float b3 = blob(px, vec2(size.x * 0.45, size.y * 1.05), m * 0.55);
         float sum = b1 + b2 + b3 + 1e-4;
-        col = (c1 * b1 + c2 * b2 + c3 * b3) / sum;
+        col = (c1 * b1 + k2 * b2 + k3 * b3) / sum;
         a = clamp(sum, 0.0, 1.0) * 0.20 * strength;
     } else if (mode < 3.5) {
         float n = hash(floor(px)) - 0.5;
@@ -82,8 +114,8 @@ void main() {
         // Mesh: bilinear blend of four colours, one per corner.
         vec2 uv = px / size;
         vec3 c00 = accent.rgb;
-        vec3 c10 = clamp(hueShift(accent.rgb, 1.2), 0.0, 1.0);
-        vec3 c01 = clamp(hueShift(accent.rgb, -1.0), 0.0, 1.0);
+        vec3 c10 = c2.a > 0.0 ? c2.rgb : clamp(hueShift(accent.rgb, 1.2), 0.0, 1.0);
+        vec3 c01 = c3.a > 0.0 ? c3.rgb : clamp(hueShift(accent.rgb, -1.0), 0.0, 1.0);
         vec3 c11 = clamp(hueShift(accent.rgb, 2.4), 0.0, 1.0);
         col = mix(mix(c00, c10, uv.x), mix(c01, c11, uv.x), uv.y);
         a = 0.22 * strength;
@@ -103,7 +135,7 @@ void main() {
     } else if (mode < 7.5) {
         // Dusk: accent at the top into a warmer neighbour at the bottom.
         float t = px.y / size.y;
-        col = mix(accent.rgb, clamp(hueShift(accent.rgb, -1.4), 0.0, 1.0), t);
+        col = mix(accent.rgb, c3.a > 0.0 ? c3.rgb : clamp(hueShift(accent.rgb, -1.4), 0.0, 1.0), t);
         a = (0.10 + 0.10 * t) * strength;
     } else if (mode < 8.5) {
         // Lines: 1 px diagonal stripes every 7 px, antialiased.
@@ -111,12 +143,67 @@ void main() {
         float l = clamp(1.0 - abs(s - 0.5) * 1.2, 0.0, 1.0);
         col = vec3(1.0);
         a = l * 0.045 * strength;
-    } else {
+    } else if (mode < 9.5) {
         // Dots: a 12 px grid of soft dots.
         vec2 c = mod(px, 12.0) - 6.0;
         float d = clamp(1.6 - length(c), 0.0, 1.0);
         col = vec3(1.0);
         a = d * 0.09 * strength;
+    } else if (mode < 10.5) {
+        // Flow: three clouds circling slowly, each on its own path.
+        float t = time * 0.25;
+        vec2 p1 = size * vec2(0.25 + 0.20 * sin(t), 0.20 + 0.15 * cos(t * 0.8));
+        vec2 p2 = size * vec2(0.75 + 0.18 * cos(t * 0.7 + 1.0), 0.45 + 0.25 * sin(t * 0.9));
+        vec2 p3 = size * vec2(0.50 + 0.25 * sin(t * 0.6 + 2.0), 0.95 + 0.10 * cos(t * 1.1));
+        float b1 = blob(px, p1, m * 0.55), b2 = blob(px, p2, m * 0.5), b3 = blob(px, p3, m * 0.55);
+        float sum = b1 + b2 + b3 + 1e-4;
+        col = (accent.rgb * b1 + second() * b2 + third() * b3) / sum;
+        a = clamp(sum, 0.0, 1.0) * 0.34 * strength;
+    } else if (mode < 11.5) {
+        // Nebula: two layers of soft noise drifting at different speeds.
+        vec2 uv = px / 140.0;
+        float n1 = fbm(uv + vec2(time * 0.05, 0.0));
+        float n2 = fbm(uv * 1.7 - vec2(time * 0.03, time * 0.02) + 5.0);
+        col = mix(accent.rgb, second(), smoothstep(0.3, 0.7, n2));
+        a = smoothstep(0.3, 0.8, n1) * 0.40 * strength;
+    } else if (mode < 12.5) {
+        // Waves: three soft bands of light, rolling.
+        float w = 0.0;
+        for (int i = 0; i < 3; i++) {
+            float fi = float(i);
+            float y = size.y * (0.35 + 0.22 * fi)
+                + sin(px.x / (90.0 + 30.0 * fi) + time * (0.5 + 0.2 * fi) + fi * 2.0) * (14.0 + 6.0 * fi);
+            float d = (px.y - y) / (24.0 + 10.0 * fi);
+            w += exp(-d * d) * (0.8 - 0.2 * fi);
+        }
+        col = mix(accent.rgb, second(), px.y / size.y);
+        a = clamp(w, 0.0, 1.0) * 0.42 * strength;
+    } else if (mode < 13.5) {
+        // Prism: a wide rainbow-tinted band sliding across, then again.
+        vec2 uv = px / m;
+        float pos = fract(time * 0.06) * 2.6 - 0.8;
+        float d = (uv.x + uv.y * 0.5) - pos;
+        float band = exp(-d * d * 9.0);
+        col = clamp(hueShift(accent.rgb, d * 6.0 + time * 0.2), 0.0, 1.0);
+        a = band * 0.28 * strength;
+    } else if (mode < 14.5) {
+        // Stars: one possible star per 22 px cell, twinkling at its own pace.
+        vec2 cell = floor(px / 22.0);
+        float h = hash(cell);
+        vec2 c = (cell + 0.25 + 0.5 * vec2(hash(cell + 3.1), hash(cell + 7.7))) * 22.0;
+        float d = length(px - c);
+        float on = step(0.62, h);
+        float tw = 0.5 + 0.5 * sin(time * (1.0 + 2.0 * h) + h * 40.0);
+        float star = clamp(1.8 - d, 0.0, 1.0) + exp(-d * d * 0.08) * 0.5;
+        col = mix(vec3(1.0), accent.rgb, 0.4);
+        a = on * star * tw * 0.7 * strength;
+    } else {
+        // Pulse: edge light that breathes, brighter at the top.
+        float e = min(min(px.x, size.x - px.x), min(px.y, size.y - px.y));
+        float edge = exp(-e / 22.0) * (0.6 + 0.4 * exp(-px.y / (size.y * 0.6)));
+        float breath = 0.55 + 0.45 * sin(time * 1.2);
+        col = mix(accent.rgb, second(), 0.5 + 0.5 * sin(time * 0.4));
+        a = edge * breath * 0.60 * strength;
     }
 
     float k = roundedMask(px) * qt_Opacity;

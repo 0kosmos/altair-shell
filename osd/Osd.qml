@@ -127,6 +127,7 @@ Scope {
 
             GlassBackground {
                 id: pill
+                animate: root.shown
                 anchors.fill: parent
                 radius: height / 2
 

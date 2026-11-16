@@ -6,6 +6,7 @@ import qs.core
 import qs.theme
 
 Page {
+    id: page
     title: "Effects"
 
     StyledText {
@@ -67,16 +68,144 @@ Page {
 
     SettingRow {
         title: "Panel backgrounds"
-        description: "A touch of colour or texture on panels, menus, Settings, the bar and the dock, from your accent colour. Drawn once, so it costs nothing while idle."
+        description: "Colour, texture or gentle motion on panels and menus, from your accent colour (or palette). Moving styles only move while a panel or menu is open; the bar, dock and Settings show them still, so nothing runs while idle."
+    }
+
+    // Live preview (moves while this page is shown).
+    Item {
+        Layout.fillWidth: true
+        Layout.preferredHeight: 128
+        Rectangle {
+            anchors.fill: parent
+            radius: Theme.radius.m
+            color: Theme.dark ? "#0b0c10" : "#d9dbe2"
+        }
+        GlassBackground {
+            id: previewGlass
+            anchors.centerIn: parent
+            width: Math.min(parent.width - 32, 420)
+            height: 100
+            radius: Theme.radius.l
+            animate: page.visible
+            StyledText {
+                anchors.left: parent.left
+                anchors.top: parent.top
+                anchors.margins: Theme.space.l
+                text: Theme.panelStyles[Theme.panelFx].replace(/^./, c => c.toUpperCase())
+                font.pixelSize: Theme.font.title
+                font.weight: Font.DemiBold
+            }
+            StyledText {
+                anchors.left: parent.left
+                anchors.bottom: parent.bottom
+                anchors.margins: Theme.space.l
+                text: Theme.panelFx >= 10 ? (Theme.panelFxAnimated ? "Moves while a panel is open" : "Still (animation off)") : "Still"
+                color: Theme.fgMuted
+                font.pixelSize: Theme.font.small
+            }
+        }
+    }
+
+    StyledText {
+        text: "Still"
+        color: Theme.fgMuted
+        font.pixelSize: Theme.font.small
     }
     Chips {
-        Layout.bottomMargin: Theme.space.s
         options: [{ label: "None", value: "none" }, { label: "Glow", value: "glow" }, { label: "Aurora", value: "aurora" },
                   { label: "Grain", value: "grain" }, { label: "Mesh", value: "mesh" }, { label: "Sheen", value: "sheen" },
                   { label: "Edge light", value: "edge" }, { label: "Dusk", value: "dusk" }, { label: "Lines", value: "lines" },
                   { label: "Dots", value: "dots" }]
         current: Theme.panelStyles.indexOf(Config.effects.panelStyle) > 0 ? Config.effects.panelStyle : "none"
         onSelected: value => Config.effects.panelStyle = value
+    }
+    StyledText {
+        text: "Moving"
+        color: Theme.fgMuted
+        font.pixelSize: Theme.font.small
+    }
+    Chips {
+        Layout.bottomMargin: Theme.space.s
+        options: [{ label: "Flow", value: "flow" }, { label: "Nebula", value: "nebula" }, { label: "Waves", value: "waves" },
+                  { label: "Prism", value: "prism" }, { label: "Stars", value: "stars" }, { label: "Pulse", value: "pulse" }]
+        current: Config.effects.panelStyle
+        onSelected: value => Config.effects.panelStyle = value
+    }
+
+    SettingRow {
+        title: "Intensity"
+        description: "How strong the background shows."
+        RowLayout {
+            spacing: Theme.space.m
+            Slider {
+                Layout.preferredWidth: 200
+                from: 30
+                to: 160
+                stepSize: 10
+                showTicks: false
+                value: Math.round(Theme.panelIntensity * 100)
+                onMoved: v => Config.effects.panelIntensity = v / 100
+            }
+            StyledText {
+                Layout.preferredWidth: 44
+                horizontalAlignment: Text.AlignRight
+                text: Math.round(Theme.panelIntensity * 100) + "%"
+                color: Theme.fgMuted
+                tabular: true
+            }
+        }
+    }
+    SettingRow {
+        title: "Colours"
+        description: Theme.usingPalette ? "Shades of the accent, or the colours of your palette." : "Shades of the accent. Choose a palette in Appearance to use its colours."
+        Segmented {
+            options: [{ label: "Accent", value: "accent" }, { label: "Palette", value: "palette" }]
+            current: Config.effects.panelColors
+            onSelected: value => Config.effects.panelColors = value
+        }
+    }
+    SettingRow {
+        title: "Animate moving styles"
+        description: "Off shows them still. Moving costs some CPU while a panel is open (30 frames a second), nothing otherwise."
+        Toggle {
+            checked: Config.effects.panelAnimate
+            onToggled: value => Config.effects.panelAnimate = value
+        }
+    }
+    SettingRow {
+        title: "Speed"
+        Segmented {
+            options: [{ label: "Slow", value: 0.5 }, { label: "Normal", value: 1 }, { label: "Fast", value: 2 }]
+            current: Config.effects.panelSpeed
+            onSelected: value => Config.effects.panelSpeed = value
+        }
+    }
+    SettingRow {
+        title: "Panel motion"
+        description: "How panels and menus open and close."
+        Segmented {
+            options: [{ label: "Glide", value: "glide" }, { label: "Spring", value: "spring" }, { label: "Zoom", value: "zoom" },
+                      { label: "Drop", value: "drop" }, { label: "Fade", value: "fade" }]
+            current: Theme.panelMotion
+            onSelected: value => {
+                Config.effects.panelMotion = value;
+                // Show it: open and close the calendar once.
+                demoMotion.restart();
+            }
+        }
+    }
+    Timer {
+        id: demoMotion
+        interval: 250
+        onTriggered: {
+            ShellState.open("calendar");
+            demoClose.restart();
+        }
+    }
+    Timer {
+        id: demoClose
+        interval: 1100
+        onTriggered: if (ShellState.openPanel === "calendar") ShellState.close()
     }
 
     SettingRow {

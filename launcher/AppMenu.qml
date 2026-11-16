@@ -123,6 +123,7 @@ Item {
     }
 
     GlassBackground {
+        animate: true
         anchors.fill: parent
         radius: Theme.radius.m
         solidity: 0.5     // sits on the launcher's own glass

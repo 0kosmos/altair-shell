@@ -18,8 +18,23 @@ Singleton {
     readonly property bool liquidGlass: !lowPower && Config.effects.liquidGlass
     // Panel decoration: 0 none, 1 glow, 2 aurora, 3 grain (off in low-power).
     // Panel decorations (shaders/panelfx.frag modes, in this order).
-    readonly property list<string> panelStyles: ["none", "glow", "aurora", "grain", "mesh", "sheen", "edge", "dusk", "lines", "dots"]
+    readonly property list<string> panelStyles: ["none", "glow", "aurora", "grain", "mesh", "sheen", "edge", "dusk", "lines", "dots",
+        "flow", "nebula", "waves", "prism", "stars", "pulse"]
     readonly property int panelFx: lowPower ? 0 : Math.max(0, panelStyles.indexOf(Config.effects.panelStyle))
+    // Modes 10+ move (only while a panel or menu is open, see GlassBackground).
+    readonly property bool panelFxAnimated: panelFx >= 10 && animations && Config.effects.panelAnimate
+    readonly property real panelIntensity: Math.max(0.3, Math.min(1.6, Config.effects.panelIntensity || 1))
+    readonly property real panelSpeed: Math.max(0.25, Math.min(3, Config.effects.panelSpeed || 1))
+    // Second and third colour of the decoration (alpha 0 = derived from the
+    // accent in the shader).
+    readonly property bool panelPaletteColors: Config.effects.panelColors === "palette" && usingPalette
+    readonly property vector4d panelC2: panelPaletteColors ? vec(paletteColors[2]) : Qt.vector4d(0, 0, 0, 0)
+    readonly property vector4d panelC3: panelPaletteColors ? vec(paletteColors[1]) : Qt.vector4d(0, 0, 0, 0)
+    function vec(c: color): vector4d {
+        return Qt.vector4d(c.r, c.g, c.b, 1);
+    }
+    // How panels open/close: "glide" | "spring" | "zoom" | "drop" | "fade".
+    readonly property string panelMotion: ["spring", "zoom", "drop", "fade"].indexOf(Config.effects.panelMotion) !== -1 ? Config.effects.panelMotion : "glide"
 
     // ---- Colours ------------------------------------------------------------
     // Palette: "default" (the built-in dark/light colours), the id of a

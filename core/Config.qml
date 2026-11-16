@@ -181,6 +181,15 @@ Singleton {
                 // Decoration on panels, menus, Settings, bar and dock:
                 // "none" | "glow" | "aurora" | "grain" (static, no cost).
                 property string panelStyle: "glow"     // see Theme.panelStyles
+                property real panelIntensity: 1        // 0.3 – 1.6
+                // Animated styles: move while a panel or menu is open.
+                property bool panelAnimate: true
+                property real panelSpeed: 1            // 0.5 slow, 1, 2 fast
+                // Colours of multi-colour styles: "accent" (shades of the
+                // accent) | "palette" (the palette's colours, if one is used).
+                property string panelColors: "accent"
+                // How panels open and close: "glide" | "spring" | "zoom" | "drop" | "fade"
+                property string panelMotion: "glide"
                 // Launcher: how results move while typing: "off" | "subtle" | "lively".
                 property string searchAnimations: "subtle"
             }

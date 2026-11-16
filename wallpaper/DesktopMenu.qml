@@ -78,6 +78,7 @@ PanelWindow {
 
     GlassBackground {
         id: background
+        animate: true
         anchors.fill: parent
         radius: Theme.radius.m
         // Over busy wallpapers (and without blur) text must stay readable.
