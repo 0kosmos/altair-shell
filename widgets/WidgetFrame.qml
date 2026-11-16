@@ -13,8 +13,9 @@ import qs.theme
 // toolbar with an opacity slider and a remove button.
 //
 // Magnetic groups: a Visualizer, Equalizer or Lyrics widget dropped next to a
-// Music widget attaches to it, a Weather widget to any widget: on its top or
-// bottom, and next to wide widgets also on its left or right. Widgets
+// Music widget attaches to it; Weather, Clock, Round clock and System attach
+// to any widget (and take others themselves): on its top or bottom, and on
+// its left or right where the result keeps a sensible size. Widgets
 // attached at the
 // top/bottom take the Music widget's width, at the left/right its height; an
 // attached widget can take another one further out on the same side. The
@@ -81,6 +82,29 @@ Item {
     }
     readonly property var groupRoot: joinParent ? joinParent.groupRoot : frame
 
+    // How far the widgets attached to this one (and further out) stick out
+    // past it on each side, in px. Built from sizes only (not positions), so
+    // positions can use it without a binding loop.
+    readonly property var ext: {
+        const e = { l: 0, t: 0, r: 0, b: 0 };
+        const L = childLeft?.attached ? childLeft : null, R = childRight?.attached ? childRight : null;
+        const T = childTop?.attached ? childTop : null, B = childBottom?.attached ? childBottom : null;
+        if (L) e.l = L.width + L.ext.l;
+        if (R) e.r = R.width + R.ext.r;
+        if (T) e.t = T.height + T.ext.t;
+        if (B) e.b = B.height + B.ext.b;
+        // Top/bottom children are as wide as this one; their own side
+        // children stick out sideways (and vice versa).
+        for (const c of [T, B]) if (c) { e.l = Math.max(e.l, c.ext.l); e.r = Math.max(e.r, c.ext.r); }
+        for (const c of [L, R]) if (c) { e.t = Math.max(e.t, c.ext.t); e.b = Math.max(e.b, c.ext.b); }
+        return e;
+    }
+    // The free part of the screen (minus bar, dock), relative to the monitor.
+    readonly property var area: {
+        const u = mon?.usable ?? { x: mon.x, y: mon.y, w: mon.w, h: mon.h };
+        return { x: u.x - mon.x, y: u.y - mon.y, w: u.w, h: u.h };
+    }
+
     // A dragged widget is pulled into a slot within this distance, and only
     // lets go beyond `magnetRelease`.
     readonly property int magnet: 28
@@ -124,9 +148,10 @@ Item {
         Widgets.remove(itemId);
     }
 
-    // Slots `f` offers this widget. A standalone widget (Music for
-    // Visualizer/Equalizer/Lyrics, any widget for Weather) offers top and
-    // bottom, and left/right when it is wide (2:1 or more). An attached
+    // Slots `f` offers this widget. A standalone widget offers top and
+    // bottom (Visualizer/Equalizer/Lyrics only attach to Music; widgets that
+    // only hang on Music never take others), and left/right when it is wide
+    // (2:1 or more) or this widget would not grow much there. An attached
     // widget offers only its own side, further out. A slot is skipped if
     // this widget would get too small or too big there.
     function slotsOf(f: var): var {
@@ -134,13 +159,17 @@ Item {
         if (f.attached) {
             sides = [f.side];
         } else {
-            if (f.canAttach || (attachTo === "music" && f.item?.type !== "music"))
+            if (f.attachTo === "music" || (attachTo === "music" && f.item?.type !== "music"))
                 return [];
-            sides = f.width >= f.height * 2 ? ["top", "bottom", "left", "right"] : ["top", "bottom"];
+            sides = ["top", "bottom", "left", "right"];
         }
         return sides.filter(sd => {
             const sc = scaleIn(f, sd);
-            return sc >= 0.45 && sc <= 2.5;
+            if (sc < 0.45 || sc > 2.5)
+                return false;
+            if ((sd === "left" || sd === "right") && !f.attached && f.width < f.height * 2 && sc > 1.3)
+                return false;
+            return true;
         });
     }
 
@@ -209,19 +238,50 @@ Item {
         NumberAnimation { duration: Theme.anim.normal; easing.type: Theme.anim.easingSlide }
     }
     // Base size (depends on the style), then scaled.
-    readonly property var base: Widgets.sizeOf(item)
-    width: Math.round(base.w * s)
-    height: Math.round(base.h * s)
+    // A widget can ask for a different size than its style's (fitW / fitH,
+    // e.g. the system widget without its GPU row); the frame glides there.
+    readonly property var styleSize: Widgets.sizeOf(item)
+    readonly property var base: ({
+        w: (content.item?.fitW ?? -1) > 0 ? content.item.fitW : styleSize.w,
+        h: (content.item?.fitH ?? -1) > 0 ? content.item.fitH : styleSize.h
+    })
+    property real shownW: base.w
+    property real shownH: base.h
+    Behavior on shownW {
+        enabled: frame.settledIn
+        NumberAnimation { duration: Theme.anim.slow; easing.type: Easing.OutQuint }
+    }
+    Behavior on shownH {
+        enabled: frame.settledIn
+        NumberAnimation { duration: Theme.anim.slow; easing.type: Easing.OutQuint }
+    }
+    width: Math.round(shownW * s)
+    height: Math.round(shownH * s)
 
     // While this frame is moved, it follows Snap.rect (smooth, also while
     // settling after release); otherwise its saved spot, kept on screen.
     property bool owning: false
+    // Resting widgets (with their group) stay inside the free area: when the
+    // bar or dock moves over them they glide out of its way (the saved spot
+    // is kept, so they come back when it moves away again).
     x: owning && Snap.rect ? Snap.rect.x - mon.x
         : attached ? slotPos(parentFrame, side, width, height).x
-        : Math.max(0, Math.min(mon.w - width, item?.x ?? 0))
+        : Math.max(area.x + ext.l, Math.min(area.x + area.w - width - ext.r, item?.x ?? 0))
     y: owning && Snap.rect ? Snap.rect.y - mon.y
         : attached ? slotPos(parentFrame, side, width, height).y
-        : Math.max(0, Math.min(mon.h - height, item?.y ?? 0))
+        : Math.max(area.y + ext.t, Math.min(area.y + area.h - height - ext.b, item?.y ?? 0))
+    readonly property bool glide: !owning && !attached && !Snap.moving && settledIn
+    Behavior on x {
+        enabled: frame.glide
+        NumberAnimation { duration: Theme.anim.slow; easing.type: Easing.OutQuint }
+    }
+    Behavior on y {
+        enabled: frame.glide
+        NumberAnimation { duration: Theme.anim.slow; easing.type: Easing.OutQuint }
+    }
+    // No glide while the layer is being built.
+    property bool settledIn: false
+    Component.onCompleted: Qt.callLater(() => frame.settledIn = true)
 
 
     readonly property real radius: Theme.radius.l * s
@@ -279,8 +339,8 @@ Item {
     // default text rendering scales without blurring).
     Loader {
         id: content
-        width: frame.base.w
-        height: frame.base.h
+        width: frame.shownW
+        height: frame.shownH
         scale: frame.s
         transformOrigin: Item.TopLeft
         // Style changes switch the widget's look in place.
@@ -288,6 +348,14 @@ Item {
             item.style = Qt.binding(() => Widgets.styleOf(frame.item));
             if (item.live !== undefined)
                 item.live = Qt.binding(() => frame.live);
+            // Where the widget is on its monitor (Weather draws moving effects
+            // in a small window of its own there, see WeatherWidget).
+            if (item.frameRect !== undefined) {
+                item.frameRect = Qt.binding(() => Qt.rect(frame.x, frame.y, frame.width, frame.height));
+                item.frameRadius = Qt.binding(() => frame.radius);
+                item.screenName = Qt.binding(() => frame.mon.name);
+                item.moving = Qt.binding(() => frame.owning || Snap.moving);
+            }
         }
         source: {
             switch (frame.item?.type) {
@@ -363,7 +431,7 @@ Item {
                 const others = frame.siblings.filter(f => f && mine.indexOf(f) === -1 && f.visible)
                     .map(f => ({ x: frame.mon.x + f.x, y: frame.mon.y + f.y, w: f.width, h: f.height }));
                 Snap.begin(frame.mon, frame.radius, { x: start.x, y: start.y, w: frame.width, h: frame.height },
-                           { targets: others, dim: false });
+                           { targets: others, dim: false, extent: frame.ext });
                 frame.owning = true;
             }
             const free = (mouse.modifiers & Qt.ShiftModifier) !== 0;

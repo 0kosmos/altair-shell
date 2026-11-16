@@ -35,6 +35,12 @@ Item {
     readonly property string memText: gb(SysStats.memUsed) + " / " + gb(SysStats.memTotal) + " GB"
     readonly property string gpuText: SysStats.gpuTemp >= 0 ? SysStats.gpuTemp + " °C" : "—"
 
+    // Size the frame should have (WidgetFrame glides to it): fits what is
+    // shown, so turning the GPU reading off leaves no gap.
+    readonly property real fitW: style === "rings" ? rings.implicitWidth + 40
+        : style === "compact" ? compact.implicitWidth + 40 : -1
+    readonly property real fitH: style === "bars" ? bars.implicitHeight + 36 : -1
+
     function gb(bytes: real): string {
         return (bytes / 1073741824).toFixed(1);
     }
@@ -85,7 +91,10 @@ Item {
     }
 
     ColumnLayout {
-        anchors.fill: parent
+        id: bars
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
         anchors.margins: 18
         visible: root.style === "bars"
         spacing: 12
@@ -113,7 +122,6 @@ Item {
                 tabular: true
             }
         }
-        Item { Layout.fillHeight: true }
     }
 
     // ---- Rings -----------------------------------------------------------------------
@@ -162,6 +170,7 @@ Item {
     }
 
     RowLayout {
+        id: rings
         anchors.centerIn: parent
         visible: root.style === "rings"
         spacing: 10
@@ -186,6 +195,7 @@ Item {
 
     // ---- Compact ---------------------------------------------------------------------
     RowLayout {
+        id: compact
         anchors.centerIn: parent
         visible: root.style === "compact"
         spacing: Theme.space.m

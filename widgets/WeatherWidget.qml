@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import QtQuick
 import QtQuick.Layouts
+import Quickshell.Wayland
+import Quickshell
 import qs.components
+import qs.core
 import qs.services
 import qs.theme
 
@@ -15,6 +18,8 @@ import qs.theme
 Item {
     id: root
     property string style: "card"
+    // False while windows cover the desktop (WidgetFrame): effects pause.
+    property bool live: true
 
     Component.onCompleted: Weather.users++
     Component.onDestruction: Weather.users--
@@ -24,6 +29,66 @@ Item {
         const d = new Date(iso + "T12:00:00");
         const s = Qt.locale().toString(d, "ddd");
         return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    // Set by WidgetFrame: the widget's rect on its monitor, its corner radius,
+    // the monitor, and whether it is being dragged.
+    property rect frameRect
+    property real frameRadius: Theme.radius.l
+    property string screenName: ""
+    property bool moving: false
+
+    // Sun glow, stars, haze: static, drawn right here behind the text.
+    readonly property bool effects: Config.widgets.weatherEffects && Weather.configured && Weather.loaded
+    Loader {
+        anchors.fill: parent
+        active: root.effects
+        sourceComponent: WeatherEffect {
+            code: Weather.code
+            day: Weather.isDay
+            drawMoving: false
+        }
+    }
+
+    // Rain, snow, storms move: drawn in a small overlay window of their own
+    // over the widget (drops run over the glass). Animating inside the widget
+    // layer would redraw every widget on it (and Hyprland would re-blur it)
+    // ~24 times a second: ~6 % of a core here, vs. about 1 % this way.
+    // Only while visible, not covered, not in edit mode or being dragged.
+    LazyLoader {
+        active: root.effects && fx.moving && root.live && !root.moving && !Widgets.editing
+            && Theme.animations && root.frameRect.width > 0 && root.screenName !== ""
+        PanelWindow {
+            screen: Quickshell.screens.find(s => s.name === root.screenName) ?? null
+            WlrLayershell.namespace: "altair-widget-fx"
+            WlrLayershell.layer: WlrLayer.Bottom
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+            exclusionMode: ExclusionMode.Ignore
+            anchors.top: true
+            anchors.left: true
+            margins.left: Math.round(root.frameRect.x)
+            margins.top: Math.round(root.frameRect.y)
+            implicitWidth: Math.round(root.frameRect.width)
+            implicitHeight: Math.round(root.frameRect.height)
+            color: "transparent"
+            mask: Region {}
+
+            WeatherEffect {
+                anchors.fill: parent
+                code: Weather.code
+                day: Weather.isDay
+                radius: root.frameRadius
+                drawStatic: false
+            }
+        }
+    }
+    // Only for its `moving` flag (what the code means).
+    WeatherEffect {
+        id: fx
+        visible: false
+        code: Weather.code
+        drawStatic: false
+        drawMoving: false
     }
 
     // ---- Not set up / not loaded --------------------------------------------------------

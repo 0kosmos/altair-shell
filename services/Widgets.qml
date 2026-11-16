@@ -40,9 +40,9 @@ Singleton {
     // + a case in widgets/WidgetFrame.qml. `attach`: the type can attach to
     // other widgets: "music" (only to a Music widget) or "any".
     readonly property var types: [
-        { type: "clock", name: "Clock", icon: "schedule", w: 320, h: 150,
+        { type: "clock", name: "Clock", icon: "schedule", w: 320, h: 150, attach: "any",
           styles: [{ id: "classic", name: "Classic" }, { id: "light", name: "Light" }, { id: "minimal", name: "Minimal" }, { id: "date", name: "Date" }] },
-        { type: "roundclock", name: "Round clock", icon: "nest_clock_farsight_analog", w: 220, h: 220,
+        { type: "roundclock", name: "Round clock", icon: "nest_clock_farsight_analog", w: 220, h: 220, attach: "any",
           styles: [{ id: "classic", name: "Classic" }, { id: "minimal", name: "Minimal" }, { id: "numbers", name: "Numbers" }, { id: "dots", name: "Dots" }] },
         { type: "music", name: "Music", icon: "music_note", w: 360, h: 120,
           styles: [{ id: "card", name: "Card", w: 380, h: 136 }, { id: "disc", name: "Disc", w: 420, h: 156 },
@@ -57,7 +57,7 @@ Singleton {
         { type: "lyrics", name: "Lyrics", icon: "lyrics", w: 360, h: 200, attach: "music",
           styles: [{ id: "scroll", name: "Scroll" }, { id: "focus", name: "Focus", w: 380, h: 120 },
                    { id: "minimal", name: "Minimal", w: 380, h: 56 }] },
-        { type: "stats", name: "System", icon: "monitoring", w: 300, h: 132,
+        { type: "stats", name: "System", icon: "monitoring", w: 300, h: 132, attach: "any",
           styles: [{ id: "bars", name: "Bars" }, { id: "rings", name: "Rings", w: 300, h: 140 },
                    { id: "compact", name: "Compact", w: 360, h: 52 }] },
     ]

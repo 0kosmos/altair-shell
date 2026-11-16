@@ -113,6 +113,15 @@ Page {
     Section { text: "Weather" }
 
     SettingRow {
+        title: "Weather effects"
+        description: "Rain, snow and storms move behind the Weather widget (only while it is not covered by windows); a sun glow, stars or haze otherwise."
+        Toggle {
+            checked: Config.widgets.weatherEffects
+            onToggled: value => Config.widgets.weatherEffects = value
+        }
+    }
+
+    SettingRow {
         id: weatherRow
         title: "Place"
         description: (Weather.configured ? "Now: " + Weather.city + ". " : "")

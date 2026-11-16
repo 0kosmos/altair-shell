@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
+import qs.core
 import qs.services
 import qs.theme
 
@@ -41,6 +42,28 @@ Scope {
                         Qt.callLater(Hyprland.refreshToplevels);
                 }
             }
+
+            // The bar or dock moved (or changed what it reserves): ask Hyprland
+            // for the new free area once it has re-arranged, so widgets can
+            // glide out of the way (WidgetFrame.area).
+            Connections {
+                target: Theme
+                function onBarPositionChanged() { reserved.restart(); }
+            }
+            Connections {
+                target: Config.dock
+                function onEnabledChanged() { reserved.restart(); }
+                function onPositionChanged() { reserved.restart(); }
+                function onReserveSpaceChanged() { reserved.restart(); }
+                function onAutoHideChanged() { reserved.restart(); }
+                function onIconSizeChanged() { reserved.restart(); }
+            }
+            Timer {
+                id: reserved
+                interval: 900   // after the dock's slide-out/in rebuild
+                onTriggered: Hyprland.refreshMonitors()
+            }
+            Component.onCompleted: Hyprland.refreshMonitors()
 
             // Kept a moment after leaving edit mode, for the fade-out.
             property bool lingering: false

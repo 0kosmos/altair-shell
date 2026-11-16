@@ -97,9 +97,15 @@ Singleton {
         };
     }
 
-    // opts (optional): { targets: [{ x, y, w, h }] to align with, dim: false }
+    // How far the dragged thing's group sticks out past its rect
+    // ({ l, t, r, b } in px): the whole group is kept on screen.
+    property var extent: ({ l: 0, t: 0, r: 0, b: 0 })
+
+    // opts (optional): { targets: [{ x, y, w, h }] to align with, dim: false,
+    // extent: { l, t, r, b } }
     function begin(mon: var, radius: real, start: var, opts: var): void {
         targets = opts?.targets ?? [];
+        extent = opts?.extent ?? { l: 0, t: 0, r: 0, b: 0 };
         dim = opts?.dim ?? true;
         screenName = mon.name;
         monitor = { x: mon.x, y: mon.y, w: mon.w, h: mon.h };
@@ -203,9 +209,10 @@ Singleton {
     }
 
     function clamp(r: var): var {
+        const e = extent;
         return {
-            x: Math.max(usable.x, Math.min(usable.x + usable.w - r.w, r.x)),
-            y: Math.max(usable.y, Math.min(usable.y + usable.h - r.h, r.y)),
+            x: Math.max(usable.x + e.l, Math.min(usable.x + usable.w - r.w - e.r, r.x)),
+            y: Math.max(usable.y + e.t, Math.min(usable.y + usable.h - r.h - e.b, r.y)),
             w: r.w, h: r.h
         };
     }

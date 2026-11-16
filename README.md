@@ -58,16 +58,20 @@ frosted glass, smooth motion and close to zero CPU when idle.
   Cover, Minimal; drag the song bar to seek; the player's own volume;
   "Playing on Spotify"; any MPRIS player), visualizer (Bars, Mirror, Wave,
   Peaks, Circle; needs `cava`), **weather** (Card, Forecast, Hourly,
-  Minimal; Open-Meteo, no account; attaches to any widget, e.g. under a
-  clock), **lyrics** (Scroll, Focus, Minimal; time-synced from LRCLIB when
+  Minimal; Open-Meteo, no account; optional rain / snow / storm / sun /
+  fog effects), **lyrics** (Scroll, Focus, Minimal; time-synced from LRCLIB when
   available), **equalizer** (16 presets + 6 bands you can
   drag, for the music player only, live; built on PipeWire's own filter, no
   extra daemon) and system (Bars,
   Rings, Compact: CPU, memory, optional GPU temperature). Drop a Visualizer
   or Equalizer next to a Music widget and it attaches like a magnet (top or
-  bottom; left or right too with the Card and Disc styles), previewed live
-  while dragging: one card that moves together (drag it away to detach). Animated widgets
-  pause while windows cover the desktop.
+  bottom; left or right too with the Card and Disc styles); weather,
+  clocks and system attach to any widget (e.g. weather under a round
+  clock). Previewed live while dragging: one card that moves together and
+  stays on screen as a whole (drag a part away to detach). Widgets glide
+  out of the way when the bar or dock moves over them, and resize to what
+  they show (e.g. without the GPU reading). Animated widgets pause while
+  windows cover the desktop.
   Edit mode dims the screen and shows a dock to add widgets; drag to move
   (with the same smooth snapping, also to other widgets), drag the corner to
   resize, click a widget for its style, opacity and remove buttons. Several

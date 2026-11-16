@@ -226,6 +226,9 @@ Singleton {
                 property real weatherLat: 0
                 property real weatherLon: 0
                 property string weatherUnits: "c"
+                // Rain, snow, sun glow... drawn behind the Weather widget
+                // (moving ones only while it is uncovered).
+                property bool weatherEffects: true
                 // Music "Disc" style: the record spins while playing.
                 property bool discSpin: true
             }
