@@ -53,7 +53,7 @@ Page {
 
     SettingRow {
         title: "Built-in visualizer"
-        description: "Each Music widget can have its own: select it in edit mode and click the visualizer button in its toolbar. Ring: bars around a round album art (Card, Disc). Glow: a glow behind the art that swells with the bass. Bars, Wave, Mirror: faint levels behind the whole player. Uses cava and the speed setting below. The Circle style of the separate Visualizer widget is not offered while it hangs on a player (two album arts); use Ring instead."
+        description: "Each Music widget can have its own: select it in edit mode and click the visualizer button in its toolbar. Ring: bars around a round album art (Card, Disc). Glow: a glow around the art that swells with the music. Bars, Wave, Mirror: faint levels behind the whole player. Uses cava and the speed setting below. The Circle style of the separate Visualizer widget is not offered while it hangs on a player (two album arts); use Ring instead."
     }
 
     Section { text: "Visualizer" }

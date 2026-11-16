@@ -16,7 +16,7 @@ import qs.theme
 // see WidgetFrame.qml).
 // Built-in visualizer (`vis`, per widget, what each style offers is in
 // services/Widgets.qml): ring = circle bars around a round album art (or
-// the record), glow = a glow behind the art swelling with the bass,
+// the record), glow = a glow behind the art swelling with the music,
 // bars / wave / mirror = faint levels behind the whole player. Costs like
 // the Visualizer widget (a redraw per cava frame), only while playing and
 // not covered.
@@ -77,7 +77,7 @@ Item {
         property real size: 96
         property real ringRoom: 14
         property real radius: Theme.radius.m
-        property real glowScale: 1.5     // glow size relative to the art
+        property real glowScale: 1.6     // glow size relative to the art
         readonly property bool ring: root.vis === "ring"
         readonly property real art: ring ? size - 14 : size
         readonly property real len: Math.round(size * 0.17)

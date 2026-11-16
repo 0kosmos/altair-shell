@@ -12,7 +12,7 @@ import qs.theme
 //   circle  bars radiating from a ring (mirrored left/right), leaving the
 //           middle free (the Visualizer widget puts the album art there;
 //           ringRadius/ringLength fit it around something else)
-//   glow    a soft round glow that swells with the bass (behind album art)
+//   glow    a soft round glow that swells with the music (behind album art)
 // It redraws only when cava delivers a frame (at the chosen fps), never at
 // the monitor's refresh rate; with no data (paused, cava missing) the bars
 // rest as small dots.
@@ -43,9 +43,40 @@ Item {
         return Math.max(0, Math.min(1, v[i] ?? 0));
     }
 
+    // Small shapes (ring, glow) are scaled to the music itself: `loudest` is the
+    // recent loudest bar, falling slowly (~2 s to halve), so the loudest
+    // moment always reaches full size whatever the song or volume.
+    // (Not called `top`: that is Item's anchor line.) Bars,
+    // wave and peaks show cava's values as they are (sensitivity setting).
+    property real loudest: 0.2
+    readonly property bool normalised: style === "circle" || style === "glow"
+    function norm(i: int): real {
+        return Math.min(1, level(i) / loudest);
+    }
+    // Overall loudness for the glow: the mean of the loudest third of bars.
+    readonly property real energy: {
+        if (style !== "glow" || n === 0 || v.length === 0)
+            return 0;
+        const s = [];
+        for (let i = 0; i < n; i++)
+            s.push(norm(i));
+        s.sort((a, b) => b - a);
+        const k = Math.max(1, Math.floor(n / 3));
+        let sum = 0;
+        for (let i = 0; i < k; i++)
+            sum += s[i];
+        return sum / k;
+    }
+
     // Peaks: per bar the highest recent level, falling ~1.2 heights/s.
     property var peaks: []
     onVChanged: {
+        if (normalised && v.length > 0) {
+            let m = 0;
+            for (let i = 0; i < n; i++)
+                m = Math.max(m, level(i));
+            loudest = Math.max(0.08, m, loudest * Math.pow(0.5, 1 / (2 * Cava.fps)));
+        }
         if (style !== "peaks")
             return;
         if (v.length === 0) {
@@ -125,7 +156,8 @@ Item {
             Item {
                 required property int index
                 readonly property int bar: index < root.n ? index : root.n * 2 - 1 - index
-                readonly property real lv: Math.min(1, root.v[bar] ?? 0)
+                // Square root: quiet parts still move visibly on short bars.
+                readonly property real lv: Math.sqrt(root.norm(bar))
                 anchors.fill: parent
                 rotation: (index + 0.5) * 360 / (root.n * 2)
                 Rectangle {
@@ -141,41 +173,41 @@ Item {
     }
 
     // ---- Glow ----------------------------------------------------------------------
-    // One static radial gradient; only its scale and opacity follow the bass
-    // (the lowest quarter of the bars), so a frame is cheap to draw.
+    // One radial gradient; only its scale and opacity follow the music, so a
+    // frame is cheap to draw. Drawn at a fixed 200 px and scaled: gradient
+    // coordinates bound to a size that starts at 0 were never redrawn
+    // (nothing showed).
     Shape {
         id: glow
         anchors.centerIn: parent
-        width: Math.min(parent.width, parent.height)
-        height: width
+        width: 200
+        height: 200
         visible: root.style === "glow"
         preferredRendererType: Shape.GeometryRenderer
-        readonly property real bass: {
-            const k = Math.max(1, Math.floor(root.n / 4));
-            let s = 0;
-            for (let i = 0; i < k; i++)
-                s += root.level(i);
-            return s / k;
-        }
-        scale: 0.78 + 0.3 * bass
-        opacity: 0.35 + 0.65 * bass
+        // Pow > 1: calm parts stay soft, loud ones bloom.
+        readonly property real e: Math.pow(root.energy, 1.6)
+        scale: Math.min(root.width, root.height) / 200 * (0.8 + 0.35 * e)
+        opacity: 0.25 + 0.75 * e
         ShapePath {
             strokeWidth: -1
             fillGradient: RadialGradient {
-                centerX: glow.width / 2
-                centerY: glow.height / 2
-                centerRadius: glow.width / 2
-                focalX: centerX
-                focalY: centerY
-                GradientStop { position: 0; color: Qt.alpha(Theme.accent, 0.75) }
-                GradientStop { position: 0.45; color: Qt.alpha(Theme.accent, 0.3) }
+                centerX: 100
+                centerY: 100
+                centerRadius: 100
+                focalX: 100
+                focalY: 100
+                // Strong up to where album art usually ends (~60 %), then a
+                // soft falloff: the part that shows is the halo around it.
+                GradientStop { position: 0; color: Qt.alpha(Theme.accent, 0.9) }
+                GradientStop { position: 0.58; color: Qt.alpha(Theme.accent, 0.9) }
+                GradientStop { position: 0.8; color: Qt.alpha(Theme.accent, 0.42) }
                 GradientStop { position: 1; color: Qt.alpha(Theme.accent, 0) }
             }
             PathAngleArc {
-                centerX: glow.width / 2
-                centerY: glow.height / 2
-                radiusX: glow.width / 2
-                radiusY: glow.height / 2
+                centerX: 100
+                centerY: 100
+                radiusX: 100
+                radiusY: 100
                 sweepAngle: 360
             }
         }
@@ -189,8 +221,11 @@ Item {
         // Geometry renderer: the curve renderer re-processed the whole shape
         // every frame (~11 % CPU at 30 fps here).
         preferredRendererType: Shape.GeometryRenderer
+        // That renderer has no antialiasing. A multisampled layer would fix
+        // it but cost ~8 % CPU at 60 fps here; instead the curve has more
+        // points and a faint, wider line underneath softens the steps.
 
-        // A smooth curve through the levels (Catmull-Rom, 2 points per bar).
+        // A smooth curve through the levels (Catmull-Rom, 4 points per bar).
         readonly property var pts: {
             const w = width, h = height, n = root.n;
             if (n < 2 || w <= 0)
@@ -199,8 +234,8 @@ Item {
             const l = [];
             for (let i = 0; i < n - 1; i++) {
                 const p0 = y(i - 1), p1 = y(i), p2 = y(i + 1), p3 = y(i + 2);
-                for (let k = 0; k < 2; k++) {
-                    const t = k / 2, t2 = t * t, t3 = t2 * t;
+                for (let k = 0; k < 4; k++) {
+                    const t = k / 4, t2 = t * t, t3 = t2 * t;
                     const yy = 0.5 * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3);
                     l.push(Qt.point((i + t) * w / (n - 1), Math.max(1, Math.min(h - 1, yy))));
                 }
@@ -222,9 +257,20 @@ Item {
                 path: [Qt.point(0, wave.height)].concat(wave.pts).concat([Qt.point(wave.width, wave.height)])
             }
         }
+        // Soft edge under the line (cheap stand-in for antialiasing).
+        ShapePath {
+            strokeWidth: 4.5
+            strokeColor: Qt.alpha(Theme.accent, 0.22)
+            fillColor: "transparent"
+            capStyle: ShapePath.RoundCap
+            joinStyle: ShapePath.RoundJoin
+            PathPolyline {
+                path: wave.pts
+            }
+        }
         // The line.
         ShapePath {
-            strokeWidth: 2
+            strokeWidth: 1.8
             strokeColor: Theme.accent
             fillColor: "transparent"
             capStyle: ShapePath.RoundCap

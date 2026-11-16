@@ -110,7 +110,10 @@ Singleton {
             "framerate = " + fps,
             "bars = " + bars,
             "autosens = " + (sensitivity === "auto" || ["low", "medium", "high"].indexOf(sensitivity) === -1 ? 1 : 0),
-            "sensitivity = " + ({ low: 60, medium: 120, high: 250 }[sensitivity] ?? 100),
+            // cava 1.0's fixed sensitivity is on a much larger scale than its
+            // docs suggest: measured with Spotify at full volume, autosens
+            // settles around 30000–40000 and 60–1000 leaves the bars flat.
+            "sensitivity = " + ({ low: 6000, medium: 15000, high: 35000 }[sensitivity] ?? 100),
             "lower_cutoff_freq = 50",
             "higher_cutoff_freq = 12000",
             "[input]",
