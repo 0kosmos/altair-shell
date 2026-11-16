@@ -122,27 +122,38 @@ Singleton {
         return l;
     }
 
-    // Moves needed to get rect `g` ({ x, y, w, h }) out of every obstacle,
-    // by the shortest way that keeps it inside `b` (the bounds): { x, y }.
-    // Two passes, so leaving one obstacle can't leave it in another.
-    function avoid(g: var, obstacles: var, b: var): var {
-        let x = g.x, y = g.y;
-        for (let pass = 0; pass < 2; pass++) {
-            for (const o of obstacles) {
-                if (x >= o.x + o.w || x + g.w <= o.x || y >= o.y + o.h || y + g.h <= o.y)
-                    continue;
-                const opts = [
-                    { x: o.x - g.w, y }, { x: o.x + o.w, y },
-                    { x, y: o.y - g.h }, { x, y: o.y + o.h }
-                ].filter(p => p.x >= b.x - 0.5 && p.y >= b.y - 0.5 && p.x + g.w <= b.x + b.w + 0.5 && p.y + g.h <= b.y + b.h + 0.5);
-                if (opts.length === 0)
-                    continue;
-                opts.sort((p, q) => Math.hypot(p.x - x, p.y - y) - Math.hypot(q.x - x, q.y - y));
-                x = opts[0].x;
-                y = opts[0].y;
+    // The nearest spot for rect `g` ({ x, y, w, h }) inside `b` (the bounds)
+    // that is clear of every obstacle at once, or null if there is none.
+    // Candidates: where it is, and against each edge of every obstacle and
+    // of the bounds, in every combination (a handful of obstacles, so a few
+    // dozen checks). Pushing out of one obstacle after another could land
+    // in the next one (e.g. under the bar when the dock is beside it).
+    function fit(g: var, obstacles: var, b: var): var {
+        const xs = [g.x, b.x, b.x + b.w - g.w], ys = [g.y, b.y, b.y + b.h - g.h];
+        for (const o of obstacles) {
+            xs.push(o.x - g.w, o.x + o.w);
+            ys.push(o.y - g.h, o.y + o.h);
+        }
+        const clear = (x, y) => x >= b.x - 0.5 && y >= b.y - 0.5 && x + g.w <= b.x + b.w + 0.5 && y + g.h <= b.y + b.h + 0.5
+            && obstacles.every(o => x >= o.x + o.w || x + g.w <= o.x || y >= o.y + o.h || y + g.h <= o.y);
+        let best = null, bestD = 1e18;
+        for (const x of xs) {
+            for (const y of ys) {
+                const d = (x - g.x) * (x - g.x) + (y - g.y) * (y - g.y);
+                if (d < bestD && clear(x, y)) {
+                    best = { x, y };
+                    bestD = d;
+                }
             }
         }
-        return { x: x - g.x, y: y - g.y };
+        return best;
+    }
+
+    // Move ({ x, y }) that gets `g` clear of the obstacles (see fit); no move
+    // if it can't be (it stays where it is).
+    function avoid(g: var, obstacles: var, b: var): var {
+        const p = fit(g, obstacles, b);
+        return p ? { x: p.x - g.x, y: p.y - g.y } : { x: 0, y: 0 };
     }
 
     // opts (optional): { targets: [{ x, y, w, h }] to align with, dim: false,

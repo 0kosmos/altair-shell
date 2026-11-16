@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import qs.components
+import qs.core
 import qs.services
 import qs.theme
 
@@ -230,7 +231,9 @@ Item {
     readonly property real targetScale: joinParent ? scaleIn(joinParent, joinSide)
         : liveScale > 0 ? liveScale : Math.max(0.5, Math.min(2.5, item?.scale ?? 1))
     property bool animateScale: false
-    property real s: targetScale
+    // fitK < 1: shrunk for now because the bar and dock leave too little
+    // room (see refit); never saved, so it grows back when there is room.
+    property real s: targetScale * (attached || previewing ? 1 : fitShown)
     Behavior on s {
         enabled: frame.animateScale
         NumberAnimation { duration: Theme.anim.normal; easing.type: Theme.anim.easingSlide }
@@ -262,15 +265,48 @@ Item {
     // Resting widgets (with their group) stay inside the free area: when the
     // bar or dock moves over them they glide out of its way (the saved spot
     // is kept, so they come back when it moves away again).
-    // Kept on the monitor and clear of the bar and dock (12 px gap), pushed
-    // out the shortest way, so a widget may sit beside the dock.
-    readonly property point restPos: {
-        const e = ext, w = width, h = height;
-        let x = Math.max(e.l, Math.min(mon.w - w - e.r, item?.x ?? 0));
-        let y = Math.max(e.t, Math.min(mon.h - h - e.b, item?.y ?? 0));
-        const d = Snap.avoid({ x: x - e.l, y: y - e.t, w: w + e.l + e.r, h: h + e.t + e.b },
-                             Snap.obstacles(mon.name, mon.w, mon.h), { x: 0, y: 0, w: mon.w, h: mon.h });
-        return Qt.point(x + d.x, y + d.y);
+    // Kept on the monitor and clear of the bar and dock (12 px gap) at the
+    // nearest free spot, so a widget may sit beside the dock. If the group
+    // fits nowhere at its size, it shrinks (fitK) until it does.
+    //
+    // Worked out imperatively (refit), not as a binding: the size depends on
+    // the result, and attached widgets' sizes follow this one's.
+    property real fitK: 1
+    property real fitShown: fitK
+    Behavior on fitShown {
+        enabled: frame.settledIn
+        NumberAnimation { duration: Theme.anim.slow; easing.type: Easing.OutQuint }
+    }
+    property point fitPos: Qt.point(item?.x ?? 0, item?.y ?? 0)
+    readonly property point restPos: fitPos
+    // Everything the fit depends on, at full size (ext / fitShown: attached
+    // widgets scale with this one).
+    readonly property string fitKey: attached ? "" : [Theme.barPosition, ShellState.barDragTarget,
+        JSON.stringify(DockApps.rects[mon.name] ?? null), item?.x, item?.y, targetScale, base.w, base.h, mon.w, mon.h,
+        Math.round(ext.l / fitShown), Math.round(ext.t / fitShown), Math.round(ext.r / fitShown), Math.round(ext.b / fitShown)].join("|")
+    onFitKeyChanged: if (!attached) Qt.callLater(refit)
+    function refit(): void {
+        if (attached)
+            return;
+        const k0 = fitShown, W = base.w * targetScale, H = base.h * targetScale;
+        const E = { l: ext.l / k0, t: ext.t / k0, r: ext.r / k0, b: ext.b / k0 };
+        const obs = Snap.obstacles(mon.name, mon.w, mon.h), bounds = { x: 0, y: 0, w: mon.w, h: mon.h };
+        let last = null;
+        for (const k of [1, 0.92, 0.84, 0.76, 0.68, 0.6, 0.52, 0.45]) {
+            const w = W * k, h = H * k, e = { l: E.l * k, t: E.t * k, r: E.r * k, b: E.b * k };
+            const x = Math.max(e.l, Math.min(mon.w - w - e.r, item?.x ?? 0));
+            const y = Math.max(e.t, Math.min(mon.h - h - e.b, item?.y ?? 0));
+            last = { k, x, y };
+            const p = Snap.fit({ x: x - e.l, y: y - e.t, w: w + e.l + e.r, h: h + e.t + e.b }, obs, bounds);
+            if (p) {
+                fitK = k;
+                fitPos = Qt.point(Math.round(p.x + e.l), Math.round(p.y + e.t));
+                return;
+            }
+        }
+        // Nowhere, even small: smallest, kept on the monitor.
+        fitK = last.k;
+        fitPos = Qt.point(Math.round(last.x), Math.round(last.y));
     }
     // Picked (edit mode > Select) while another picked widget is dragged:
     // follow it.
