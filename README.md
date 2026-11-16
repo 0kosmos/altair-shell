@@ -426,9 +426,8 @@ The lock screen is built so that you can always get back in:
   running. Last resort: `hyprctl --instance 0 dispatch 'hl.dsp.exit()'`
   ends the Hyprland session; unsaved work in open apps is lost.)
 - **The password check itself is broken** (e.g. after a system update):
-  the lock screen says so instead of freezing. While Altair 0.3 is in
-  testing it also offers an *Unlock* button in that case only; that button
-  will be removed before the release.
+  the lock screen says so and shows these steps instead of freezing; it
+  never unlocks without a password.
 
 ## Uninstall
 

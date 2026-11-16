@@ -148,13 +148,19 @@ FocusScope {
                 Behavior on opacity { NumberAnimation { duration: Theme.anim.fast } }
             }
 
-            // TEMPORARY (testing phase, remove before v0.3.0): only when the
-            // password check itself is broken, never after a wrong password.
-            PillButton {
+            // The password check itself is broken: how to get back in. The
+            // screen stays locked (no way in without a password).
+            StyledText {
                 Layout.alignment: Qt.AlignHCenter
+                Layout.preferredWidth: 360
                 visible: Locker.broken
-                text: "Unlock (password check is broken)"
-                onClicked: Locker.forceUnlock()
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
+                textFormat: Text.StyledText
+                text: "Try <b>SUPER + SHIFT + R</b> (restarts Altair, stays locked), then your password again.<br>"
+                    + "Still broken: <b>Ctrl + Alt + F3</b>, log in, run <b>loginctl unlock-sessions</b>, then <b>Ctrl + Alt + F2</b>."
+                color: Qt.alpha("#ffffff", 0.8)
+                font.pixelSize: Theme.font.small
             }
         }
 

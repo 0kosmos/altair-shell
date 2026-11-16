@@ -20,8 +20,9 @@ import qs.core
 //   (SUPER + SHIFT + R also works on the lock screen) locks again at once
 //   (misc.allow_session_lock_restore, set by hypr/init.lua).
 // - If PAM itself fails (missing module, broken config: not a wrong
-//   password), the lock says so and, FOR NOW (testing phase), offers an
-//   Unlock button. TODO(before v0.3.0): remove `broken` unlocking.
+//   password), the lock says so and how to get back in (restart Altair,
+//   or a console and `loginctl unlock-sessions`); it never freezes and
+//   never unlocks without a password.
 Singleton {
     id: root
 
@@ -81,14 +82,6 @@ Singleton {
         locked = false;
         Quickshell.execDetached(["rm", "-f", flagFile]);
         setLockedHint(false);
-    }
-
-    // TEMPORARY (testing phase): only while PAM itself is broken.
-    function forceUnlock(): void {
-        if (broken) {
-            console.warn("altair: unlocking without a password check (PAM is broken)");
-            unlock();
-        }
     }
 
     onSecureChanged: if (secure) setLockedHint(true)
@@ -167,7 +160,7 @@ Singleton {
         message = "";
         if (!pam.start()) {
             pending = null;
-            fail("error", "The password check couldn't start (PAM). Check the log: journalctl --user -t qs");
+            fail("error", "The password check couldn't start (PAM).");
         }
     }
 
@@ -212,7 +205,7 @@ Singleton {
                 root.failures++;
                 root.fail("failed", root.message || (root.failures >= 3 ? "Wrong password. Too many tries may lock the account for a while." : "Wrong password"));
             } else {
-                root.fail("error", "The password check isn't working (PAM error). " + (root.message || "See journalctl -t qs."));
+                root.fail("error", "The password check isn't working (PAM error)." + (root.message ? " " + root.message : ""));
             }
         }
         onError: error => console.warn("altair: PAM error: " + PamError.toString(error))

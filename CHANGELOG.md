@@ -12,8 +12,8 @@ All notable changes to Altair. Versions follow [semantic versioning](https://sem
   and on `loginctl lock-session`; screen off while locked.
 - Safe by design: a crashed lock screen comes back locked
   (`SUPER + SHIFT + R` works on it), `loginctl unlock-session(s)` from a
-  console unlocks, and a broken password check shows an error instead of
-  freezing. See README, "If the lock screen breaks".
+  console unlocks, and a broken password check shows an error and the
+  recovery steps instead of freezing (it never unlocks without a password). See README, "If the lock screen breaks".
 
 ### Quick settings
 - **Quick settings** (`SUPER + A`, bar button): Wi-Fi, Bluetooth, Do not
