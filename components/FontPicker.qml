@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import QtQuick
 import QtQuick.Layouts
+import qs.services
 import qs.theme
 
 // Choice of a font family: common families that are installed, each shown in
@@ -36,7 +37,10 @@ Flow {
             implicitHeight: 30
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: root.picked(modelData.family)
+            onClicked: {
+                Sounds.click();
+                root.picked(modelData.family);
+            }
             Rectangle {
                 anchors.fill: parent
                 radius: Theme.pill(height)

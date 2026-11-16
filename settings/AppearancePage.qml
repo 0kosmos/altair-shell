@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import Quickshell.Widgets
 import qs.components
 import qs.core
+import qs.services
 import qs.theme
 
 Page {
@@ -99,6 +100,7 @@ Page {
                         NumberAnimation { duration: Theme.anim.fast; easing.type: Easing.OutBack; easing.overshoot: 2.5 }
                     }
                     onClicked: {
+                        Sounds.click();
                         page.editingSlot = page.editingSlot === index ? -1 : index;
                         if (page.editingSlot >= 0)
                             slotPicker.load(value);
@@ -271,6 +273,8 @@ Page {
 
     component Swatch: MouseArea {
         id: swatch
+        // Plays alongside the instance's own onClicked.
+        onClicked: Sounds.click()
         property color fillColor
         property bool selected: false
 
@@ -309,6 +313,7 @@ Page {
     // A palette preview: its five colours as stripes, and its name.
     component PaletteCard: MouseArea {
         id: card
+        onClicked: Sounds.click()
         property string name
         property var colors: []
         property bool selected: false

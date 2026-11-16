@@ -329,7 +329,10 @@ Scope {
                                             implicitHeight: 38
                                             hoverEnabled: true
                                             cursorShape: Qt.PointingHandCursor
-                                            onClicked: win.page = modelData.id
+                                            onClicked: {
+                                                Sounds.click();
+                                                win.page = modelData.id;
+                                            }
                                             scale: pressed ? Theme.anim.pressScale : 1
                                             Behavior on scale {
                                                 NumberAnimation { duration: Theme.anim.fast; easing.type: Easing.OutBack; easing.overshoot: 2.5 }
